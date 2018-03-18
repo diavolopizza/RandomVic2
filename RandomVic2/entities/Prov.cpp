@@ -5,22 +5,18 @@ Prov::Prov()
 {
 }
 
-Prov::Prov(int provnr,int r, int g,int b)
+Prov::Prov(int provnr,RGBTRIPLE colour)
 {
 	this->provnr = provnr;
-	this->r = r;
-	this->g = g;
-	this->b = b;
+	this->colour = colour;
 	this->tag = "DUM";
 	this->stateid = 0;
 }
 
-Prov::Prov(int provnr, int r, int g, int b,bool s)
+Prov::Prov(int provnr, RGBTRIPLE colour,bool s)
 {
+	this->colour = colour;
 	this->provnr = provnr;
-	this->r = r;
-	this->g = g;
-	this->b = b;
 	this->tag = "DUM";
 	this->sea = s;
 	this->stateid = 0;
@@ -34,9 +30,9 @@ Prov::~Prov()
 bool Prov::operator==(const Prov& right) const
 {
 	
-	if (this->r == right.r)
-		if (this->g == right.g)
-			if (this->b == right.b)
+	if (this->colour.rgbtRed == right.colour.rgbtRed)
+		if (this->colour.rgbtGreen == right.colour.rgbtGreen)
+			if (this->colour.rgbtBlue == right.colour.rgbtBlue)
 				return true;
 
 

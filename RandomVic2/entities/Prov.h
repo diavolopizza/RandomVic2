@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <unordered_set>
+#include <Windows.h>
 using namespace std;
 
 class Prov
@@ -11,13 +12,14 @@ class Prov
 	string path;
 public:
 	Prov();
-	Prov(int,int, int, int);
-	Prov(int, int, int, int,bool);
+	Prov(int,RGBTRIPLE);
+	Prov(int, RGBTRIPLE,bool);
 	~Prov();
 
 
 	string tag;//tag who owns prov
-	int provnr, r, g, b;
+	int provnr;
+	RGBTRIPLE colour;
 	int stateid;
 	int victory_points = 0;
 	bool placed = false, coastal = false, island = false, sea = false;

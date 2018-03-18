@@ -13,21 +13,17 @@ class BMPHandler
 public:
 	BMPHandler();
 	~BMPHandler();
-	bool SaveBMP(Bitmap*, LPCTSTR bmpfile, int height, int width, string type);
-	bool SaveChangedBMP(Bitmap*, LPCTSTR bmpfile);
-	Bitmap* Load24bitBMP(LPCTSTR input, int modifier, string key);
-	Bitmap* Load8bitBMP(LPCTSTR input, int modifier, string key);
+	bool SaveBMPToFile(Bitmap*, LPCTSTR bmpfile);
+	Bitmap* Load24bitBMP(LPCTSTR input, string key);
+	Bitmap* Load8bitBMP(LPCTSTR input, string key);
 	Bitmap* findBitmapByKey(string key);
-
-
 
 	BMPHandler(BMPHandler const&) = delete;
 	void operator=(BMPHandler const&) = delete;
 
 	static BMPHandler& getInstance()
 	{
-		static BMPHandler   instance; // Guaranteed to be destroyed.
-							  // Instantiated on first use.
+		static BMPHandler instance; // Guaranteed to be destroyed.
 		return instance;
 	}
 

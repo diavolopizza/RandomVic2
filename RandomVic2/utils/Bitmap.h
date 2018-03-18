@@ -4,7 +4,7 @@
 using namespace std;
 class Bitmap
 {
-	
+
 public:
 	Bitmap();
 	~Bitmap();
@@ -14,6 +14,6 @@ public:
 	BITMAPINFOHEADER bitmapinfoheader;
 
 	BYTE* Buffer;
-	BYTE*colourtable;
+	BYTE* colourtable;
 };
 
