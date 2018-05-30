@@ -10,16 +10,18 @@ Prov::Prov(int provnr,RGBTRIPLE colour)
 	this->provnr = provnr;
 	this->colour = colour;
 	this->tag = "DUM";
-	this->stateid = 0;
 }
 
-Prov::Prov(int provnr, RGBTRIPLE colour,bool s)
+Prov::Prov(int provnr, RGBTRIPLE colour,bool s, ranlux48* random)
 {
 	this->colour = colour;
 	this->provnr = provnr;
 	this->tag = "DUM";
 	this->sea = s;
-	this->stateid = 0;
+	this->continent = nullptr;
+	this->region = nullptr;
+	this->random = random;
+	this->climate = "mild_climate";
 }
 
 Prov::~Prov()
@@ -44,41 +46,47 @@ bool Prov::operator==(const Prov& right) const
 
 void Prov::setneighbour2(Prov*P)
 {
-	neighbours.insert(P);
-	P->neighbours.insert(this);
-
-	//this->totalborder += 1;
-	//if (this->neighbour.size() == 0)
-	//{
-	//	this->neighbour.push_back(neighbour);
-	//	//this->bordertoeach.push_back(0);
-	//}
-	//else
-	//for (int i = 0; i < this->neighbour.size(); i++)
-	//{
-	//	//
-	//	//if (this->neighbour[i] == neighbour)
-	//	//{
-	//	//	this->bordertoeach[i] += 1;
-	//	//	break;
-	//	//}
-	//	if (i >= this->neighbour.size() - 1)
-	//	{
-	//		this->neighbour.push_back(neighbour);
-	//		//this->bordertoeach.push_back(0);
-	//		break;
-	//	}
-	//}
-	
+	neighbourProvinces.insert(P);
+	P->neighbourProvinces.insert(this);	
 }
 
 void Prov::checkDeveloped(vector <int> developed_continent) {
 	for (auto dev_con : developed_continent)
 	{
-		if (this->continent == dev_con)
-		{
-			this->developed = true;
-			break;
+		//if (this->continent == dev_con)
+		//{
+		//	this->developed = true;
+		//	break;
+		//}
+	}
+}
+
+void Prov::assignContinent(Continent * C)
+{
+	this->continent = C;
+	C->provinces.push_back(this);
+	for (auto neighbour : this->neighbourProvinces)
+	{
+		if (neighbour->continent == nullptr && !neighbour->sea) {
+			neighbour->assignContinent(C);
 		}
+	}
+}
+
+void Prov::assignRegion(Region * R, bool recursive)
+{
+	this->region = R;
+	R->provinces.push_back(this);
+	if (recursive) {
+		for (auto neighbour : this->neighbourProvinces)
+		{
+			if (neighbour->region == nullptr && !neighbour->sea && R->provinces.size() < 10) {
+				neighbour->assignRegion(R, false);
+			}
+		}
+	}
+	if (R->provinces.size() < 10)
+	{
+
 	}
 }
