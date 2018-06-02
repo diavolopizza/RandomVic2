@@ -6,6 +6,7 @@ class River
 {
 
 	uint32_t source;
+	uint32_t currentEnd;
 public:
 	vector<uint32_t> pixels;
 	vector<River*> ingoing;
@@ -15,5 +16,8 @@ public:
 	~River();
 	void defineColour();
 	void setSource(uint32_t	pixel);
+	uint32_t getCurrentEnd();
+	void setcurrentEnd(uint32_t pixel);
+	bool contains(uint32_t pixel);
 };
 

@@ -31,6 +31,7 @@ public:
 	vector<Prov*> provinces;
 	vector<Region*> regions;
 	vector<Continent*> continents;
+	vector<River*> rivers;
 	Terrain(ranlux48* random, uint32_t generalBmpWidth, uint32_t generalBmpHeight);
 	~Terrain();
 
@@ -43,16 +44,16 @@ public:
 	void provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint32_t numOfLandProv, uint32_t greyval);
 	void fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal);
 	BYTE* createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer);
-	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed);
-	void evaluateContinents();
+	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter);
+	void evaluateContinents(uint32_t minProvPerContinent);
 	void evaluateNeighbours(Bitmap * provinceBMP);
 	void evaluateRegions();
 	void evaluateCoasts(Bitmap * provinceBMP);
 	void provPixels(Bitmap * provinceBMP);
 	void prettyContinents(Bitmap * continents);
 	void prettyRegions(Bitmap * regions);
-	void prettyProvinces(Bitmap * provinceBMP);
+	void prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize);
 	void prettyTerrain(Bitmap * provinceBMP, Bitmap * heightmap);
-	void prettyRivers(Bitmap * riverBMP, Bitmap * heightmap);
+	void prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t riverAmount, uint32_t elevationTolerance);
 	boost::multi_array<Prov*, 3> createProvinceMap();
 };

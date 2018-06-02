@@ -10,7 +10,7 @@ public:
 	~Data();
 
 	string VicPath = "C:/Users/Paul/Documents/Visual Studio 2017/Projects/";//;Victoriasource/";
-	string modPath = "C:/Users/Paul/Documents/Visual Studio 2017/Projects/";//;Victoriatarget/mod/ran/";
+	string mapPath = "C:/Users/Paul/Documents/Visual Studio 2017/Projects/map/";//;Victoriatarget/mod/ran/";
 
 	ranlux48* random;
 	int maxNumOfCountries = 113;

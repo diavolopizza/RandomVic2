@@ -2,7 +2,8 @@
 #include "../utils/Random.h"
 #include "../utils/BMPHandler.h"
 #include "../FastNoise/FastNoise.h"
-#include <windows.h> //for timeGetTime() mainly
+#include <windows.h>
+
 //MACROS
 #define LEFT(val) \
 (val-3)
@@ -28,7 +29,7 @@ Terrain::Terrain(ranlux48* random, uint32_t generalBmpWidth, uint32_t generalBmp
 Terrain::~Terrain()
 {
 }
-
+//Utility to find starting point of new province
 void Terrain::determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour) {
 	uint32_t bmpWidth = b->bitmapinfoheader.biWidth;
 	uint32_t bmpHeight = b->bitmapinfoheader.biHeight;
@@ -41,7 +42,7 @@ void Terrain::determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels
 	b->setTriple(provinceColour, startingPixel * 3);
 	provincePixels.push_back(startingPixel * 3);
 }
-
+//generates all land provinces
 BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap * provinceBMP)
 {
 	cout << "Landprovinces" << endl;
@@ -65,7 +66,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	assignRemainingPixels(provinceBMP, provinceBuffer, provinces, false);
 	return provinceBuffer;
 }
-
+//generates all land provinces
 BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap * provinceBMP)
 {
 	uint32_t bmpWidth = terrainBMP->bitmapinfoheader.biWidth;
@@ -207,7 +208,7 @@ void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal)
 }
 //creates continents from the random landmasses and assigns
 //provinces to those continents
-void Terrain::evaluateContinents() {
+void Terrain::evaluateContinents(uint32_t minProvPerContinent) {
 	uint32_t continentID = 0;
 	for (auto prov : provinces)
 	{
@@ -220,7 +221,7 @@ void Terrain::evaluateContinents() {
 	}
 	for (int i = 0; i < continents.size(); i++)
 	{
-		if (continents[i]->provinces.size() < 100) {
+		if (continents[i]->provinces.size() < minProvPerContinent) {
 			for (auto province : continents[i]->provinces) {
 				province->continent = nullptr;
 			}
@@ -231,7 +232,7 @@ void Terrain::evaluateContinents() {
 	for (auto prov : provinces)
 	{
 		if (prov->continent == nullptr && !prov->sea) {
-			uint32_t distance = 10000;
+			uint32_t distance = MAXUINT32;
 			Continent* nextOwner = nullptr;
 			for (Prov* P : provinces)
 			{
@@ -296,7 +297,7 @@ void Terrain::evaluateRegions()
 	for (auto prov : provinces)
 	{
 		if (prov->region == nullptr && !prov->sea) {
-			uint32_t distance = 10000;
+			uint32_t distance = MAXUINT32;
 			Region* nextOwner = nullptr;
 			for (Prov* P : provinces)
 			{
@@ -315,6 +316,7 @@ void Terrain::evaluateRegions()
 		}
 	}
 }
+//evaluate if province is coastal
 void Terrain::evaluateCoasts(Bitmap * provinceBMP)
 {
 	for (auto prov : provinces) {
@@ -358,21 +360,21 @@ BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer)
 	return terrainBuffer;
 }
 //creates the heightmap with a given seed
-BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed)
+BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter )
 {
-	cout << "Create Heightmap" << endl;
+	cout << "Creating Heightmap" << endl;
 	FastNoise myNoise; // Create a FastNoise object
 	myNoise.SetNoiseType(FastNoise::SimplexFractal); // Set the desired noise type
 	//myNoise.SetSeed((*random)() % 1000000);
 	myNoise.SetSeed(seed);
-	myNoise.SetFrequency(0.0006);
-	myNoise.SetFractalOctaves(11);
-	myNoise.SetFractalGain(0.5);
+	myNoise.SetFrequency(frequency);
+	myNoise.SetFractalOctaves(fractalOctaves);
+	myNoise.SetFractalGain(fractalGain);
 	myNoise.SetFractalType(FastNoise::FBM);
 	const int width = RGBBMP->bitmapinfoheader.biWidth;
 	const int height = RGBBMP->bitmapinfoheader.biHeight;
 	BYTE* heightmapBuffer = new BYTE[RGBBMP->bitmapinfoheader.biSizeImage];
-	float delimiter = generalBmpWidth / 10;
+	float delimiter = generalBmpWidth / borderLimiter;
 	for (int x = 0; x < height; x++)
 	{
 		for (int y = 0; y < width; y++)
@@ -403,9 +405,9 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 	for (uint32_t unassignedPixel = 0; unassignedPixel < bmpSize; unassignedPixel += 3)
 	{
 		if (sea) {
-
 			if (provinceBuffer[unassignedPixel] == 254 || provinceBuffer[unassignedPixel] == 0)
 			{
+				//find unique colour
 				RGBTRIPLE lakeColour;
 				bool unique = false;
 				while (!unique) {
@@ -431,28 +433,24 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 						if (i < bmpSize - width * 3 && provinceBuffer[ABOVE(i, width * 3)] == 0)
 						{
 							provinceBMP->setTriple(lakeColour, ABOVE(i, width * 3));
-							//assignColour(lakeColour, provinceBuffer, ABOVE(i, width * 3), 1);
 							lake->pixels.push_back(ABOVE(i, width * 3));
 							newFound = true;
 						}
 						if (i > width * 3 && provinceBuffer[BELOW(i, width * 3)] == 0)
 						{
 							provinceBMP->setTriple(lakeColour, BELOW(i, width * 3));
-							//assignColour(lakeColour, provinceBuffer, BELOW(i, width * 3), 1);
 							lake->pixels.push_back(BELOW(i, width * 3));
 							newFound = true;
 						}
 						if (i + 3 < bmpSize - 3 && provinceBuffer[i + 3] == 0)
 						{
 							provinceBMP->setTriple(lakeColour, i + 3);
-							//assignColour(lakeColour, provinceBuffer, i + 3, 1);
 							lake->pixels.push_back((i + 3));
 							newFound = true;
 						}
 						if (i - 3 > 0 && provinceBuffer[i - 3] == 0)
 						{
 							provinceBMP->setTriple(lakeColour, i - 3);
-							//assignColour(lakeColour, provinceBuffer, i - 3, 1);
 							lake->pixels.push_back((i - 3));
 							newFound = true;
 						}
@@ -543,7 +541,6 @@ void Terrain::prettyContinents(Bitmap * continentBMP)
 //writes the regions to a bitmap, non-unique colours
 void Terrain::prettyRegions(Bitmap * regionBMP)
 {
-	//	delete regionBMP->Buffer;
 	regionBMP->Buffer = new BYTE[regionBMP->bitmapinfoheader.biSizeImage];
 	for (auto region : regions) {
 		RGBTRIPLE regionColour;
@@ -559,14 +556,12 @@ void Terrain::prettyRegions(Bitmap * regionBMP)
 		}
 	}
 }
-//evaluates province size to define wether it should be deleted
-//in case it is too small
-void Terrain::prettyProvinces(Bitmap * provinceBMP)
+//evaluates province size to define wether it should be deleted in case it is too small
+void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize)
 {
 	for (auto province : provinces)
 	{
-		if (province->pixels.size() < 30 && !province->sea) {
-			cout << "TINY PROVINCE" << endl;
+		if (province->pixels.size() < minProvSize && !province->sea) {
 			for (auto pixel : province->pixels) {
 				RGBTRIPLE colour;
 				colour.rgbtBlue = 0;
@@ -581,7 +576,6 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP)
 	for (int i = 0; i < provinces.size(); i++)
 	{
 		if (provinces[i]->pixels.size() == 0 && !provinces[i]->sea) {
-			cout << "DELETE PROVINCE" << endl;
 			provinces.erase(provinces.begin() + i);
 			i--;
 		}
@@ -590,8 +584,11 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP)
 	assignRemainingPixels(provinceBMP, provinceBMP->Buffer, provinces, false);
 	provPixels(provinceBMP);
 }
+//creates terrain around simplistic climate model
 void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 {
+	//TODO CONFIG FOR ALL PARAMS
+	uint32_t coastalDistanceInfluence = 30;
 	uint32_t mountainStart = 185;
 	uint32_t hillStart = 170;
 
@@ -627,9 +624,47 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 		float pixX = prov->center / 3 % (generalBmpWidth);
 		float pixY = (prov->center / 3 - pixX) / generalBmpWidth;
 		float temperatureFactor = ((int)pixY % (int)equator) / equator;
+
+
+		//DISTANCE TO COAST
+		float humidityFactor = 0;
+		int offset = 0;
+		int distanceNorth = 0;
+		int distanceSouth = 0;
+		int distanceEast = 0;
+		int distanceWest = 0;
+		uint32_t bitmapWidth = terrainBMP->bitmapinfoheader.biWidth;
+		while (terrainBMP->getValueAt(prov->center / 3 + offset) != 254) {
+			offset++;
+			distanceEast = offset;
+		}
+		offset = 0;
+		while (terrainBMP->getValueAt(prov->center / 3 - offset) != 254) {
+			offset++;
+			distanceWest = offset;
+		}
+		offset = bitmapWidth;
+		while (terrainBMP->getValueAt(prov->center / 3 + offset) != 254) {
+			offset += bitmapWidth;
+			distanceNorth = offset / bitmapWidth;
+		}
+		offset = bitmapWidth;
+		while (terrainBMP->getValueAt(prov->center / 3 - offset) != 254) {
+			offset += bitmapWidth;
+			distanceSouth = offset / bitmapWidth;
+		}
+		int distances[] = { abs(distanceNorth), abs(distanceEast), abs(distanceWest), abs(distanceSouth) };
+
+		if (*std::min_element(distances, distances + 4) < coastalDistanceInfluence) {
+			humidityFactor = 1 - (*std::min_element(distances, distances + 4) / coastalDistanceInfluence);
+		}
+
+		//DISTANCE TO EQUATOR
 		if (pixY >= equator) {
 			temperatureFactor = 1 - temperatureFactor;
-		}			if (temperatureFactor < 0.1 && !prov->sea)//mountains
+		}
+
+		if (temperatureFactor < 0.1 && !prov->sea)//mountains
 		{
 			arcticLikelyhood += 1;
 		}
@@ -644,47 +679,27 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 			marshLikelyhood += 0.03;
 			forestLikelyhood += (0.7 - temperatureFactor);//0.4-0.1
 		}
-		//if (temperatureFactor < 0.65 && temperatureFactor >= 0.5 && !prov->sea)
-		//{
-		//	farmlandsLikelyhood += 0.3;//0.3
-		//	forestLikelyhood += 0.1;//0.1
-		//}
 		if (temperatureFactor < 0.75 && temperatureFactor >= 0.6 && !prov->sea)
 		{
 			farmlandsLikelyhood += 0.9 - temperatureFactor;//0.3-0.15
 			steppeLikelyhood += temperatureFactor - 0.6;//0.0-0.15
-			//desertLikelyhood += 0.15;
 		}
 		if (temperatureFactor < 0.85 && temperatureFactor >= 0.75 && !prov->sea)
 		{
-			steppeLikelyhood += temperatureFactor - 0.6;//0.15-0.25
-			farmlandsLikelyhood += 0.1;
-			//desertLikelyhood += 0.5;//
+			steppeLikelyhood += humidityFactor * (temperatureFactor - 0.6);//0.15-0.25
+			farmlandsLikelyhood += 0.5*humidityFactor;
+			desertLikelyhood += 0.5*(1 - humidityFactor);//
 		}
 		if (temperatureFactor >= 0.85 && !prov->sea)
 		{
 			steppeLikelyhood += (uint32_t)(1.0 - temperatureFactor);//0.25-0.1
-			jungleLikelyhood += (temperatureFactor - 0.85) * 4;//0.0-0.7
-			//farmlandsLikelyhood += 0.3;//0.0-0.3
+			jungleLikelyhood += (temperatureFactor - 0.85) * 2;//0.0-0.7
 		}
-		//DISTANCE TO COAST
-		uint32_t offset = 500;
-		float distance = 0;
-		uint32_t bitmapWidth = terrainBMP->bitmapinfoheader.biWidth;
-		while (terrainBMP->getValueAt(prov->center) - offset == 254 && (prov->center - offset) % (bitmapWidth) > prov->center %bitmapWidth && offset > 0) {
-			offset--;
-			distance = offset;
-			cout << "TRUE";
-		}
-		if (offset < 500)
-			farmlandsLikelyhood += 10;
+
 
 
 		//WESTWINDS
 
-
-
-		//
 
 
 
@@ -793,15 +808,92 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 		}
 	}
 }
-void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap)
+//creates rivers 
+void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t riverAmount, uint32_t elevationTolerance)
 {
-	River R;
-	R.setSource((*random)() % riverBMP->bitmapinfoheader.biSizeImage / 3);
+	//TODO PARAMETRISATION
+	uint32_t heightmapWidth = heightmap->bitmapinfoheader.biWidth;
+	for (int i = 0; i < riverAmount; i++) {
+		River* R = new River();
+		this->rivers.push_back(R);
 
-	//find destination
-	//Find any Coastal province nearby
+		//find random start point
+		uint32_t start = 0;
+		while (!(heightmap->getValueAt(start) > 146))
+		{
+			start = ((*random)() % heightmap->bitmapinfoheader.biSizeImage);
+		}
+		R->setSource(start);
+		R->setcurrentEnd(start);
+		
+		//check each direction for fastest decay in altitude
+		vector<uint32_t> altitudes{ heightmap->getValueAt(ABOVE(R->getCurrentEnd(), heightmapWidth * 3 * 5)),
+			heightmap->getValueAt(BELOW(R->getCurrentEnd(), heightmapWidth * 3 * 5)),
+			heightmap->getValueAt(R->getCurrentEnd() - 15),
+			heightmap->getValueAt(R->getCurrentEnd() + 15) };
+
+		std::vector<uint32_t>::iterator result = std::min_element(std::begin(altitudes), std::end(altitudes));
+		uint32_t favDirection = std::distance(std::begin(altitudes), result);
+
+		while (heightmap->getValueAt(R->getCurrentEnd()) > 144) {
+			uint32_t lastPick = 0;
+			uint32_t offset = 0;
+			vector<uint32_t> candidates;
+			//now expand to lower or equal pixel as long as possible
+			while (offset < elevationTolerance &&candidates.size()==0) {
+				if (heightmap->getValueAt(ABOVE(R->getCurrentEnd(), heightmapWidth * 3)) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth * 3)) && favDirection != 1) {
+					if (ABOVE(R->getCurrentEnd(), heightmapWidth * 3) < heightmap->bitmapinfoheader.biSizeImage)
+						candidates.push_back(ABOVE(R->getCurrentEnd(), heightmapWidth * 3));
+				}
+				if (heightmap->getValueAt(BELOW(R->getCurrentEnd(), heightmapWidth * 3)) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(BELOW(R->getCurrentEnd(), heightmapWidth * 3)) && favDirection != 0) {
+					if (BELOW(R->getCurrentEnd(), heightmapWidth * 3) > heightmapWidth * 3)
+						candidates.push_back(BELOW(R->getCurrentEnd(), heightmapWidth * 3));
+				}
+				if (heightmap->getValueAt(LEFT(R->getCurrentEnd())) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(LEFT(R->getCurrentEnd())) && favDirection != 3) {
+					if (LEFT(R->getCurrentEnd()) > 3)
+						candidates.push_back(LEFT(R->getCurrentEnd()));
+				}
+				if (heightmap->getValueAt(RIGHT(R->getCurrentEnd())) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(RIGHT(R->getCurrentEnd())) && favDirection != 2) {
+					if (RIGHT(R->getCurrentEnd()) < heightmap->bitmapinfoheader.biSizeImage - 3)
+						candidates.push_back(RIGHT(R->getCurrentEnd()));
+				}
+				if (candidates.size() == 0) {
+					offset++;
+					if (offset >= elevationTolerance) {
+						cout << "RIVER stopped due to elevation with length: " << R->pixels.size() << endl;
+						break;
+					}
+				}
+			}
+			if (candidates.size() == 0) {
+				break;
+			}
+			//ERROR HANDLING TODO
+
+			lastPick = (*random)() % candidates.size();
+			R->setcurrentEnd(candidates[lastPick]);
+			R->pixels.push_back(R->getCurrentEnd());
+
+			if (heightmap->getValueAt(R->getCurrentEnd()) <= 145) {
+				cout << "RIVER ENDED IN SEA with length: " << R->pixels.size() << endl;
+				break;
+			}
+		}
+	}
 
 
+	for (int i = 0; i < riverBMP->bitmapinfoheader.biSizeImage; i++)
+	{
+		if (heightmap->getValueAt(i * 3) > 145)
+			riverBMP->Buffer[i] = 255;
+		else
+			riverBMP->Buffer[i] = 254;
+	}
+	for (River* river : rivers) {
+		for (uint32_t pix : river->pixels) {
+			riverBMP->Buffer[pix / 3] = 10;
+		}
+	}
 }
 //creates the province map for fast access of provinces when only
 //rgb values are available, removes need to search this province
@@ -811,47 +903,4 @@ boost::multi_array<Prov*, 3> Terrain::createProvinceMap()
 		provinceMap[province->colour.rgbtRed][province->colour.rgbtGreen][province->colour.rgbtBlue] = province;
 	}
 	return provinceMap;
-
-	//for (unsigned int i = 0; i < provinces.size(); i++)
-	//{
-	//	getline(defi, temp1);
-	//	pos = temp1.find_first_of(';', pos + 1);
-	//	provnr = stoi(temp1.substr(0, temp1.find_first_of(';')));
-
-	//	r = stoi(temp1.substr(pos + 1, temp1.find_first_of(';', pos + 1)));//RED
-
-	//	pos = temp1.find_first_of(';', pos + 1);
-	//	g = stoi(temp1.substr(pos + 1, temp1.find_first_of(';', pos + 1)));//GREEN
-
-	//	pos = temp1.find_first_of(';', pos + 1);
-	//	b = stoi(temp1.substr(pos + 1, temp1.find_first_of(';', pos + 1)));//BLUE
-
-	//	Prov*prov = new Prov(provnr, r, g, b);
-
-	//	pos = temp1.find_first_of(';', pos + 1);
-	//	string temp2 = temp1.substr(pos + 1, temp1.find_first_of(';', pos + 1) - pos - 1);//land, sea or lake
-	//	if (temp2 == "sea" || temp2 == "lake")
-	//		prov->sea = true;
-	//	else {
-	//		prov->sea = false;
-	//	}
-
-	//	pos = temp1.find_first_of(';', pos + 1);
-	//	if (temp1.substr(pos + 1, temp1.find_first_of(';', pos + 1) - pos - 1) == "true")//coastal
-	//		prov->coastal = true;
-	//	else
-	//		prov->coastal = false;
-
-
-
-	//	pos = temp1.find_first_of(';', pos + 1);
-	//	prov->terrain_type = temp1.substr(pos + 1, temp1.find_first_of(';', pos + 1) - pos - 1); //terraintype
-
-	//	pos = temp1.find_first_of(';', pos + 1);
-	//	prov->continent = stoi(temp1.substr(pos + 1, temp1.find_first_of(';', pos + 1) - pos - 1));//continent
-
-	//	pos = 0;
-	//	orderedprov[prov->provnr] = prov;
-	//	provs[prov->r][prov->g][prov->b] = prov;
-	//}
 }
