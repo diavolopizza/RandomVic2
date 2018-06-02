@@ -40,3 +40,22 @@ bool River::contains(uint32_t pixel)
 	}
 	return false;
 }
+
+void River::addIngoing(River * ingoing, uint32_t pixel)
+{
+	this->ingoing.push_back(ingoing);
+	ingoing->addEndsIn(this);
+	ingoingRivers.insert_or_assign(pixel, ingoing);
+}
+
+void River::addEndsIn(River * river)
+{
+	this->endsIn = river;
+}
+
+River * River::getIngoingForKey(uint32_t pixel)
+{
+	if(ingoingRivers.find(pixel)!= ingoingRivers.end())
+		return ingoingRivers.at(pixel);
+	else return nullptr;
+}

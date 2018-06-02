@@ -812,18 +812,18 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t riverAmount, uint32_t elevationTolerance)
 {
 	std::unordered_set<uint32_t> riverPixels;
+	uint32_t maxRiverColour = 10;
 	//TODO PARAMETRISATION
 	uint32_t heightmapWidth = heightmap->bitmapinfoheader.biWidth;
 	for (uint32_t i = 0; i < riverAmount; i++) {
-		cout << i << endl;
 		River* R = new River();
 		this->rivers.push_back(R);
 
 		//find random start point
 		uint32_t start = 0;
-		while (!(heightmap->getValueAt(start*3) > 145)/* && riverPixels.find(start) == riverPixels.end()*/)
+		while (!(heightmap->getValueAt(start * 3) > 145) && riverPixels.find(start) == riverPixels.end())
 		{
-			start = ((*random)() % heightmap->bitmapinfoheader.biSizeImage/3);
+			start = ((*random)() % heightmap->bitmapinfoheader.biSizeImage / 3);
 		}
 		start *= 3;
 		R->setSource(start);
@@ -838,51 +838,65 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 
 		std::vector<uint32_t>::iterator result = std::min_element(std::begin(altitudes), std::end(altitudes));
 		uint32_t favDirection = std::distance(std::begin(altitudes), result);
+		//this variable is used to avoid rectangles in the river
+		int previous = 0;
 		while (heightmap->getValueAt(R->getCurrentEnd()) > 144) {
-			uint32_t offset = 0;
+			uint32_t elevationToleranceOffset = 0;
 			vector<uint32_t> candidates;
 			//now expand to lower or equal pixel as long as possible
-			while (offset < elevationTolerance &&candidates.size() == 0) {
-				if (heightmap->getValueAt(ABOVE(R->getCurrentEnd(), heightmapWidth * 3)) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth * 3)) && favDirection != 1) {
-					if (ABOVE(R->getCurrentEnd(), heightmapWidth * 3) < heightmap->bitmapinfoheader.biSizeImage)
+			while (elevationToleranceOffset < elevationTolerance &&candidates.size() == 0) {
+				if (heightmap->getValueAt(ABOVE(R->getCurrentEnd(), heightmapWidth * 3)) < heightmap->getValueAt(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth * 3)) && favDirection != 1) {
+					if (ABOVE(R->getCurrentEnd(), heightmapWidth * 3) < heightmap->bitmapinfoheader.biSizeImage && previous != -(int)heightmapWidth * 3)
 						candidates.push_back(ABOVE(R->getCurrentEnd(), heightmapWidth * 3));
 				}
-				if (heightmap->getValueAt(BELOW(R->getCurrentEnd(), heightmapWidth * 3)) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(BELOW(R->getCurrentEnd(), heightmapWidth * 3)) && favDirection != 0) {
-					if (BELOW(R->getCurrentEnd(), heightmapWidth * 3) > heightmapWidth * 3)
+				if (heightmap->getValueAt(BELOW(R->getCurrentEnd(), heightmapWidth * 3)) < heightmap->getValueAt(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(BELOW(R->getCurrentEnd(), heightmapWidth * 3)) && favDirection != 0) {
+					if (BELOW(R->getCurrentEnd(), heightmapWidth * 3) > heightmapWidth * 3 && previous != heightmapWidth * 3)
 						candidates.push_back(BELOW(R->getCurrentEnd(), heightmapWidth * 3));
 				}
-				if (heightmap->getValueAt(LEFT(R->getCurrentEnd())) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(LEFT(R->getCurrentEnd())) && favDirection != 3) {
-					if (LEFT(R->getCurrentEnd()) > 3)
+				if (heightmap->getValueAt(LEFT(R->getCurrentEnd())) < heightmap->getValueAt(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(LEFT(R->getCurrentEnd())) && favDirection != 3) {
+					if (LEFT(R->getCurrentEnd()) > 3 && previous != 3)
 						candidates.push_back(LEFT(R->getCurrentEnd()));
 				}
-				if (heightmap->getValueAt(RIGHT(R->getCurrentEnd())) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(RIGHT(R->getCurrentEnd())) && favDirection != 2) {
-					if (RIGHT(R->getCurrentEnd()) < heightmap->bitmapinfoheader.biSizeImage - 3)
+				if (heightmap->getValueAt(RIGHT(R->getCurrentEnd())) < heightmap->getValueAt(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(RIGHT(R->getCurrentEnd())) && favDirection != 2) {
+					if (RIGHT(R->getCurrentEnd()) < heightmap->bitmapinfoheader.biSizeImage - 3 && previous != -3)
 						candidates.push_back(RIGHT(R->getCurrentEnd()));
 				}
 				if (candidates.size() == 0) {
-					offset++;
-					if (offset >= elevationTolerance) {
-						cout << "RIVER stopped due to elevation with length: " << R->pixels.size() << endl;
+					elevationToleranceOffset++;
+					if (elevationToleranceOffset >= elevationTolerance) {
+						//cout << "RIVER stopped due to elevation with length: " << R->pixels.size() << endl;
 						break;
 					}
 				}
 			}
-
+			if (candidates.size() == 0) {
+				break;
+			}
 			uint32_t newPixel = candidates[(*random)() % candidates.size()];
-			std::unordered_set<uint32_t>::iterator got = riverPixels.find(newPixel);
 			// if is already a river pixel, end this river
-			if (got == riverPixels.end()) {
+			if (riverPixels.find(newPixel) == riverPixels.end()) {
+				if (R->pixels.size() > 1)
+					previous = (R->pixels[R->pixels.size() - 1]) - (R->pixels[R->pixels.size() - 2]);
 				R->setcurrentEnd(newPixel);
 				R->pixels.push_back(newPixel);
 				riverPixels.insert(newPixel);
+
+
 			}
 			else {
-				cout << "RIVER ENDED IN OTHER river with length: " << R->pixels.size() << endl;
+				for (auto river : rivers)
+				{
+					if (river->contains(newPixel))
+					{
+						river->addIngoing(R, newPixel);
+					}
+				}
+				//cout << "RIVER ENDED IN OTHER river with length: " << R->pixels.size() << endl;
 				break;
 			}
 
 			if (heightmap->getValueAt(R->getCurrentEnd()) <= 145) {
-				cout << "RIVER ENDED IN SEA with length: " << R->pixels.size() << endl;
+				//cout << "RIVER ENDED IN SEA with length: " << R->pixels.size() << endl;
 				break;
 			}
 		}
@@ -896,10 +910,12 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 			riverBMP->Buffer[i] = 254;
 	}
 	for (River* river : rivers) {
-		uint32_t rivCol = 10;
+		uint32_t riverColour = 2;
 		riverBMP->Buffer[river->getSource() / 3] = 0;
 		for (uint32_t pix : river->pixels) {
-			riverBMP->Buffer[pix / 3] = rivCol;
+			if (riverColour  < maxRiverColour && river->getIngoingForKey(pix) != nullptr)
+				riverColour++;
+			riverBMP->Buffer[pix / 3] = riverColour;
 		}
 	}
 }

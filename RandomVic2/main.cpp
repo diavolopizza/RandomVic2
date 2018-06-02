@@ -9,7 +9,7 @@ Step 1: Generate Terrain/continent shape/rivers
 	-continents(check)
 	-climate(check)
 	-terrain(acceptable)
-	-rivers
+	-rivers(good)
 Step 2: Generate Provinces on new terrain
 			-provinces.bmp (check)
 Step 2.2: Generate new regions for new provinces
@@ -77,7 +77,7 @@ int main() {
 	uint32_t borderLimiter = 10;
 	uint32_t minProvSize = 30;
 	uint32_t elevationTolerance = 5;
-	uint32_t riverAmount = 300;
+	uint32_t riverAmount = 1000;
 
 	//generate noise map
 	heightMapBMP.Buffer = t.heightMap(&heightMapBMP, 3, fractalFrequency, fractalOctaves,fractalGain, borderLimiter);
