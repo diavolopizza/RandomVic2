@@ -14,7 +14,11 @@ River::~River()
 void River::setSource(uint32_t pixel)
 {
 	this->source = pixel;
-	this->pixels.push_back(source);
+}
+
+uint32_t River::getSource()
+{
+	return source;
 }
 
 uint32_t River::getCurrentEnd()

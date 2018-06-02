@@ -85,7 +85,7 @@ void Bitmap::setBitmapSize(uint32_t width, uint32_t height)
 
 uint32_t Bitmap::getValueAt(int32_t index, uint32_t mode)
 {
-	if (index < 0 || index > this->bitmapinfoheader.biSizeImage)
+	if (index < 0 || (uint32_t)index > this->bitmapinfoheader.biSizeImage)
 		return NULL;
 	return Buffer[index + mode];
 }

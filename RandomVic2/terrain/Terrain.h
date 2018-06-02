@@ -8,6 +8,7 @@
 #include <vector>
 #include <Windows.h>
 #include <random>
+#include <unordered_set>
 #include "../utils/Bitmap.h"
 #include "../entities/Prov.h"
 #include "../terrain/VoronoiDiagramGenerator.h"

@@ -4,7 +4,6 @@
 #include "utils\Parser.h"
 #include <memory.h>
 #include <random>
-#define _CRT_SECURE_NO_WARNINGS
 /*
 Step 1: Generate Terrain/continent shape/rivers
 	-continents(check)
@@ -46,8 +45,8 @@ Step 4.1: Output scenario info
 */
 int main() {
 	//Params
-	uint32_t width = 2048;
-	uint32_t height = 2048;
+	uint32_t width = 5616;
+	uint32_t height = 2160;
 	uint32_t landProv = 3000;
 	uint32_t seaProv = 5000;
 	uint32_t minProvPerContinent = 100;
@@ -72,13 +71,13 @@ int main() {
 	terrainBMP->setBitmapSize(width, height);
 	riverBMP->setBitmapSize(width, height);
 	
-	float fractalFrequency = 0.0006;
+	float fractalFrequency = 0.0006f;
 	uint32_t fractalOctaves = 11;
 	float fractalGain = 0.5;
 	uint32_t borderLimiter = 10;
 	uint32_t minProvSize = 30;
 	uint32_t elevationTolerance = 5;
-	uint32_t riverAmount = 100;
+	uint32_t riverAmount = 300;
 
 	//generate noise map
 	heightMapBMP.Buffer = t.heightMap(&heightMapBMP, 3, fractalFrequency, fractalOctaves,fractalGain, borderLimiter);
@@ -125,7 +124,7 @@ int main() {
 		P.writeClimate((data->mapPath + ("climate.txt")).c_str(), t.provinces);//general
 		P.writeDefaultMapHeader((data->mapPath + ("default.map")).c_str(), t.provinces);//general
 
-		printf("Writing Bitmaps to %s folder\n", data->mapPath);
+		printf("Writing Bitmaps to %s folder\n", data->mapPath.c_str());
 		//save all the bmps
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (data->mapPath + ("terrain.bmp")).c_str());
 		BMPHandler::getInstance().SaveBMPToFile(riverBMP, (data->mapPath + ("rivers.bmp")).c_str());

@@ -16,6 +16,7 @@ public:
 	~River();
 	void defineColour();
 	void setSource(uint32_t	pixel);
+	uint32_t getSource();
 	uint32_t getCurrentEnd();
 	void setcurrentEnd(uint32_t pixel);
 	bool contains(uint32_t pixel);

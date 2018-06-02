@@ -219,7 +219,7 @@ void Terrain::evaluateContinents(uint32_t minProvPerContinent) {
 			prov->assignContinent(C);
 		}
 	}
-	for (int i = 0; i < continents.size(); i++)
+	for (uint32_t i = 0; i < continents.size(); i++)
 	{
 		if (continents[i]->provinces.size() < minProvPerContinent) {
 			for (auto province : continents[i]->provinces) {
@@ -255,7 +255,7 @@ void Terrain::evaluateContinents(uint32_t minProvPerContinent) {
 void Terrain::evaluateNeighbours(Bitmap * provinceBMP)
 {
 	uint32_t width = provinceBMP->bitmapinfoheader.biWidth;
-	for (int i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage - width * 3 - 9; i += 3)
+	for (uint32_t i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage - width * 3 - 9; i += 3)
 	{
 		provinceBMP->getTriple(i);
 		Prov * left = provinceMap[provinceBMP->getTriple(i).rgbtRed][provinceBMP->getTriple(i).rgbtGreen][provinceBMP->getTriple(i).rgbtBlue];
@@ -284,7 +284,7 @@ void Terrain::evaluateRegions()
 			prov->assignRegion(R, true);
 		}
 	}
-	for (int i = 0; i < regions.size(); i++)
+	for (uint32_t i = 0; i < regions.size(); i++)
 	{
 		if (regions[i]->provinces.size() < 3) {
 			for (auto province : regions[i]->provinces) {
@@ -345,9 +345,9 @@ BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer)
 	BYTE* terrainBuffer = new BYTE[terrainBMP->bitmapinfoheader.biSizeImage];
 	uint32_t width = terrainBMP->bitmapinfoheader.biWidth;
 	uint32_t height = terrainBMP->bitmapinfoheader.biHeight;
-	for (int x = 0; x < height; x++)
+	for (uint32_t x = 0; x < height; x++)
 	{
-		for (int y = 0; y < width; y++)
+		for (uint32_t y = 0; y < width; y++)
 		{
 			if (heightMapBuffer[(x * width + y) * 3] > 145) {
 				terrainBuffer[(x * width + y)] = 13;
@@ -360,7 +360,7 @@ BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer)
 	return terrainBuffer;
 }
 //creates the heightmap with a given seed
-BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter )
+BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter)
 {
 	cout << "Creating Heightmap" << endl;
 	FastNoise myNoise; // Create a FastNoise object
@@ -371,13 +371,13 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 	myNoise.SetFractalOctaves(fractalOctaves);
 	myNoise.SetFractalGain(fractalGain);
 	myNoise.SetFractalType(FastNoise::FBM);
-	const int width = RGBBMP->bitmapinfoheader.biWidth;
-	const int height = RGBBMP->bitmapinfoheader.biHeight;
+	const uint32_t width = RGBBMP->bitmapinfoheader.biWidth;
+	const uint32_t height = RGBBMP->bitmapinfoheader.biHeight;
 	BYTE* heightmapBuffer = new BYTE[RGBBMP->bitmapinfoheader.biSizeImage];
-	float delimiter = generalBmpWidth / borderLimiter;
-	for (int x = 0; x < height; x++)
+	uint32_t delimiter = generalBmpWidth / borderLimiter;
+	for (uint32_t x = 0; x < height; x++)
 	{
-		for (int y = 0; y < width; y++)
+		for (uint32_t y = 0; y < width; y++)
 		{
 			float factor = 1;
 			if (y < delimiter) {
@@ -504,7 +504,7 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 void Terrain::provPixels(Bitmap * provinceBMP)
 {
 	int r, g, b;
-	for (int j = 0; j < provinceBMP->bitmapinfoheader.biSizeImage - 3; j += 3)
+	for (uint32_t j = 0; j < provinceBMP->bitmapinfoheader.biSizeImage - 3; j += 3)
 	{
 		try {
 			r = provinceBMP->Buffer[j + 2];
@@ -573,7 +573,7 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize)
 			provinceMap[province->colour.rgbtRed][province->colour.rgbtGreen][province->colour.rgbtBlue] = nullptr;
 		}
 	}
-	for (int i = 0; i < provinces.size(); i++)
+	for (uint32_t i = 0; i < provinces.size(); i++)
 	{
 		if (provinces[i]->pixels.size() == 0 && !provinces[i]->sea) {
 			provinces.erase(provinces.begin() + i);
@@ -610,20 +610,20 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 	{
 		if (prov->sea)
 			continue;
-		vector<float> likelyHoods;
-		float arcticLikelyhood = 0;
-		float plainsLikelyhood = 0;
-		float forestLikelyhood = 0;
-		float farmlandsLikelyhood = 0;
-		float steppeLikelyhood = 0;
-		float jungleLikelyhood = 0;
-		float marshLikelyhood = 0;
-		float desertLikelyhood = 0;
+		vector<double> likelyHoods;
+		double arcticLikelyhood = 0;
+		double plainsLikelyhood = 0;
+		double forestLikelyhood = 0;
+		double farmlandsLikelyhood = 0;
+		double steppeLikelyhood = 0;
+		double jungleLikelyhood = 0;
+		double marshLikelyhood = 0;
+		double desertLikelyhood = 0;
 		//determine north south temperature factor
-		float equator = generalBmpHeight / 2;
-		float pixX = prov->center / 3 % (generalBmpWidth);
-		float pixY = (prov->center / 3 - pixX) / generalBmpWidth;
-		float temperatureFactor = ((int)pixY % (int)equator) / equator;
+		uint32_t equator = generalBmpHeight / 2;
+		uint32_t pixX = prov->center / 3 % (generalBmpWidth);
+		uint32_t pixY = (prov->center / 3 - pixX) / generalBmpWidth;
+		double temperatureFactor = (float)(pixY % equator) / (float)equator;
 
 
 		//DISTANCE TO COAST
@@ -653,10 +653,10 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 			offset += bitmapWidth;
 			distanceSouth = offset / bitmapWidth;
 		}
-		int distances[] = { abs(distanceNorth), abs(distanceEast), abs(distanceWest), abs(distanceSouth) };
+		uint32_t distances[] = { abs(distanceNorth), abs(distanceEast), abs(distanceWest), abs(distanceSouth) };
 
 		if (*std::min_element(distances, distances + 4) < coastalDistanceInfluence) {
-			humidityFactor = 1 - (*std::min_element(distances, distances + 4) / coastalDistanceInfluence);
+			humidityFactor = (float)(1 - (*std::min_element(distances, distances + 4) / coastalDistanceInfluence));
 		}
 
 		//DISTANCE TO EQUATOR
@@ -711,14 +711,14 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 		likelyHoods.push_back(jungleLikelyhood);
 		likelyHoods.push_back(marshLikelyhood);
 		likelyHoods.push_back(desertLikelyhood);
-		float sumOfAllLikelyhoods = 0;
+		double sumOfAllLikelyhoods = 0;
 		uint32_t highestLikelyhoodIndex = 0;
 		for (uint32_t i = 0; i < likelyHoods.size(); i++) {
 			sumOfAllLikelyhoods += likelyHoods[i];
 		}
 
 		vector<bool> candidates;
-		for (float likelyHood : likelyHoods) {
+		for (double likelyHood : likelyHoods) {
 			candidates.push_back(false);
 		}
 
@@ -727,7 +727,7 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 		}
 		bool foundAtLeastOne = false;
 		while (!foundAtLeastOne) {
-			for (int i = 0; i < likelyHoods.size(); i++) {
+			for (uint32_t i = 0; i < likelyHoods.size(); i++) {
 				if ((*random)() % 100 < (likelyHoods[i] / sumOfAllLikelyhoods) * 100)
 				{
 					candidates[i] = true;
@@ -799,11 +799,11 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 			}
 			if (altitude > hillStart)//mountains
 			{
-				terrainBMP->Buffer[pixel / 3] = (float)(altitude - hillStart) / (float)(mountainStart - hillStart) *(float)4 + 16;
+				terrainBMP->Buffer[pixel / 3] = (uint32_t)((float)(altitude - hillStart) / (float)(mountainStart - hillStart) *(float)4 + 16);
 			}
 			if (altitude > mountainStart)//mountains
 			{
-				terrainBMP->Buffer[pixel / 3] = (float)(altitude - mountainStart) / (float)(210 - mountainStart) *(float)7 + 24;
+				terrainBMP->Buffer[pixel / 3] = (uint32_t)((float)(altitude - mountainStart) / (float)(210 - mountainStart) *(float)7 + 24);
 			}
 		}
 	}
@@ -811,21 +811,25 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 //creates rivers 
 void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t riverAmount, uint32_t elevationTolerance)
 {
+	std::unordered_set<uint32_t> riverPixels;
 	//TODO PARAMETRISATION
 	uint32_t heightmapWidth = heightmap->bitmapinfoheader.biWidth;
-	for (int i = 0; i < riverAmount; i++) {
+	for (uint32_t i = 0; i < riverAmount; i++) {
+		cout << i << endl;
 		River* R = new River();
 		this->rivers.push_back(R);
 
 		//find random start point
 		uint32_t start = 0;
-		while (!(heightmap->getValueAt(start) > 146))
+		while (!(heightmap->getValueAt(start*3) > 145)/* && riverPixels.find(start) == riverPixels.end()*/)
 		{
-			start = ((*random)() % heightmap->bitmapinfoheader.biSizeImage);
+			start = ((*random)() % heightmap->bitmapinfoheader.biSizeImage/3);
 		}
+		start *= 3;
 		R->setSource(start);
 		R->setcurrentEnd(start);
-		
+		riverPixels.insert(R->getCurrentEnd());
+
 		//check each direction for fastest decay in altitude
 		vector<uint32_t> altitudes{ heightmap->getValueAt(ABOVE(R->getCurrentEnd(), heightmapWidth * 3 * 5)),
 			heightmap->getValueAt(BELOW(R->getCurrentEnd(), heightmapWidth * 3 * 5)),
@@ -834,13 +838,11 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 
 		std::vector<uint32_t>::iterator result = std::min_element(std::begin(altitudes), std::end(altitudes));
 		uint32_t favDirection = std::distance(std::begin(altitudes), result);
-
 		while (heightmap->getValueAt(R->getCurrentEnd()) > 144) {
-			uint32_t lastPick = 0;
 			uint32_t offset = 0;
 			vector<uint32_t> candidates;
 			//now expand to lower or equal pixel as long as possible
-			while (offset < elevationTolerance &&candidates.size()==0) {
+			while (offset < elevationTolerance &&candidates.size() == 0) {
 				if (heightmap->getValueAt(ABOVE(R->getCurrentEnd(), heightmapWidth * 3)) < heightmap->getValueAt(R->getCurrentEnd()) + offset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth * 3)) && favDirection != 1) {
 					if (ABOVE(R->getCurrentEnd(), heightmapWidth * 3) < heightmap->bitmapinfoheader.biSizeImage)
 						candidates.push_back(ABOVE(R->getCurrentEnd(), heightmapWidth * 3));
@@ -865,14 +867,19 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 					}
 				}
 			}
-			if (candidates.size() == 0) {
+
+			uint32_t newPixel = candidates[(*random)() % candidates.size()];
+			std::unordered_set<uint32_t>::iterator got = riverPixels.find(newPixel);
+			// if is already a river pixel, end this river
+			if (got == riverPixels.end()) {
+				R->setcurrentEnd(newPixel);
+				R->pixels.push_back(newPixel);
+				riverPixels.insert(newPixel);
+			}
+			else {
+				cout << "RIVER ENDED IN OTHER river with length: " << R->pixels.size() << endl;
 				break;
 			}
-			//ERROR HANDLING TODO
-
-			lastPick = (*random)() % candidates.size();
-			R->setcurrentEnd(candidates[lastPick]);
-			R->pixels.push_back(R->getCurrentEnd());
 
 			if (heightmap->getValueAt(R->getCurrentEnd()) <= 145) {
 				cout << "RIVER ENDED IN SEA with length: " << R->pixels.size() << endl;
@@ -881,8 +888,7 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 		}
 	}
 
-
-	for (int i = 0; i < riverBMP->bitmapinfoheader.biSizeImage; i++)
+	for (uint32_t i = 0; i < riverBMP->bitmapinfoheader.biSizeImage; i++)
 	{
 		if (heightmap->getValueAt(i * 3) > 145)
 			riverBMP->Buffer[i] = 255;
@@ -890,8 +896,10 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 			riverBMP->Buffer[i] = 254;
 	}
 	for (River* river : rivers) {
+		uint32_t rivCol = 10;
+		riverBMP->Buffer[river->getSource() / 3] = 0;
 		for (uint32_t pix : river->pixels) {
-			riverBMP->Buffer[pix / 3] = 10;
+			riverBMP->Buffer[pix / 3] = rivCol;
 		}
 	}
 }

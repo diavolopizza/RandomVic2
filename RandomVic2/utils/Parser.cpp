@@ -14,7 +14,7 @@ Parser::~Parser()
 void Parser::writeDefinition(string filePath, vector<Prov*> provinces)
 {
 	string completeFile = "province;red;green;blue;x;x\n";
-	for (int provNr = 0; provNr < provinces.size(); provNr++)
+	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
 	{
 		string line = "";
 		line.append(to_string(provNr));
@@ -40,7 +40,7 @@ void Parser::writeDefinition(string filePath, vector<Prov*> provinces)
 void Parser::writeAdjacency(string filePath, vector<Prov*> provinces)
 {
 	string completeFile = "provinceID;red;green;blue;Neighbours\n";
-	for (int provNr = 0; provNr < provinces.size(); provNr++)
+	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
 	{
 		string line = "";
 		line.append(to_string(provinces[provNr]->provnr));
@@ -123,7 +123,7 @@ void Parser::writeClimate(string filePath, /*string originalClimatePath,*/ vecto
 	string temperateClimate = "temperate_climate = {\n\t";
 	string harshClimate = "harsh_climate = {\n\t";
 	string inhospitableClimate = "inhospitable_climate = {\n\t";
-	for (int provNr = 0; provNr < provinces.size(); provNr++)
+	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
 	{
 		if (provinces[provNr]->climate == "mild_climate")
 		{
