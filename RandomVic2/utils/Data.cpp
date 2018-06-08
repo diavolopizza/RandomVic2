@@ -5,7 +5,7 @@
 Data::Data()
 {
 	this->random = new ranlux48();
-	random->seed(4/*time(NULL)*/);
+	random->seed(time(NULL));
 }
 
 

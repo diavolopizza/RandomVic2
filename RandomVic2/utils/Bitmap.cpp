@@ -90,6 +90,11 @@ uint32_t Bitmap::getValueAt(int32_t index, uint32_t mode)
 	return Buffer[index + mode];
 }
 
+void Bitmap::setSingle(uint32_t bufferIndex, uint32_t value)
+{
+	this->Buffer[bufferIndex] = value;
+}
+
 void Bitmap::setTriple(RGBTRIPLE colour, uint32_t bufferIndex)
 {
 	if (bitmapinfoheader.biBitCount == 24)
@@ -108,5 +113,15 @@ void Bitmap::setTriple(uint32_t bufferIndex, uint32_t bufferIndexNew)
 		Buffer[bufferIndex + 1] = Buffer[bufferIndexNew + 1];
 		Buffer[bufferIndex + 2] = Buffer[bufferIndexNew + 2];
 	}
+}
+
+void Bitmap::setBuffer(BYTE * Buffer)
+{
+	this->Buffer = Buffer;
+}
+
+BYTE * Bitmap::getBuffer()
+{
+	return this->Buffer;
 }
 

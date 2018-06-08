@@ -41,7 +41,7 @@ bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 	if (B->bitmapinfoheader.biBitCount == 24)
 	{
 		paddedsize = B->bitmapinfoheader.biSizeImage;
-		if (WriteFile(file, B->Buffer, (paddedsize), &bwritten, NULL) == false)
+		if (WriteFile(file, B->getBuffer(), (paddedsize), &bwritten, NULL) == false)
 		{
 			CloseHandle(file);
 			return false;
@@ -55,7 +55,7 @@ bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 			CloseHandle(file);
 			return false;
 		}
-		if (WriteFile(file, B->Buffer, (paddedsize), &bwritten, NULL) == false)
+		if (WriteFile(file, B->getBuffer(), (paddedsize), &bwritten, NULL) == false)
 		{
 			CloseHandle(file);
 			return false;
@@ -136,13 +136,13 @@ Bitmap* BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 	int offset = 54;
 	*size = B->bitmapinfoheader.biSizeImage;	// create buffer to hold the data,-Offsetbits
 
-	B->Buffer = new BYTE[*size];
+	B->setBuffer(new BYTE[*size]);
 	paddedsize = *size;
 
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //needs to be 58 for copying, but why?
-	if (ReadFile(file, B->Buffer, *size, &bytesread, NULL) == false)
+	if (ReadFile(file, B->getBuffer(), *size, &bytesread, NULL) == false)
 	{
-		delete[] B->Buffer;
+		delete[] B->getBuffer();
 		CloseHandle(file);
 		return NULL;
 	}
@@ -191,7 +191,7 @@ Bitmap* BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 	}
 	int offset = 54;
 	*size = B->bitmapfileheader.bfSize - 1078;	// create buffer to hold the data,-headerbyte-colourablebyte
-	B->Buffer = new BYTE[*size];
+	B->setBuffer(new BYTE[*size]);
 
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //start reading at beginning of colourtable
 	if (ReadFile(file, B->colourtable, 1024, &bytesread, NULL) == false)
@@ -204,9 +204,9 @@ Bitmap* BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 	//cout << i/4 << " " << int(B->colourtable[i]) << " " << int(B->colourtable[i+1]) << " " << int(B->colourtable[i+2]) << " " << int(B->colourtable[i + 3]) << endl;
 
 	SetFilePointer(file, 1078, NULL, FILE_BEGIN); //start reading after end of colourtable
-	if (ReadFile(file, B->Buffer, *size, &bytesread, NULL) == false)
+	if (ReadFile(file, B->getBuffer(), *size, &bytesread, NULL) == false)
 	{
-		delete[]  B->Buffer;
+		delete[]  B->getBuffer();
 		CloseHandle(file);
 		return NULL;
 	}

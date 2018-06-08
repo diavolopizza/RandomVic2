@@ -53,7 +53,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	uint32_t bmpSize = bmpWidth * bmpHeight;
 	RGBTRIPLE rgbHigh{ 254, 254, 254 };
 	RGBTRIPLE rgbLow{ 0, 0, 0 };
-	BYTE* provinceBuffer = provinceBMP->Buffer;
+	BYTE* provinceBuffer = provinceBMP->getBuffer();
 	for (uint32_t i = 0; i < bmpSize * 3; i += 3) {
 		if (terrainBMP->getValueAt(i / 3) == 254) {
 			provinceBMP->setTriple(rgbHigh, i);
@@ -65,7 +65,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	uint32_t provincesize = (int)((float)bmpSize * 0.2f / (float)numoflandprov);//better calculation?
 	provinceCreation(provinceBMP, provincesize, numoflandprov, 0);
 	vector<uint32_t> randomValuesCached;
-	for (int i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
+	for (uint32_t i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
 	uint32_t threadCount = 1;
@@ -75,7 +75,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	}
 	const uint32_t numThreads = threadCount;
 	std::vector<std::thread> threads;
-	for (int i = 0; i < numThreads; ++i) {
+	for (uint32_t i = 0; i < numThreads; ++i) {
 		uint32_t from = i * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
 		uint32_t to = (i + 1) * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
 		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), (uint32_t)1, (uint32_t)0, from, to, std::ref(randomValuesCached)));
@@ -94,14 +94,14 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	uint32_t bmpWidth = terrainBMP->bitmapinfoheader.biWidth;
 	uint32_t bmpHeight = terrainBMP->bitmapinfoheader.biHeight;
 	uint32_t bmpSize = bmpWidth * bmpHeight;
-	BYTE* provinceBuffer = provinceBMP->Buffer;
+	BYTE* provinceBuffer = provinceBMP->getBuffer();
 	cout << "Seaprovinces" << endl;
 	uint32_t provincesize = bmpSize / numOfSeaProv;//better calculation?
 	provinceCreation(provinceBMP, provincesize, numOfSeaProv, 254);
 	//multithreading
 	uint32_t threadCount = 1;
 	vector<uint32_t> randomValuesCached;
-	for (int i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
+	for (uint32_t i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
 	while (provinceBMP->bitmapinfoheader.biSizeImage % threadCount != 0)
@@ -110,7 +110,7 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	}
 	const uint32_t numThreads = threadCount;
 	std::vector<std::thread> threads;
-	for (int i = 0; i < numThreads; ++i) {
+	for (uint32_t i = 0; i < numThreads; ++i) {
 		uint32_t from = i * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
 		uint32_t to = (i + 1) * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
 		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), (uint32_t)255, (uint32_t)254, from, to, std::ref(randomValuesCached)));
@@ -192,7 +192,7 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 //fills unassigned pixels in iterations, so provinces grow
 void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached)
 {
-	cout << "FILLING START"  << from << "  "  << to << endl;
+	cout << "FILLING START" << from << "  " << to << endl;
 	uint32_t bmpWidth = provinceBMP->bitmapinfoheader.biWidth;
 	uint32_t bmpHeight = provinceBMP->bitmapinfoheader.biHeight;
 	uint32_t bmpSize = bmpWidth * bmpHeight;
@@ -412,7 +412,7 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 	FastNoise myNoise; // Create a FastNoise object
 	myNoise.SetNoiseType(FastNoise::SimplexFractal); // Set the desired noise type
 	//myNoise.SetSeed((*random)() % 1000000);
-	myNoise.SetSeed(seed);
+	myNoise.SetSeed(time(NULL));
 	myNoise.SetFrequency(frequency);
 	myNoise.SetFractalOctaves(fractalOctaves);
 	myNoise.SetFractalGain(fractalGain);
@@ -505,13 +505,13 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 			}
 		}
 		else {
-			if (provinceBuffer[unassignedPixel] == 0 )
+			if (provinceBuffer[unassignedPixel] == 0)
 			{
 				uint32_t distance = UINT32_MAX;
 				Prov* nextOwner = nullptr;
 				for (Prov* P : provinces)
 				{
-					if (( P->colour.rgbtBlue == 1) /*|| (provinceBuffer[unassignedPixel] == 254 && P->colour.rgbtBlue == 255)*/) {
+					if ((P->colour.rgbtBlue == 1) /*|| (provinceBuffer[unassignedPixel] == 254 && P->colour.rgbtBlue == 255)*/) {
 						//length of vector between current pixel and province pixel
 						/*uint32_t nearestPixelOfThatProvince = 0;
 						uint32_t pixelDistance = INFINITY;
@@ -529,7 +529,7 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 								}
 							}
 						}*/
-						uint32_t x1 = P->center/3 % bmpWidth;
+						uint32_t x1 = P->center / 3 % bmpWidth;
 						//uint32_t x1 = nearestPixelOfThatProvince % bmpWidth;
 						uint32_t x2 = (unassignedPixel / 3) % bmpWidth;
 						uint32_t y1 = P->center / 3 / bmpHeight;
@@ -553,9 +553,9 @@ void Terrain::provPixels(Bitmap * provinceBMP)
 	for (uint32_t j = 0; j < provinceBMP->bitmapinfoheader.biSizeImage - 3; j += 3)
 	{
 		try {
-			r = provinceBMP->Buffer[j + 2];
-			g = provinceBMP->Buffer[j + 1];
-			b = provinceBMP->Buffer[j];
+			r = provinceBMP->getValueAt(j, 2);
+			g = provinceBMP->getValueAt(j, 1);
+			b = provinceBMP->getValueAt(j);
 			provinceMap[r][g][b]->pixels.push_back(j);
 		}
 		catch (runtime_error e)
@@ -567,8 +567,8 @@ void Terrain::provPixels(Bitmap * provinceBMP)
 //writes the continents to a bitmap, non-unique colours
 void Terrain::prettyContinents(Bitmap * continentBMP)
 {
-	delete continentBMP->Buffer;
-	continentBMP->Buffer = new BYTE[continentBMP->bitmapinfoheader.biSizeImage];
+	delete continentBMP->getBuffer();
+	continentBMP->setBuffer(new BYTE[continentBMP->bitmapinfoheader.biSizeImage]);
 	for (auto continent : continents) {
 		cout << continent->provinces.size() << endl;
 		RGBTRIPLE continentColour;
@@ -587,7 +587,7 @@ void Terrain::prettyContinents(Bitmap * continentBMP)
 //writes the regions to a bitmap, non-unique colours
 void Terrain::prettyRegions(Bitmap * regionBMP)
 {
-	regionBMP->Buffer = new BYTE[regionBMP->bitmapinfoheader.biSizeImage];
+	regionBMP->setBuffer(new BYTE[regionBMP->bitmapinfoheader.biSizeImage]);
 	for (auto region : regions) {
 		RGBTRIPLE regionColour;
 		regionColour.rgbtBlue = (*random)() % 256;
@@ -625,9 +625,9 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize)
 			provinces.erase(provinces.begin() + i);
 			i--;
 		}
-	}	
+	}
 	vector<uint32_t> randomValuesCached;
-	for (int i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
+	for (uint32_t i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
 	//fill(provinceBMP, 0, 0, 0, provinceBMP->bitmapinfoheader.biSizeImage, std::ref(randomValuesCached));
@@ -703,7 +703,8 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 			offset += bitmapWidth;
 			distanceSouth = offset / bitmapWidth;
 		}
-		uint32_t distances[] = { abs(distanceNorth), abs(distanceEast), abs(distanceWest), abs(distanceSouth) };
+		uint32_t distances[] = { (uint32_t)abs(distanceNorth), (uint32_t)abs(distanceEast),
+								(uint32_t)abs(distanceWest), (uint32_t)abs(distanceSouth) };
 
 		if (*std::min_element(distances, distances + 4) < coastalDistanceInfluence) {
 			humidityFactor = (float)(1 - (*std::min_element(distances, distances + 4) / coastalDistanceInfluence));
@@ -798,19 +799,19 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 			switch (index) {
 			case 0:
 			{
-				terrainBMP->Buffer[pixel / 3] = arctic;
+				terrainBMP->setSingle(pixel / 3, arctic);
 				prov->climate = "inhospitable_climate";
 				break;
 			}
 			case 1:
 			{
-				terrainBMP->Buffer[pixel / 3] = plains;
+				terrainBMP->setSingle(pixel / 3, plains);
 				prov->climate = "temperate_climate";
 				break;
 			}
 			case 2:
 			{
-				terrainBMP->Buffer[pixel / 3] = forest;
+				terrainBMP->setSingle(pixel / 3, forest);
 				prov->climate = "mild_climate";
 				if (temperatureFactor < 0.3)
 					prov->climate = "harsh_climate";
@@ -818,42 +819,44 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap)
 			}
 			case 3:
 			{
-				terrainBMP->Buffer[pixel / 3] = farmlands;
+				terrainBMP->setSingle(pixel / 3, farmlands);
 				prov->climate = "mild_climate";
 				break;
 			}
 			case 4:
 			{
-				terrainBMP->Buffer[pixel / 3] = steppe;
+				terrainBMP->setSingle(pixel / 3, steppe);
 				prov->climate = "harsh_climate";
 				break;
 			}
 			case 5:
 			{
-				terrainBMP->Buffer[pixel / 3] = jungle;
+				terrainBMP->setSingle(pixel / 3, jungle);
 				prov->climate = "harsh_climate";
 				break;
 			}
 			case 6:
 			{
-				terrainBMP->Buffer[pixel / 3] = marsh;
+				terrainBMP->setSingle(pixel / 3, marsh);
 				prov->climate = "temperate_climate";
 				break;
 			}
 			case 7:
 			{
-				terrainBMP->Buffer[pixel / 3] = desert;
+				terrainBMP->setSingle(pixel / 3, desert);
 				prov->climate = "inhospitable_climate";
 				break;
 			}
 			}
 			if (altitude > hillStart)//mountains
 			{
-				terrainBMP->Buffer[pixel / 3] = (uint32_t)((float)(altitude - hillStart) / (float)(mountainStart - hillStart) *(float)4 + 16);
+
+				terrainBMP->setSingle(pixel / 3, (uint32_t)((float)(altitude - hillStart) / (float)(mountainStart - hillStart) *(float)4 + 16));
 			}
 			if (altitude > mountainStart)//mountains
 			{
-				terrainBMP->Buffer[pixel / 3] = (uint32_t)((float)(altitude - mountainStart) / (float)(210 - mountainStart) *(float)7 + 24);
+
+				terrainBMP->setSingle(pixel / 3, (uint32_t)((float)(altitude - mountainStart) / (float)(210 - mountainStart) *(float)7 + 24));
 			}
 		}
 	}
@@ -955,22 +958,22 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 	for (uint32_t i = 0; i < riverBMP->bitmapinfoheader.biSizeImage; i++)
 	{
 		if (heightmap->getValueAt(i * 3) > 145)
-			riverBMP->Buffer[i] = 255;
+			riverBMP->setSingle(i, 255);
 		else
-			riverBMP->Buffer[i] = 10;
+			riverBMP->setSingle(i, 10);
 	}
 	for (River* river : rivers) {
 		if (river->pixels.size() < 10)
 			continue;
 		uint32_t riverColour = 2;
-		riverBMP->Buffer[river->getSource() / 3] = 0;
+		riverBMP->setSingle(river->getSource() / 3, 0);
 		for (uint32_t pix : river->pixels) {
 			if (riverColour < maxRiverColour && river->getIngoingForKey(pix) != nullptr) {
-				riverColour += river->getIngoingForKey(pix)->getIngoing().size() +1;
+				riverColour += river->getIngoingForKey(pix)->getIngoing().size() + 1;
 				if (riverColour > maxRiverColour)
 					riverColour = maxRiverColour;
 			}
-			riverBMP->Buffer[pix / 3] = riverColour;
+			riverBMP->setSingle(pix / 3, riverColour);
 		}
 	}
 }
