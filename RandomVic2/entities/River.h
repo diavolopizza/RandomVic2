@@ -22,6 +22,7 @@ public:
 	void setcurrentEnd(uint32_t pixel);
 	bool contains(uint32_t pixel);
 	void addIngoing(River* ingoing, uint32_t pixel);
+	vector<River*> getIngoing();
 	void addEndsIn(River * river);
 	River * getIngoingForKey(uint32_t pixel);
 

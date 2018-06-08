@@ -75,7 +75,7 @@ int main() {
 	uint32_t fractalOctaves = 11;
 	float fractalGain = 0.5;
 	uint32_t borderLimiter = 10;
-	uint32_t minProvSize = 30;
+	uint32_t minProvSize = 0;
 	uint32_t elevationTolerance = 5;
 	uint32_t riverAmount = 1000;
 
@@ -90,7 +90,7 @@ int main() {
 		provincesBMP.Buffer = t.seaProvinces(seaProv, landProv, terrainBMP, &provincesBMP);
 		t.createProvinceMap();
 		t.provPixels(&provincesBMP);
-		t.prettyProvinces(&provincesBMP, minProvSize);
+		//t.prettyProvinces(&provincesBMP, minProvSize);
 		t.evaluateCoasts(&provincesBMP);
 		//dump to file
 		P.writeDefinition((data->mapPath + ("definition.csv")).c_str(), t.provinces);

@@ -3,6 +3,8 @@
 #include "../utils/BMPHandler.h"
 #include "../FastNoise/FastNoise.h"
 #include <windows.h>
+#include <thread>
+
 
 //MACROS
 #define LEFT(val) \
@@ -62,7 +64,27 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	}
 	uint32_t provincesize = (int)((float)bmpSize * 0.2f / (float)numoflandprov);//better calculation?
 	provinceCreation(provinceBMP, provincesize, numoflandprov, 0);
-	fill(provinceBMP, 1, 0);
+	vector<uint32_t> randomValuesCached;
+	for (int i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
+		randomValuesCached.push_back((*random)() % 4);
+	}
+	uint32_t threadCount = 1;
+	while (provinceBMP->bitmapinfoheader.biSizeImage % threadCount != 0)
+	{
+		threadCount--;
+	}
+	const uint32_t numThreads = threadCount;
+	std::vector<std::thread> threads;
+	for (int i = 0; i < numThreads; ++i) {
+		uint32_t from = i * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
+		uint32_t to = (i + 1) * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
+		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), (uint32_t)1, (uint32_t)0, from, to, std::ref(randomValuesCached)));
+	}
+	//wait for threads to finish
+	for (auto& t : threads) {
+		t.join();
+	}
+	//fill(provinceBMP, 1, 0);
 	assignRemainingPixels(provinceBMP, provinceBuffer, provinces, false);
 	return provinceBuffer;
 }
@@ -74,9 +96,30 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	uint32_t bmpSize = bmpWidth * bmpHeight;
 	BYTE* provinceBuffer = provinceBMP->Buffer;
 	cout << "Seaprovinces" << endl;
-	uint32_t provincesize = bmpSize * 1 / numOfSeaProv;//better calculation?
+	uint32_t provincesize = bmpSize / numOfSeaProv;//better calculation?
 	provinceCreation(provinceBMP, provincesize, numOfSeaProv, 254);
-	fill(provinceBMP, 255, 254);
+	//multithreading
+	uint32_t threadCount = 1;
+	vector<uint32_t> randomValuesCached;
+	for (int i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
+		randomValuesCached.push_back((*random)() % 4);
+	}
+	while (provinceBMP->bitmapinfoheader.biSizeImage % threadCount != 0)
+	{
+		threadCount--;
+	}
+	const uint32_t numThreads = threadCount;
+	std::vector<std::thread> threads;
+	for (int i = 0; i < numThreads; ++i) {
+		uint32_t from = i * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
+		uint32_t to = (i + 1) * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
+		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), (uint32_t)255, (uint32_t)254, from, to, std::ref(randomValuesCached)));
+	}
+	//wait for threads to finish
+	for (auto& t : threads) {
+		t.join();
+	}
+	//fill(provinceBMP, 255, 254, 0);
 	assignRemainingPixels(provinceBMP, provinceBuffer, provinces, true);
 	return provinceBuffer;
 }
@@ -147,14 +190,15 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 	}
 }
 //fills unassigned pixels in iterations, so provinces grow
-void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal)
+void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached)
 {
-	cout << "FILLING START" << endl;
+	cout << "FILLING START"  << from << "  "  << to << endl;
 	uint32_t bmpWidth = provinceBMP->bitmapinfoheader.biWidth;
 	uint32_t bmpHeight = provinceBMP->bitmapinfoheader.biHeight;
 	uint32_t bmpSize = bmpWidth * bmpHeight;
 	uint32_t unassignedPixels = bmpSize;
 	uint32_t previousUnassignedPixels = unassignedPixels + 1;
+	uint32_t randomValueIndex = 0;
 	while (unassignedPixels > 0 && unassignedPixels < previousUnassignedPixels)
 	{
 		if (unassignedPixels == 0)
@@ -162,12 +206,14 @@ void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal)
 		cout << unassignedPixels << endl;
 		previousUnassignedPixels = unassignedPixels;
 		unassignedPixels = 0;
-		for (uint32_t unassignedPixel = 0; unassignedPixel < bmpSize * 3; unassignedPixel += 3)
+		for (uint32_t unassignedPixel = from; unassignedPixel < to; unassignedPixel += 3)
 		{
 			if (provinceBMP->getValueAt(unassignedPixel) == fillVal)
 			{
 				unassignedPixels++;
-				uint32_t direction = (*random)() % 4;
+				uint32_t direction = randomValuesCached[randomValueIndex++];
+				if (randomValueIndex > randomValuesCached.size())
+					randomValueIndex = 0;
 				switch (direction)
 				{
 				case 0: {
@@ -212,7 +258,7 @@ void Terrain::evaluateContinents(uint32_t minProvPerContinent) {
 	uint32_t continentID = 0;
 	for (auto prov : provinces)
 	{
-		if (prov->continent == nullptr) {
+		if (prov->continent == nullptr && !prov->sea) {
 			Continent *C = new Continent(to_string(continentID), continentID);
 			continents.push_back(C);
 			continentID++;
@@ -459,13 +505,13 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 			}
 		}
 		else {
-			if (provinceBuffer[unassignedPixel] == 0 || provinceBuffer[unassignedPixel] == 4)
+			if (provinceBuffer[unassignedPixel] == 0 )
 			{
-				uint32_t distance = 10000;
+				uint32_t distance = UINT32_MAX;
 				Prov* nextOwner = nullptr;
 				for (Prov* P : provinces)
 				{
-					if ((provinceBuffer[unassignedPixel] == 0 && P->colour.rgbtBlue == 1) || (provinceBuffer[unassignedPixel] == 254 && P->colour.rgbtBlue == 255)) {
+					if (( P->colour.rgbtBlue == 1) /*|| (provinceBuffer[unassignedPixel] == 254 && P->colour.rgbtBlue == 255)*/) {
 						//length of vector between current pixel and province pixel
 						/*uint32_t nearestPixelOfThatProvince = 0;
 						uint32_t pixelDistance = INFINITY;
@@ -483,10 +529,10 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 								}
 							}
 						}*/
-						uint32_t x1 = P->center % bmpWidth;
+						uint32_t x1 = P->center/3 % bmpWidth;
 						//uint32_t x1 = nearestPixelOfThatProvince % bmpWidth;
-						uint32_t x2 = unassignedPixel / 3 % bmpWidth;
-						uint32_t y1 = P->center / bmpHeight;
+						uint32_t x2 = (unassignedPixel / 3) % bmpWidth;
+						uint32_t y1 = P->center / 3 / bmpHeight;
 						//uint32_t y1 = nearestPixelOfThatProvince / bmpHeight;
 						uint32_t y2 = unassignedPixel / 3 / bmpHeight;
 						if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
@@ -579,9 +625,13 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize)
 			provinces.erase(provinces.begin() + i);
 			i--;
 		}
+	}	
+	vector<uint32_t> randomValuesCached;
+	for (int i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
+		randomValuesCached.push_back((*random)() % 4);
 	}
-	fill(provinceBMP, 0, 0);
-	assignRemainingPixels(provinceBMP, provinceBMP->Buffer, provinces, false);
+	//fill(provinceBMP, 0, 0, 0, provinceBMP->bitmapinfoheader.biSizeImage, std::ref(randomValuesCached));
+	//assignRemainingPixels(provinceBMP, provinceBMP->Buffer, provinces, false);
 	provPixels(provinceBMP);
 }
 //creates terrain around simplistic climate model
@@ -907,14 +957,19 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 		if (heightmap->getValueAt(i * 3) > 145)
 			riverBMP->Buffer[i] = 255;
 		else
-			riverBMP->Buffer[i] = 254;
+			riverBMP->Buffer[i] = 10;
 	}
 	for (River* river : rivers) {
+		if (river->pixels.size() < 10)
+			continue;
 		uint32_t riverColour = 2;
 		riverBMP->Buffer[river->getSource() / 3] = 0;
 		for (uint32_t pix : river->pixels) {
-			if (riverColour  < maxRiverColour && river->getIngoingForKey(pix) != nullptr)
-				riverColour++;
+			if (riverColour < maxRiverColour && river->getIngoingForKey(pix) != nullptr) {
+				riverColour += river->getIngoingForKey(pix)->getIngoing().size() +1;
+				if (riverColour > maxRiverColour)
+					riverColour = maxRiverColour;
+			}
 			riverBMP->Buffer[pix / 3] = riverColour;
 		}
 	}

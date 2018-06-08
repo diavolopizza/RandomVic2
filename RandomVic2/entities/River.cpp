@@ -48,6 +48,11 @@ void River::addIngoing(River * ingoing, uint32_t pixel)
 	ingoingRivers.insert_or_assign(pixel, ingoing);
 }
 
+vector<River*> River::getIngoing()
+{
+	return ingoing;
+}
+
 void River::addEndsIn(River * river)
 {
 	this->endsIn = river;
