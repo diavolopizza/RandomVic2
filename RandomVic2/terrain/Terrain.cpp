@@ -385,7 +385,7 @@ void Terrain::evaluateCoasts(Bitmap * provinceBMP)
 	}
 }
 //creates the terrain, factoring in heightmap and some climate calculations
-BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer)
+BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer, uint32_t heightThreshold)
 {
 	cout << "Creating basic terrain from heightmap" << endl;
 	BYTE* terrainBuffer = new BYTE[terrainBMP->bitmapinfoheader.biSizeImage];
@@ -395,7 +395,7 @@ BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer)
 	{
 		for (uint32_t y = 0; y < width; y++)
 		{
-			if (heightMapBuffer[(x * width + y) * 3] > 145) {
+			if (heightMapBuffer[(x * width + y) * 3] > heightThreshold) {
 				terrainBuffer[(x * width + y)] = 13;
 			}
 			else {

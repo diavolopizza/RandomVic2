@@ -45,8 +45,8 @@ Step 4.1: Output scenario info
 */
 int main() {
 	//Params
-	uint32_t width = 8000;
-	uint32_t height = 4000;
+	uint32_t width = 5616;
+	uint32_t height = 2160;
 	uint32_t landProv = 3000;
 	uint32_t seaProv = 5000;
 	uint32_t minProvPerContinent = 100;
@@ -71,18 +71,19 @@ int main() {
 	terrainBMP->setBitmapSize(width, height);
 	riverBMP->setBitmapSize(width, height);
 	
-	float fractalFrequency = 0.0006f;
+	float fractalFrequency = 0.008f;
 	uint32_t fractalOctaves = 11;
-	float fractalGain = 0.5;
+	float fractalGain = 0.6;
 	uint32_t borderLimiter = 10;
 	uint32_t minProvSize = 0;
 	uint32_t elevationTolerance = 5;
 	uint32_t riverAmount = 1000;
+	uint32_t heightThreshold = 128;
 
 	//generate noise map
 	heightMapBMP.setBuffer(t.heightMap(&heightMapBMP, 3, fractalFrequency, fractalOctaves,fractalGain, borderLimiter));
 	//create simplistic terrain shape from noise map
-	terrainBMP->setBuffer(t.createTerrain(terrainBMP, heightMapBMP.getBuffer()));
+	terrainBMP->setBuffer(t.createTerrain(terrainBMP, heightMapBMP.getBuffer(), heightThreshold));
 
 	//create provinces
 	{
