@@ -5,19 +5,19 @@ Prov::Prov()
 {
 }
 
-Prov::Prov(int provnr,RGBTRIPLE colour)
+Prov::Prov(int provID, RGBTRIPLE colour)
 {
-	this->provnr = provnr;
+	this->provID = provID;
 	this->colour = colour;
-	this->tag = "DUM";
+	this->owner = "DUM";
 }
 
-Prov::Prov(int provnr, RGBTRIPLE colour,bool s, ranlux48* random)
+Prov::Prov(int provID, RGBTRIPLE colour, bool sea, ranlux48* random)
 {
 	this->colour = colour;
-	this->provnr = provnr;
-	this->tag = "DUM";
-	this->sea = s;
+	this->provID = provID;
+	this->owner = "DUM";
+	this->sea = sea;
 	this->continent = nullptr;
 	this->region = nullptr;
 	this->random = random;
@@ -31,7 +31,7 @@ Prov::~Prov()
 
 bool Prov::operator==(const Prov& right) const
 {
-	
+
 	if (this->colour.rgbtRed == right.colour.rgbtRed)
 		if (this->colour.rgbtGreen == right.colour.rgbtGreen)
 			if (this->colour.rgbtBlue == right.colour.rgbtBlue)
@@ -44,10 +44,10 @@ bool Prov::operator==(const Prov& right) const
 
 
 
-void Prov::setneighbour2(Prov*P)
+void Prov::setNeighbour(Prov*P)
 {
 	neighbourProvinces.insert(P);
-	P->neighbourProvinces.insert(this);	
+	P->neighbourProvinces.insert(this);
 }
 
 void Prov::checkDeveloped(vector <int> developed_continent) {
@@ -88,5 +88,13 @@ void Prov::assignRegion(Region * R, bool recursive)
 	if (R->provinces.size() < 10)
 	{
 
+	}
+}
+
+void Prov::computeCandidates()
+{
+	while (positionCandidates.size() < 20 && positionCandidates.size()<pixels.size()-1)
+	{
+		positionCandidates.insert(pixels[(*random)() % pixels.size()]);
 	}
 }

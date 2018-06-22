@@ -2,13 +2,17 @@
 #include "terrain\Terrain.h"
 #include "utils\Data.h"
 #include "utils\Parser.h"
+#include "CountryCreation.h"
+#include "Victoria2Parser.h"
 #include <memory.h>
 #include <random>
 /*
 Step 1: Generate Terrain/continent shape/rivers
 	-continents(check)
+		-happy, but add more options for fractal generation
 	-climate(check)
 	-terrain(acceptable)
+		-add westwinds/coastal region
 	-rivers(good)
 Step 2: Generate Provinces on new terrain
 			-provinces.bmp (check)
@@ -20,19 +24,19 @@ Step 2.3: Generate colourmaps
 			-colormap_political.dds
 			-colormap_water.dds
 			-colormap.dds
-Step 3.1: Generate province files for new provinces
-			-positions.txt
-				-create candidates for various types of installations, which can afterwards be utilised by the respective generation
-			-definition.csv(check)
-			-default.map (check)
-			-number of provinces and seastarts(b=10 land, b=255 sea)
-			-adjacencies.csv(check)
+
+
+
+
+
 //THIS PART FOR ACTUAL VIC2 Generation
-Step 3.1: Read general info from map folder
-			-default.map (check)
-			-number of provinces and seastarts(b=10 land, b=255 sea)
-			-definition.csv(check)
-			-positions.txt
+Step 3.1: Generate province files for new provinces
+	-positions.txt(simple)
+		-create candidates for various types of installations, which can afterwards be utilised by the respective generation(simple)
+	-definition.csv(check)
+	-default.map (check)
+	-number of provinces and seastarts(b=10 land, b=255 sea)
+	-adjacencies.csv(check)
 
 
 Step 4.1: Scenario Info:
@@ -47,11 +51,12 @@ int main() {
 	//Params
 	uint32_t width = 5616;
 	uint32_t height = 2160;
-	uint32_t landProv = 3000;
-	uint32_t seaProv = 5000;
-	uint32_t minProvPerContinent = 100;
+	uint32_t landProv = 1000;
+	uint32_t seaProv = 2000;
+	uint32_t minProvPerContinent = 1;
+	uint32_t minProvPerRegion = 1;
 	//Generation objects
-	Data *data = new Data();
+	Data *data = new Data(11);
 	Parser P;
 	Terrain t(data->random, width, height);
 
@@ -71,19 +76,19 @@ int main() {
 	terrainBMP->setBitmapSize(width, height);
 	riverBMP->setBitmapSize(width, height);
 	
-	float fractalFrequency = 0.008f;
+	float fractalFrequency = 0.0006f;
 	uint32_t fractalOctaves = 11;
-	float fractalGain = 0.6;
+	float fractalGain = 0.2;
 	uint32_t borderLimiter = 10;
 	uint32_t minProvSize = 0;
 	uint32_t elevationTolerance = 5;
-	uint32_t riverAmount = 1000;
-	uint32_t heightThreshold = 128;
+	uint32_t riverAmount = 0;
+	uint32_t seaLevel = 128;
 
 	//generate noise map
-	heightMapBMP.setBuffer(t.heightMap(&heightMapBMP, 3, fractalFrequency, fractalOctaves,fractalGain, borderLimiter));
+	heightMapBMP.setBuffer(t.heightMap(&heightMapBMP, 11, fractalFrequency, fractalOctaves,fractalGain, borderLimiter, seaLevel));
 	//create simplistic terrain shape from noise map
-	terrainBMP->setBuffer(t.createTerrain(terrainBMP, heightMapBMP.getBuffer(), heightThreshold));
+	terrainBMP->setBuffer(t.createTerrain(terrainBMP, heightMapBMP.getBuffer(), seaLevel));
 
 	//create provinces
 	{
@@ -91,7 +96,7 @@ int main() {
 		provincesBMP.setBuffer(t.seaProvinces(seaProv, landProv, terrainBMP, &provincesBMP));
 		t.createProvinceMap();
 		t.provPixels(&provincesBMP);
-		//t.prettyProvinces(&provincesBMP, minProvSize);
+		t.prettyProvinces(&provincesBMP, minProvSize);
 		t.evaluateCoasts(&provincesBMP);
 		//dump to file
 		P.writeDefinition((data->mapPath + ("definition.csv")).c_str(), t.provinces);
@@ -109,17 +114,16 @@ int main() {
 	}
 	//assign provinces to regions and dump them
 	{
-		t.evaluateRegions();
+		t.evaluateRegions(minProvPerRegion);
 		t.prettyRegions(&regionBMP);
 		P.writeRegions((data->mapPath + ("region.txt")).c_str(), t.regions);
 	}
 	//generate terrain and rivers according to simplistic climate model
 	{
-		t.prettyTerrain(terrainBMP, &heightMapBMP);
+		t.prettyTerrain(terrainBMP, &heightMapBMP, seaLevel);
 		//generate rivers according to terrain and climate
-		t.prettyRivers(riverBMP, &heightMapBMP, riverAmount,elevationTolerance);
+		t.prettyRivers(riverBMP, &heightMapBMP, riverAmount,elevationTolerance, seaLevel);
 	}
-
 	//Dump all info into map folder
 	{
 		P.writeClimate((data->mapPath + ("climate.txt")).c_str(), t.provinces);//general
@@ -134,5 +138,94 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(&heightMapBMP, (data->mapPath + ("heightmap.bmp")).c_str());
 		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (data->mapPath + ("provinces.bmp")).c_str());
 	}
-	system("pause");
+	//VIC2 stuff starts here	
+	//Dump all info into map folder
+	{
+		P.writeDefinition((data->modPath + ("map/definition.csv")).c_str(), t.provinces);
+		P.writeAdjacency((data->modPath + ("map/adjacency.csv")).c_str(), t.provinces);
+		P.writeContinents((data->modPath + ("map/continent.txt")).c_str(), t.continents);
+		P.writeRegions((data->modPath + ("map/region.txt")).c_str(), t.regions);
+		P.writeClimate((data->modPath + ("map/climate.txt")).c_str(), t.provinces);//general
+		P.writeDefaultMapHeader((data->modPath + ("map/default.map")).c_str(), t.provinces);//general
+
+		printf("Writing Bitmaps to %s folder\n", data->modPath.c_str());
+		//save all the bmps
+		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (data->modPath + ("map/terrain.bmp")).c_str());
+		BMPHandler::getInstance().SaveBMPToFile(riverBMP, (data->modPath + ("map/rivers.bmp")).c_str());
+		BMPHandler::getInstance().SaveBMPToFile(&continents, (data->modPath + ("map/continents.bmp")).c_str());
+		BMPHandler::getInstance().SaveBMPToFile(&regionBMP, (data->modPath + ("map/regions.bmp")).c_str());
+		BMPHandler::getInstance().SaveBMPToFile(&heightMapBMP, (data->modPath + ("map/heightmap.bmp")).c_str());
+		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (data->modPath + ("map/provinces.bmp")).c_str());
+	}
+	CountryCreation::distributeCountries(t.provinces);
+	Victoria2Parser::writeCountries(data->modPath, t.provinces);
+	Victoria2Parser::writePops(data->modPath, t.provinces);
+	Victoria2Parser::writeClimate(data->modPath, (data->VicPath + ("map/climate.txt")).c_str() , t.provinces);
+	Victoria2Parser::writeDefaultMapHeader(data->modPath, (data->VicPath + ("map/default.map")).c_str(), t.provinces);
+	Victoria2Parser::writePositions(data->modPath, t.provinces);
+
+	//errors:
+		//continent names
+		//province IDs in definition.csv and climate and so on...continents
+		
+		//default.map
+		//seastarts
+
+
+	/*
+
+	Prerequisites: 
+		-religions for continents
+
+	Step : Generate countries
+		-common/countries:
+			-color = { 124 40 30 }
+			-graphical_culture
+			-parties
+				-name
+				-start/end
+				-ideology
+				-policies
+					-economic
+					-trade
+					-religious
+					.citizenship
+					-war
+			-optional: unit names
+		-history/countries
+			-capital province
+			-primary_culture
+			-religion
+			-government
+			-plurality
+			-nationalvalue
+			-literacy
+			-civilized
+			-prestige
+			-political_reforms
+			-social reforms
+			-ruling party
+			-upper_house
+			-technologies
+			-starting_counciousness
+			-unit files(oob)
+			-tech schools
+		-history/pops/1836.1.1
+			-for each region
+				-each province
+		-history/provinces
+		-history/units
+		-Flags
+		
+	Step 2: Distribute provinces to countries
+	
+	
+	
+	
+	
+	
+	*/
+
+
+	//system("pause");
 }

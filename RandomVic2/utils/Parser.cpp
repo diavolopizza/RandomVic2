@@ -17,7 +17,7 @@ void Parser::writeDefinition(string filePath, vector<Prov*> provinces)
 	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
 	{
 		string line = "";
-		line.append(to_string(provNr));
+		line.append(to_string(provNr+1));//province IDs start at 1
 		line.append(";");
 		line.append(to_string(provinces[provNr]->colour.rgbtRed));
 		line.append(";");
@@ -43,7 +43,7 @@ void Parser::writeAdjacency(string filePath, vector<Prov*> provinces)
 	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
 	{
 		string line = "";
-		line.append(to_string(provinces[provNr]->provnr));
+		line.append(to_string(provinces[provNr]->provID));
 		line.append(";");
 		line.append(to_string(provinces[provNr]->colour.rgbtRed));
 		line.append(";");
@@ -54,7 +54,7 @@ void Parser::writeAdjacency(string filePath, vector<Prov*> provinces)
 
 		for (auto neighbour : provinces[provNr]->neighbourProvinces)
 		{
-			line.append(to_string(neighbour->provnr));
+			line.append(to_string(neighbour->provID));
 			line.append(";");
 		}
 		line.append("\n");
@@ -75,7 +75,7 @@ void Parser::writeContinents(string filePath, vector<Continent*> continents)
 		completeFile.append(" = {\n\tprovinces = {\n\t\t");
 		for (auto province : continent->provinces)
 		{
-			completeFile.append(to_string(province->provnr));
+			completeFile.append(to_string(province->provID));
 			completeFile.append(" ");
 		}
 		completeFile.append("\n\t}\n\tassimilation_rate = 0.01\n}\n");
@@ -95,7 +95,7 @@ void Parser::writeRegions(string filePath, vector<Region*> regions)
 		completeFile.append(" = { ");
 		for (auto province : region->provinces)
 		{
-			completeFile.append(to_string(province->provnr));
+			completeFile.append(to_string(province->provID));
 			completeFile.append(" ");
 		}
 		completeFile.append("}\n\n");
@@ -123,26 +123,29 @@ void Parser::writeClimate(string filePath, /*string originalClimatePath,*/ vecto
 	string temperateClimate = "temperate_climate = {\n\t";
 	string harshClimate = "harsh_climate = {\n\t";
 	string inhospitableClimate = "inhospitable_climate = {\n\t";
-	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
+	for (auto province:provinces)
 	{
-		if (provinces[provNr]->climate == "mild_climate")
+		if (province->sea) {
+			continue;
+		}
+		if (province->climate == "mild_climate")
 		{
-			mildClimate.append(to_string(provinces[provNr]->provnr));
+			mildClimate.append(to_string(province->provID));
 			mildClimate.append(" ");
 		}
-		else if (provinces[provNr]->climate == "temperate_climate")
+		else if (province->climate == "temperate_climate")
 		{
-			temperateClimate.append(to_string(provinces[provNr]->provnr));
+			temperateClimate.append(to_string(province->provID));
 			temperateClimate.append(" ");
 		}
-		else if (provinces[provNr]->climate == "harsh_climate")
+		else if (province->climate == "harsh_climate")
 		{
-			harshClimate.append(to_string(provinces[provNr]->provnr));
+			harshClimate.append(to_string(province->provID));
 			harshClimate.append(" ");
 		}
-		else if (provinces[provNr]->climate == "inhospitable_climate")
+		else if (province->climate == "inhospitable_climate")
 		{
-			inhospitableClimate.append(to_string(provinces[provNr]->provnr));
+			inhospitableClimate.append(to_string(province->provID));
 			inhospitableClimate.append(" ");
 		}
 	}
@@ -176,7 +179,7 @@ void Parser::writeDefaultMapHeader(string filePath, /*string originalDefaultMapP
 	for (auto province : provinces) {
 		if (province->sea)
 		{
-			completeFile.append(to_string(province->provnr));
+			completeFile.append(to_string(province->provID));
 			completeFile.append(" ");
 		}
 	}

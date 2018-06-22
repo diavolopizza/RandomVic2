@@ -2,10 +2,13 @@
 
 
 
-Data::Data()
+Data::Data(uint32_t seed)
 {
 	this->random = new ranlux48();
-	random->seed(time(NULL));
+	if (seed)
+		random->seed(seed);
+	else
+		random->seed(time(NULL));
 }
 
 

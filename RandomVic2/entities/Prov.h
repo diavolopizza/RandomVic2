@@ -14,29 +14,33 @@ class Prov
 	ranlux48* random;
 public:
 	Prov();
-	Prov(int,RGBTRIPLE);
-	Prov(int, RGBTRIPLE,bool, ranlux48* random);
+	Prov(int, RGBTRIPLE);
+	Prov(int, RGBTRIPLE, bool, ranlux48* random);
 	~Prov();
-
-
-	string tag;//tag who owns prov
-	uint32_t provnr;
 	RGBTRIPLE colour;
-	bool placed = false, coastal = false, island = false, sea = false;
-	bool developed = false;
+
+	uint32_t provID;
+	uint32_t center;
 	Continent* continent;
 	Region* region;
+	bool placed = false, coastal = false, island = false, sea = false;
+	bool developed = false;
 	bool operator==(const Prov& right) const;
 	string terrain_type;
 	string climate;
-	uint32_t center;
+	string owner;//tag who owns prov
+	vector<string>cores;
+	uint32_t lifeRating;
+	string tradegood;
 
 	unordered_set <Prov*> neighbourProvinces;//contains all the province Ids of the neighbouring provinces
 	unordered_set<uint32_t> neighbourRegions;
-	vector<uint32_t > pixels;
-	void setneighbour2(Prov*P);
+	vector<uint32_t> pixels;
+	unordered_set<uint32_t> positionCandidates;
+	void setNeighbour(Prov*P);
 	void checkDeveloped(vector <int> developed_continent);
 	void assignContinent(Continent *C);
 	void assignRegion(Region *R, bool recursive);
+	void computeCandidates();
 };
 
