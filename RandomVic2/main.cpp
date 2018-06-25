@@ -78,7 +78,7 @@ int main() {
 	
 	float fractalFrequency = 0.0006f;
 	uint32_t fractalOctaves = 11;
-	float fractalGain = 0.2;
+	float fractalGain = 0.5;
 	uint32_t borderLimiter = 10;
 	uint32_t minProvSize = 0;
 	uint32_t elevationTolerance = 5;
@@ -139,6 +139,7 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (data->mapPath + ("provinces.bmp")).c_str());
 	}
 	//VIC2 stuff starts here	
+	Victoria2Parser::createFolders(data->modPath);
 	//Dump all info into map folder
 	{
 		P.writeDefinition((data->modPath + ("map/definition.csv")).c_str(), t.provinces);
@@ -165,11 +166,6 @@ int main() {
 	Victoria2Parser::writePositions(data->modPath, t.provinces);
 
 	//errors:
-		//continent names
-		//province IDs in definition.csv and climate and so on...continents
-		
-		//default.map
-		//seastarts
 
 
 	/*

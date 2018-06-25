@@ -474,7 +474,7 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 						unique = true;
 					}
 				}
-				Prov * lake = new Prov(provinces.size(), lakeColour, true, this->random);
+				Prov * lake = new Prov(provinces.size()+1, lakeColour, true, this->random);
 				provinceMap[lakeColour.rgbtRed][lakeColour.rgbtGreen][lakeColour.rgbtBlue] = lake;
 				provinces.push_back(lake);
 				lake->pixels.push_back(unassignedPixel);
@@ -659,8 +659,8 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t se
 {
 	//TODO CONFIG FOR ALL PARAMS
 	uint32_t coastalDistanceInfluence = 30;
-	uint32_t mountainStart = seaLevel + 60;
-	uint32_t hillStart = seaLevel + 45;
+	uint32_t mountainStart = seaLevel + 40;
+	uint32_t hillStart = seaLevel + 20;
 
 	uint32_t arctic = 0;//0-3
 	uint32_t arcticRange = 4;

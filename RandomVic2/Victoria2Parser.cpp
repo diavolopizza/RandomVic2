@@ -1,6 +1,7 @@
 #include "Victoria2Parser.h"
-
-
+#include <direct.h>  
+#include <stdlib.h>  
+#include <stdio.h>  
 
 Victoria2Parser::Victoria2Parser()
 {
@@ -9,6 +10,21 @@ Victoria2Parser::Victoria2Parser()
 
 Victoria2Parser::~Victoria2Parser()
 {
+}
+
+void Victoria2Parser::createFolders(string modPath) {
+	_mkdir(modPath.c_str());
+	_mkdir((modPath + "map/").c_str());
+	_mkdir((modPath + "history/").c_str());
+	_mkdir((modPath + "history/countries").c_str());
+	_mkdir((modPath + "history/provinces").c_str());
+	_mkdir((modPath + "history/provinces/germany").c_str());
+	_mkdir((modPath + "history/pops").c_str());
+	_mkdir((modPath + "history/pops/1836.1.1").c_str());
+	_mkdir((modPath + "history/diplomacy").c_str());
+	_mkdir((modPath + "history/units").c_str());
+	_mkdir((modPath + "history/wars").c_str());
+	_mkdir((modPath + "common/").c_str());
 }
 
 void Victoria2Parser::writeCountries(string modPath, vector<Prov*> provinces)
@@ -137,7 +153,7 @@ string Victoria2Parser::readDefaultMapHeader(string filePath)
 	std::ifstream defaultMap(filePath);
 	std::string content((std::istreambuf_iterator<char>(defaultMap)),
 		(std::istreambuf_iterator<char>()));
-	uint32_t pos = content.find("definitions", 100);
+	uint32_t pos = content.find("provinces", 100);
 	return content.substr(pos, string::npos);
 }
 
@@ -153,9 +169,10 @@ void Victoria2Parser::writeDefaultMapHeader(string filePath, string originalDefa
 		}
 	}
 	completeFile.append("\n}\n\n");
+	completeFile.append("definitions = \"" + filePath + "\"");
 	completeFile.append(readDefaultMapHeader(originalDefaultMapPath));
 	ofstream defaultMap;
-	defaultMap.open(filePath+"/map/default.map");
+	defaultMap.open(filePath + "/map/default.map");
 	defaultMap << completeFile;
 	defaultMap.close();
 }

@@ -10,6 +10,7 @@ public:
 	static void writeCountries(string modPath, vector<Prov*> provinces);
 	static void writePops(string modPath, vector<Prov*> provinces);
 
+	static void createFolders(string modPath);
 	static string readClimateHeader(string modPath);
 	static void writeClimate(string modPath, string originalClimatePath, vector<Prov*> provinces);
 	static string readDefaultMapHeader(string modPath);
