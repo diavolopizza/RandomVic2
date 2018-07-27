@@ -16,5 +16,6 @@ public:
 	static string readDefaultMapHeader(string modPath);
 	static void writeDefaultMapHeader(string modPath, string originalDefaultMapPath, vector<Prov*> provinces);
 	static void writePositions(string modPath, vector<Prov*> provinces);
+	static void writeAdjacencies(string modPath);
 };
 

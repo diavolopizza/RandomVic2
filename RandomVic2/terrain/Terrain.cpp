@@ -133,7 +133,7 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 	uint32_t green = 0;
 	RGBTRIPLE provinceColour;
 
-	for (uint32_t i = offset + 1; i < numOfLandProv + offset+1; i++)
+	for (uint32_t i = offset + 1; i < numOfLandProv + offset + 1; i++)
 	{
 		provinceColour.rgbtRed = 1 + red;
 		provinceColour.rgbtGreen = 1 + green;
@@ -344,7 +344,7 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion)
 				if (P->region != nullptr) {
 					uint32_t x1 = P->center / 3 % generalBmpWidth;
 					uint32_t x2 = prov->center / 3 % generalBmpWidth;
-					uint32_t y1 = P->center/3 / generalBmpHeight;
+					uint32_t y1 = P->center / 3 / generalBmpHeight;
 					uint32_t y2 = prov->center / 3 / generalBmpHeight;
 					if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
 						distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
@@ -435,18 +435,19 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 			RGBBMP->setSingle((x * width + y) * 3 + 2, (myNoise.GetNoise(x, y) + 1) * 128 * factor);
 		}
 	}
-	uint32_t maxHeight = 253;
+	/*uint32_t maxHeight = 256;
 	double maxFactor = pow(maxHeight - seaLevel, 2);
 	for (int i = 0; i < RGBBMP->bitmapinfoheader.biSizeImage; i++)
 	{
 		uint32_t positionHeight = RGBBMP->getValueAt(i);
 		if (positionHeight > seaLevel)
 		{
-			RGBBMP->setSingle(i, seaLevel + (positionHeight *( pow(positionHeight - seaLevel, 2)/ maxFactor)));
-			if (RGBBMP->getValueAt(i) > maxHeight)
+			if (seaLevel + (positionHeight *(pow(positionHeight - seaLevel, 2) / maxFactor) > maxHeight))
 				RGBBMP->setSingle(i, maxHeight);
+
+			RGBBMP->setSingle(i, seaLevel + (positionHeight *(pow(positionHeight - seaLevel, 2) / maxFactor)));
 		}
-	}
+	}*/
 	return RGBBMP->getBuffer();
 }
 //assigns all unassigned pixels to the nearest province
@@ -474,10 +475,11 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 						unique = true;
 					}
 				}
-				Prov * lake = new Prov(provinces.size()+1, lakeColour, true, this->random);
+				Prov * lake = new Prov(provinces.size() + 1, lakeColour, true, this->random);
 				provinceMap[lakeColour.rgbtRed][lakeColour.rgbtGreen][lakeColour.rgbtBlue] = lake;
 				provinces.push_back(lake);
 				lake->pixels.push_back(unassignedPixel);
+				lake->center = unassignedPixel;
 				provinceBMP->setTriple(lakeColour, unassignedPixel);
 				bool newFound = false;
 				bool first = true;
@@ -837,7 +839,7 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t se
 			}
 			case 2:
 			{
-				terrainBMP->setSingle(pixel / 3, forest + ((double)forestRange)*(1.0-(temperatureFactor/ 0.6)));
+				terrainBMP->setSingle(pixel / 3, forest + ((double)forestRange)*(1.0 - (temperatureFactor / 0.6)));
 				prov->climate = "temperate_climate";
 				if (temperatureFactor < 0.3)
 					prov->climate = "harsh_climate";
@@ -880,7 +882,10 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t se
 			}
 			if (altitude > mountainStart)//mountains
 			{
-				terrainBMP->setSingle(pixel / 3, (uint32_t)((float)(altitude - mountainStart) / (float)(seaLevel + 65 - mountainStart) *(float)7 + 24));
+				if ((uint32_t)((float)(altitude - mountainStart) / (float)(210 - mountainStart) *(float)7 + 24) < 31) {
+					terrainBMP->setSingle(pixel / 3, (uint32_t)((float)(altitude - mountainStart) / (float)(210 - mountainStart) *(float)7 + 24));
+				}
+				else { terrainBMP->setSingle(pixel / 3, 31); }
 			}
 		}
 	}

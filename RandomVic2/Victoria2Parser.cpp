@@ -25,6 +25,7 @@ void Victoria2Parser::createFolders(string modPath) {
 	_mkdir((modPath + "history/units").c_str());
 	_mkdir((modPath + "history/wars").c_str());
 	_mkdir((modPath + "common/").c_str());
+
 }
 
 void Victoria2Parser::writeCountries(string modPath, vector<Prov*> provinces)
@@ -32,16 +33,14 @@ void Victoria2Parser::writeCountries(string modPath, vector<Prov*> provinces)
 	modPath.append("history/provinces/germany/");
 	for (auto prov : provinces)
 	{
+		if (prov->sea) {
+			continue;
+		}
 		string completeFile = "";
 		ofstream def;
 		def.open(modPath + to_string(prov->provID) + ".txt");
 
 
-		if (prov->sea) {
-			def << completeFile;
-			def.close();
-			continue;
-		}
 
 		completeFile.append("owner = " + prov->owner);
 		completeFile.append("\n");
@@ -159,7 +158,7 @@ string Victoria2Parser::readDefaultMapHeader(string filePath)
 
 void Victoria2Parser::writeDefaultMapHeader(string filePath, string originalDefaultMapPath, vector<Prov*> provinces)
 {
-	string completeFile = "max_provinces = " + to_string(provinces.size());
+	string completeFile = "max_provinces = " + to_string(provinces.size()+1);
 	completeFile.append("\n\nsea_starts = {\n\t");
 	for (auto province : provinces) {
 		if (province->sea)
@@ -169,7 +168,7 @@ void Victoria2Parser::writeDefaultMapHeader(string filePath, string originalDefa
 		}
 	}
 	completeFile.append("\n}\n\n");
-	completeFile.append("definitions = \"" + filePath + "\"");
+	completeFile.append("definitions = \"../mod/myMod/map/definition.csv\"\n"); // + filePath + "\map\definition.csv\n"
 	completeFile.append(readDefaultMapHeader(originalDefaultMapPath));
 	ofstream defaultMap;
 	defaultMap.open(filePath + "/map/default.map");
@@ -257,4 +256,12 @@ void Victoria2Parser::writePositions(string modPath, vector<Prov*> provinces)
 	position.open(modPath + "map/positions.txt");
 	position << completeFile;
 	position.close();
+}
+
+void Victoria2Parser::writeAdjacencies(string modPath)
+{
+	ofstream defaultMap;
+	defaultMap.open(modPath + "/map/adjacencies.csv");
+	defaultMap << "";
+	defaultMap.close();
 }

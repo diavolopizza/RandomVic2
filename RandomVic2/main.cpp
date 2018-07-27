@@ -56,7 +56,7 @@ int main() {
 	uint32_t minProvPerContinent = 1;
 	uint32_t minProvPerRegion = 1;
 	//Generation objects
-	Data *data = new Data(11);
+	Data *data = new Data(14);
 	Parser P;
 	Terrain t(data->random, width, height);
 
@@ -78,7 +78,7 @@ int main() {
 	
 	float fractalFrequency = 0.0006f;
 	uint32_t fractalOctaves = 11;
-	float fractalGain = 0.5;
+	float fractalGain = 0.2;
 	uint32_t borderLimiter = 10;
 	uint32_t minProvSize = 0;
 	uint32_t elevationTolerance = 5;
@@ -86,7 +86,7 @@ int main() {
 	uint32_t seaLevel = 128;
 
 	//generate noise map
-	heightMapBMP.setBuffer(t.heightMap(&heightMapBMP, 11, fractalFrequency, fractalOctaves,fractalGain, borderLimiter, seaLevel));
+	heightMapBMP.setBuffer(t.heightMap(&heightMapBMP, 14, fractalFrequency, fractalOctaves,fractalGain, borderLimiter, seaLevel));
 	//create simplistic terrain shape from noise map
 	terrainBMP->setBuffer(t.createTerrain(terrainBMP, heightMapBMP.getBuffer(), seaLevel));
 
@@ -164,6 +164,7 @@ int main() {
 	Victoria2Parser::writeClimate(data->modPath, (data->VicPath + ("map/climate.txt")).c_str() , t.provinces);
 	Victoria2Parser::writeDefaultMapHeader(data->modPath, (data->VicPath + ("map/default.map")).c_str(), t.provinces);
 	Victoria2Parser::writePositions(data->modPath, t.provinces);
+	Victoria2Parser::writeAdjacencies(data->modPath);
 
 	//errors:
 
