@@ -51,10 +51,10 @@ int main() {
 	//Params
 	uint32_t width = 5616;
 	uint32_t height = 2160;
-	uint32_t landProv = 1000;
+	uint32_t landProv = 15000;
 	uint32_t seaProv = 2000;
 	uint32_t minProvPerContinent = 1;
-	uint32_t minProvPerRegion = 1;
+	uint32_t minProvPerRegion = 2;
 	//Generation objects
 	Data *data = new Data(14);
 	Parser P;
@@ -80,7 +80,7 @@ int main() {
 	uint32_t fractalOctaves = 11;
 	float fractalGain = 0.2;
 	uint32_t borderLimiter = 10;
-	uint32_t minProvSize = 0;
+	uint32_t minProvSize = 50;
 	uint32_t elevationTolerance = 5;
 	uint32_t riverAmount = 0;
 	uint32_t seaLevel = 128;

@@ -31,13 +31,32 @@ Terrain::Terrain(ranlux48* random, uint32_t generalBmpWidth, uint32_t generalBmp
 Terrain::~Terrain()
 {
 }
+
+
+uint32_t Terrain::GetMinDistanceToProvince(uint32_t position) {
+	uint32_t distance = MAXUINT32;
+	for (Prov* P : provinces)
+	{
+		uint32_t x1 = P->center / 3 % generalBmpWidth;
+		uint32_t x2 = position / 3 % generalBmpWidth;
+		uint32_t y1 = P->center / 3 / generalBmpHeight;
+		uint32_t y2 = position / 3 / generalBmpHeight;
+		if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
+			distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
+		}
+	}
+
+
+	return 0;
+}
 //Utility to find starting point of new province
-void Terrain::determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour) {
+void Terrain::determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize) {
 	uint32_t bmpWidth = b->bitmapinfoheader.biWidth;
 	uint32_t bmpHeight = b->bitmapinfoheader.biHeight;
 	uint32_t bmpSize = bmpWidth * bmpHeight;
 	uint32_t startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
-	while (!(startingPixel >= bmpWidth && startingPixel <= bmpSize - bmpWidth && b->getValueAt(startingPixel * 3) == provinceColour.rgbtBlue - 1))
+	while (!(startingPixel >= bmpWidth && startingPixel <= bmpSize - bmpWidth && b->getValueAt(startingPixel * 3) == provinceColour.rgbtBlue - 1)
+		&& GetMinDistanceToProvince(startingPixel) < sqrt(provinceSize/(std::atan(1) * 4)))
 	{
 		startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
 	}
@@ -53,22 +72,29 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	uint32_t bmpSize = bmpWidth * bmpHeight;
 	RGBTRIPLE rgbHigh{ 254, 254, 254 };
 	RGBTRIPLE rgbLow{ 0, 0, 0 };
+	//initialize buffer
 	BYTE* provinceBuffer = provinceBMP->getBuffer();
 	for (uint32_t i = 0; i < bmpSize * 3; i += 3) {
 		if (terrainBMP->getValueAt(i / 3) == 254) {
+			//sea
 			provinceBMP->setTriple(rgbHigh, i);
 		}
 		else {
+			//land
 			provinceBMP->setTriple(rgbLow, i);
 		}
 	}
-	uint32_t provincesize = (int)((float)bmpSize * 0.2f / (float)numoflandprov);//better calculation?
+	//assign province size
+	uint32_t provincesize = (int)((float)bmpSize * 0.6f / (float)numoflandprov);//better calculation?
+	//assign pixels to this new province
 	provinceCreation(provinceBMP, provincesize, numoflandprov, 0, 0);
+	//For multithreading: create vector of random values. Used for performance improvements, as ranlux48 is using locks, and new instances would remove determination.
 	vector<uint32_t> randomValuesCached;
 	for (uint32_t i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
 	uint32_t threadCount = 1;
+	//decrement number of threads, until biSizeImage can be divided by threadCount without any rest
 	while (provinceBMP->bitmapinfoheader.biSizeImage % threadCount != 0)
 	{
 		threadCount--;
@@ -84,7 +110,6 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	for (auto& t : threads) {
 		t.join();
 	}
-	//fill(provinceBMP, 1, 0);
 	assignRemainingPixels(provinceBMP, provinceBuffer, false);
 	return provinceBuffer;
 }
@@ -142,12 +167,12 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 		if (red > 254)//if end of colourrange(255) is reached
 		{
 			green++; //increment second(g) value
-			red = 0; //reset red
+			red = 1; //reset red
 		}
 		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255, this->random); //create new landprovince
 
-		determineStartingPixel(provinceBMP, P->pixels, provinceColour);
-		for (uint32_t x = 0; x < provinceSize; x++)
+		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
+		for (uint32_t x = 0; x < provinceSize - 1; x++)
 		{
 			uint32_t currentPixel = 0;
 			while (currentPixel <= bmpWidth * 3 || currentPixel >= bmpSize * 3 - bmpWidth * 3)
@@ -156,15 +181,19 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 			}
 			if (provinceBMP->getValueAt(RIGHT(currentPixel)) == greyval)
 			{
-				provinceBMP->setTriple(provinceColour, RIGHT(currentPixel));
-				P->pixels.push_back(RIGHT(currentPixel));
-				x++;
+				if (((currentPixel / 3) + 1) % (bmpWidth / 2) != 0) {
+					provinceBMP->setTriple(provinceColour, RIGHT(currentPixel));
+					P->pixels.push_back(RIGHT(currentPixel));
+					x++;
+				}
 			}
 			if (provinceBMP->getValueAt(LEFT(currentPixel)) == greyval)
 			{
-				provinceBMP->setTriple(provinceColour, LEFT(currentPixel));
-				P->pixels.push_back(LEFT(currentPixel));
-				x++;
+				if (((currentPixel / 3)) % (bmpWidth / 2) != 0) {
+					provinceBMP->setTriple(provinceColour, LEFT(currentPixel));
+					P->pixels.push_back(LEFT(currentPixel));
+					x++;
+				}
 			}
 			if (provinceBMP->getValueAt(ABOVE(currentPixel, bmpWidth * 3)) == greyval)
 			{
@@ -180,6 +209,8 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 			}
 		}
 		P->center = P->pixels[0];
+		if (P->pixels.size() <= 1)
+			cout << "Small" << endl;
 		provinces.push_back(P);
 	}
 }
@@ -210,10 +241,15 @@ void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint
 					randomValueIndex = 0;
 				switch (direction)
 				{
+					//Constraints when checking neighbours:
+						//not going out of buffer bounds
+						//only assign if neighbouring pixel is assigned and of same type
+						//not crossing the wrapping line in east/west direction
 				case 0: {
 					if (unassignedPixel < bmpSize * 3 - 3 && provinceBMP->getValueAt(RIGHT(unassignedPixel)) != 0 && provinceBMP->getValueAt(RIGHT(unassignedPixel)) == greyVal)
 					{
-						provinceBMP->setTriple(unassignedPixel, RIGHT(unassignedPixel));
+						if (((unassignedPixel / 3) + 1) % (bmpWidth / 2) != 0)
+							provinceBMP->setTriple(unassignedPixel, RIGHT(unassignedPixel));
 					}
 					break;
 				}
@@ -221,7 +257,8 @@ void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint
 				{
 					if (unassignedPixel > 3 && provinceBMP->getValueAt(LEFT(unassignedPixel)) != 0 && provinceBMP->getValueAt(LEFT(unassignedPixel)) == greyVal)
 					{
-						provinceBMP->setTriple(unassignedPixel, LEFT(unassignedPixel));
+						if ((unassignedPixel / 3) % (bmpWidth / 2) != 0)
+							provinceBMP->setTriple(unassignedPixel, LEFT(unassignedPixel));
 					}
 					break;
 				}
@@ -321,7 +358,7 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion)
 			Region *R = new Region(to_string(regionID), regionID);
 			regions.push_back(R);
 			regionID++;
-			prov->assignRegion(R, true);
+			prov->assignRegion(R, true, minProvPerRegion);
 		}
 	}
 	for (uint32_t i = 0; i < regions.size(); i++)
@@ -352,7 +389,7 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion)
 					}
 				}
 			}
-			prov->assignRegion(nextOwner, false);
+			prov->assignRegion(nextOwner, false, minProvPerRegion);
 		}
 	}
 }
@@ -630,6 +667,7 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize)
 	for (auto province : provinces)
 	{
 		if (province->pixels.size() < minProvSize && !province->sea) {
+			cout << "Eliminating small province" << endl;
 			for (auto pixel : province->pixels) {
 				RGBTRIPLE colour;
 				colour.rgbtBlue = 0;
@@ -652,7 +690,7 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize)
 	for (uint32_t i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
-	//fill(provinceBMP, 0, 0, 0, provinceBMP->bitmapinfoheader.biSizeImage, std::ref(randomValuesCached));
+	fill(provinceBMP, 1, 0, 0, provinceBMP->bitmapinfoheader.biSizeImage, std::ref(randomValuesCached));
 	//assignRemainingPixels(provinceBMP, provinceBMP->Buffer, provinces, false);
 	provPixels(provinceBMP);
 }

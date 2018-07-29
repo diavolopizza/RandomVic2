@@ -73,19 +73,19 @@ void Prov::assignContinent(Continent * C)
 	}
 }
 
-void Prov::assignRegion(Region * R, bool recursive)
+void Prov::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)
 {
 	this->region = R;
 	R->provinces.push_back(this);
 	if (recursive) {
 		for (auto neighbour : this->neighbourProvinces)
 		{
-			if (neighbour->region == nullptr && !neighbour->sea && R->provinces.size() < 10) {
-				neighbour->assignRegion(R, false);
+			if (neighbour->region == nullptr && !neighbour->sea && R->provinces.size() < minProvPerRegion) {
+				neighbour->assignRegion(R, false, minProvPerRegion);
 			}
 		}
 	}
-	if (R->provinces.size() < 10)
+	if (R->provinces.size() < minProvPerRegion)
 	{
 
 	}

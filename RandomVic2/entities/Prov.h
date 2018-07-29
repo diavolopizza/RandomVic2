@@ -40,7 +40,7 @@ public:
 	void setNeighbour(Prov*P);
 	void checkDeveloped(vector <int> developed_continent);
 	void assignContinent(Continent *C);
-	void assignRegion(Region *R, bool recursive);
+	void assignRegion(Region *R, bool recursive, uint32_t minProvPerRegion);
 	void computeCandidates();
 };
 

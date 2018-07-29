@@ -38,7 +38,8 @@ public:
 	~Terrain();
 
 	//Utilities
-	void determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour);
+	uint32_t Terrain::GetMinDistanceToProvince(uint32_t position);
+	void determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize);
 	void assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, bool sea);
 	//void assignColour(RGBTRIPLE provinceColour, BYTE* provinceBuffer, uint32_t currentPixel, uint32_t modifier = 1);
 	BYTE* landProvinces(uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP);
