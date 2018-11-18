@@ -1,5 +1,4 @@
 #include "Terrain.h"
-#include "../utils/Random.h"
 #include "../utils/BMPHandler.h"
 #include "../FastNoise/FastNoise.h"
 #include <windows.h>
@@ -45,9 +44,7 @@ uint32_t Terrain::GetMinDistanceToProvince(uint32_t position) {
 			distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
 		}
 	}
-
-
-	return 0;
+	return distance;
 }
 //Utility to find starting point of new province
 void Terrain::determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize) {
@@ -55,8 +52,8 @@ void Terrain::determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels
 	uint32_t bmpHeight = b->bitmapinfoheader.biHeight;
 	uint32_t bmpSize = bmpWidth * bmpHeight;
 	uint32_t startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
-	while (!(startingPixel >= bmpWidth && startingPixel <= bmpSize - bmpWidth && b->getValueAt(startingPixel * 3) == provinceColour.rgbtBlue - 1)
-		&& GetMinDistanceToProvince(startingPixel) < sqrt(provinceSize/(std::atan(1) * 4)))
+	while (!(startingPixel >= bmpWidth * 3 && startingPixel <= bmpSize - bmpWidth * 3 && b->getValueAt(startingPixel * 3) == provinceColour.rgbtBlue - 1)
+		&& !GetMinDistanceToProvince(startingPixel) < 3 * sqrt(provinceSize / (std::atan(1) * 4)))
 	{
 		startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
 	}
@@ -209,8 +206,8 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 			}
 		}
 		P->center = P->pixels[0];
-		if (P->pixels.size() <= 1)
-			cout << "Small" << endl;
+		if (P->pixels.size() < 1)
+			cout << "´Zero size province" << endl;
 		provinces.push_back(P);
 	}
 }
@@ -248,7 +245,7 @@ void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint
 				case 0: {
 					if (unassignedPixel < bmpSize * 3 - 3 && provinceBMP->getValueAt(RIGHT(unassignedPixel)) != 0 && provinceBMP->getValueAt(RIGHT(unassignedPixel)) == greyVal)
 					{
-						if (((unassignedPixel / 3) + 1) % (bmpWidth / 2) != 0)
+						if (((unassignedPixel / 3) + 1) % (bmpWidth) != 0)
 							provinceBMP->setTriple(unassignedPixel, RIGHT(unassignedPixel));
 					}
 					break;
@@ -257,7 +254,7 @@ void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint
 				{
 					if (unassignedPixel > 3 && provinceBMP->getValueAt(LEFT(unassignedPixel)) != 0 && provinceBMP->getValueAt(LEFT(unassignedPixel)) == greyVal)
 					{
-						if ((unassignedPixel / 3) % (bmpWidth / 2) != 0)
+						if ((unassignedPixel / 3) % (bmpWidth) != 0)
 							provinceBMP->setTriple(unassignedPixel, LEFT(unassignedPixel));
 					}
 					break;
@@ -389,7 +386,8 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion)
 					}
 				}
 			}
-			prov->assignRegion(nextOwner, false, minProvPerRegion);
+			if (nextOwner != nullptr)
+				prov->assignRegion(nextOwner, false, minProvPerRegion);
 		}
 	}
 }
@@ -504,9 +502,9 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, 
 				RGBTRIPLE lakeColour;
 				bool unique = false;
 				while (!unique) {
-					lakeColour.rgbtBlue = 128;
-					lakeColour.rgbtGreen = (*random)() % 256;
-					lakeColour.rgbtRed = (*random)() % 256;
+					lakeColour.rgbtBlue = 204;
+					lakeColour.rgbtGreen = 1 + (*random)() % 255;
+					lakeColour.rgbtRed = 1 + (*random)() % 255;
 					if (provinceMap[lakeColour.rgbtRed][lakeColour.rgbtGreen][lakeColour.rgbtBlue] == nullptr)
 					{
 						unique = true;

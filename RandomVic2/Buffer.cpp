@@ -29,7 +29,6 @@ uint32_t BitmapBuffer::getValueAt(int32_t index, uint32_t mode)
 
 void BitmapBuffer::setTriple(RGBTRIPLE colour, uint32_t bufferIndex)
 {
-
 	myBuffer[bufferIndex] = colour.rgbtBlue;
 	myBuffer[bufferIndex + 1] = colour.rgbtGreen;
 	myBuffer[bufferIndex + 2] = colour.rgbtRed;
@@ -37,7 +36,6 @@ void BitmapBuffer::setTriple(RGBTRIPLE colour, uint32_t bufferIndex)
 
 void BitmapBuffer::setTriple(uint32_t bufferIndex, uint32_t bufferIndexNew)
 {
-
 	myBuffer[bufferIndex] = myBuffer[bufferIndexNew];
 	myBuffer[bufferIndex + 1] = myBuffer[bufferIndexNew + 1];
 	myBuffer[bufferIndex + 2] = myBuffer[bufferIndexNew + 2];

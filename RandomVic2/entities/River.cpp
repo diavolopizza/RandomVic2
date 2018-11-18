@@ -60,7 +60,7 @@ void River::addEndsIn(River * river)
 
 River * River::getIngoingForKey(uint32_t pixel)
 {
-	if(ingoingRivers.find(pixel)!= ingoingRivers.end())
+	if (ingoingRivers.find(pixel) != ingoingRivers.end())
 		return ingoingRivers.at(pixel);
 	else return nullptr;
 }

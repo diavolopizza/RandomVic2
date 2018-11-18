@@ -13,7 +13,7 @@ Parser::~Parser()
 
 void Parser::writeDefinition(string filePath, vector<Prov*> provinces)
 {
-	string completeFile = "province;red;green;blue;x;x\n";
+	string completeString = "province;red;green;blue;x;x\n";
 	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
 	{
 		string line = "";
@@ -29,17 +29,17 @@ void Parser::writeDefinition(string filePath, vector<Prov*> provinces)
 		line.append(";");
 		line.append("x");
 		line.append("\n");
-		completeFile.append(line);
+		completeString.append(line);
 	}
-	ofstream def;
-	def.open(filePath);
-	def << completeFile;
-	def.close();
+	ofstream definitionFile;
+	definitionFile.open(filePath);
+	definitionFile << completeString;
+	definitionFile.close();
 }
 
 void Parser::writeAdjacency(string filePath, vector<Prov*> provinces)
 {
-	string completeFile = "provinceID;red;green;blue;Neighbours\n";
+	string completeString = "provinceID;red;green;blue;Neighbours\n";
 	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
 	{
 		string line = "";
@@ -58,58 +58,58 @@ void Parser::writeAdjacency(string filePath, vector<Prov*> provinces)
 			line.append(";");
 		}
 		line.append("\n");
-		completeFile.append(line);
+		completeString.append(line);
 	}
-	ofstream adj;
-	adj.open(filePath);
-	adj << completeFile;
-	adj.close();
+	ofstream adjacencyFile;
+	adjacencyFile.open(filePath);
+	adjacencyFile << completeString;
+	adjacencyFile.close();
 }
 
 void Parser::writeContinents(string filePath, vector<Continent*> continents)
 {
-	string completeFile = "";
+	string completeString = "";
 	for (auto continent : continents)
 	{
-		completeFile.append(continent->name);
-		completeFile.append(" = {\n\tprovinces = {\n\t\t");
+		completeString.append(continent->name);
+		completeString.append(" = {\n\tprovinces = {\n\t\t");
 		for (auto province : continent->provinces)
 		{
-			completeFile.append(to_string(province->provID));
-			completeFile.append(" ");
+			completeString.append(to_string(province->provID));
+			completeString.append(" ");
 		}
-		completeFile.append("\n\t}\n\tassimilation_rate = 0.01\n}\n");
+		completeString.append("\n\t}\n\tassimilation_rate = 0.01\n}\n");
 	}
-	ofstream continent;
-	continent.open(filePath);
-	continent << completeFile;
-	continent.close();
+	ofstream continentFile;
+	continentFile.open(filePath);
+	continentFile << completeString;
+	continentFile.close();
 }
 
 void Parser::writeRegions(string filePath, vector<Region*> regions)
 {
-	string completeFile = "";
+	string completeString = "";
 	for (auto region : regions)
 	{
-		completeFile.append(region->name);
-		completeFile.append(" = { ");
+		completeString.append(region->name);
+		completeString.append(" = { ");
 		for (auto province : region->provinces)
 		{
-			completeFile.append(to_string(province->provID));
-			completeFile.append(" ");
+			completeString.append(to_string(province->provID));
+			completeString.append(" ");
 		}
-		completeFile.append("}\n\n");
+		completeString.append("}\n\n");
 	}
-	ofstream region;
-	region.open(filePath);
-	region << completeFile;
-	region.close();
+	ofstream regionFile;
+	regionFile.open(filePath);
+	regionFile << completeString;
+	regionFile.close();
 }
 
 string Parser::readClimateHeader(string filePath)
 {
-	std::ifstream climate(filePath);
-	std::string content((std::istreambuf_iterator<char>(climate)),
+	std::ifstream climateFile(filePath);
+	std::string content((std::istreambuf_iterator<char>(climateFile)),
 		(std::istreambuf_iterator<char>()));
 	uint32_t pos = content.find("mild_climate", 100);
 	content.erase(pos, string::npos);
@@ -118,7 +118,7 @@ string Parser::readClimateHeader(string filePath)
 
 void Parser::writeClimate(string filePath, /*string originalClimatePath,*/ vector<Prov*> provinces)
 {
-	string completeFile = "";//this is VIC 2 SPECIFIC readClimateHeader(originalClimatePath);
+	string completeString = "";//this is VIC 2 SPECIFIC readClimateHeader(originalClimatePath);
 	string mildClimate = "mild_climate = {\n\t";
 	string temperateClimate = "temperate_climate = {\n\t";
 	string harshClimate = "harsh_climate = {\n\t";
@@ -153,20 +153,20 @@ void Parser::writeClimate(string filePath, /*string originalClimatePath,*/ vecto
 	temperateClimate.append("\n\n}\n");
 	harshClimate.append("\n\n}\n");
 	inhospitableClimate.append("\n\n}\n");
-	completeFile.append(mildClimate);
-	completeFile.append(temperateClimate);
-	completeFile.append(harshClimate);
-	completeFile.append(inhospitableClimate);
-	ofstream climate;
-	climate.open(filePath);
-	climate << completeFile;
-	climate.close();
+	completeString.append(mildClimate);
+	completeString.append(temperateClimate);
+	completeString.append(harshClimate);
+	completeString.append(inhospitableClimate);
+	ofstream climateFile;
+	climateFile.open(filePath);
+	climateFile << completeString;
+	climateFile.close();
 }
 
 string Parser::readDefaultMapHeader(string filePath)
 {
-	std::ifstream defaultMap(filePath);
-	std::string content((std::istreambuf_iterator<char>(defaultMap)),
+	std::ifstream defaultMapFile(filePath);
+	std::string content((std::istreambuf_iterator<char>(defaultMapFile)),
 		(std::istreambuf_iterator<char>()));
 	uint32_t pos = content.find("definitions", 100);
 	return content.substr(pos, string::npos);
@@ -174,19 +174,19 @@ string Parser::readDefaultMapHeader(string filePath)
 
 void Parser::writeDefaultMapHeader(string filePath, /*string originalDefaultMapPath, */vector<Prov*> provinces)
 {
-	string completeFile = "max_provinces = " + to_string(provinces.size());
-	completeFile.append("\n\nsea_starts = {\n\t");
+	string completeString = "max_provinces = " + to_string(provinces.size());
+	completeString.append("\n\nsea_starts = {\n\t");
 	for (auto province : provinces) {
 		if (province->sea)
 		{
-			completeFile.append(to_string(province->provID));
-			completeFile.append(" ");
+			completeString.append(to_string(province->provID));
+			completeString.append(" ");
 		}
 	}
-	completeFile.append("\n}\n\n");
+	completeString.append("\n}\n\n");
 	//completeFile.append(readDefaultMapHeader(originalDefaultMapPath));
-	ofstream defaultMap;
-	defaultMap.open(filePath);
-	defaultMap << completeFile;
-	defaultMap.close();
+	ofstream defaultMapFile;
+	defaultMapFile.open(filePath);
+	defaultMapFile << completeString;
+	defaultMapFile.close();
 }

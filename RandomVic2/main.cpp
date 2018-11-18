@@ -51,14 +51,15 @@ int main() {
 	//Params
 	uint32_t width = 5616;
 	uint32_t height = 2160;
-	uint32_t landProv = 15000;
-	uint32_t seaProv = 2000;
+	uint32_t landProv = 2000;
+	uint32_t seaProv = 3000;
 	uint32_t minProvPerContinent = 1;
-	uint32_t minProvPerRegion = 2;
+	uint32_t minProvPerRegion = 5;
+	uint32_t seed = 2;
 	//Generation objects
-	Data *data = new Data(14);
-	Parser P;
-	Terrain t(data->random, width, height);
+	Data *data = new Data(seed);
+	Parser genericParser;
+	Terrain terrainGenerator(data->random, width, height);
 
 	//create new bmps{
 	Bitmap provincesBMP(width, height, 24);
@@ -66,7 +67,7 @@ int main() {
 	Bitmap continents(width, height, 24);
 	Bitmap regionBMP(width, height, 24);
 	//load 8 bit bitmaps from file to get colourtable
-	string terrainsourceString = data->mapPath + ("terrain.bmp");
+	string terrainsourceString = data->mapSource + ("terrain.bmp");
 	const char* terrainsource = terrainsourceString.c_str();
 	string riversourceString = data->mapPath + ("rivers.bmp");
 	const char* riversource = riversourceString.c_str();
@@ -78,56 +79,56 @@ int main() {
 	
 	float fractalFrequency = 0.0006f;
 	uint32_t fractalOctaves = 11;
-	float fractalGain = 0.2;
+	float fractalGain = 0.3298;
 	uint32_t borderLimiter = 10;
-	uint32_t minProvSize = 50;
+	uint32_t minProvSize = 100;
 	uint32_t elevationTolerance = 5;
 	uint32_t riverAmount = 0;
-	uint32_t seaLevel = 128;
+	uint32_t seaLevel = 139;
 
 	//generate noise map
-	heightMapBMP.setBuffer(t.heightMap(&heightMapBMP, 14, fractalFrequency, fractalOctaves,fractalGain, borderLimiter, seaLevel));
+	heightMapBMP.setBuffer(terrainGenerator.heightMap(&heightMapBMP, seed, fractalFrequency, fractalOctaves,fractalGain, borderLimiter, seaLevel));
 	//create simplistic terrain shape from noise map
-	terrainBMP->setBuffer(t.createTerrain(terrainBMP, heightMapBMP.getBuffer(), seaLevel));
+	terrainBMP->setBuffer(terrainGenerator.createTerrain(terrainBMP, heightMapBMP.getBuffer(), seaLevel));
 
 	//create provinces
 	{
-		provincesBMP.setBuffer( t.landProvinces(landProv, terrainBMP, &provincesBMP));
-		provincesBMP.setBuffer(t.seaProvinces(seaProv, landProv, terrainBMP, &provincesBMP));
-		t.createProvinceMap();
-		t.provPixels(&provincesBMP);
-		t.prettyProvinces(&provincesBMP, minProvSize);
-		t.evaluateCoasts(&provincesBMP);
+		provincesBMP.setBuffer( terrainGenerator.landProvinces(landProv, terrainBMP, &provincesBMP));
+		provincesBMP.setBuffer(terrainGenerator.seaProvinces(seaProv, landProv, terrainBMP, &provincesBMP));
+		terrainGenerator.createProvinceMap();
+		terrainGenerator.provPixels(&provincesBMP);
+		//terrainGenerator.prettyProvinces(&provincesBMP, minProvSize);
+		//terrainGenerator.evaluateCoasts(&provincesBMP);
 		//dump to file
-		P.writeDefinition((data->mapPath + ("definition.csv")).c_str(), t.provinces);
+		genericParser.writeDefinition((data->mapPath + ("definition.csv")).c_str(), terrainGenerator.provinces);
 	}
 	//calculate neighbours and dump them
 	{
-		t.evaluateNeighbours(&provincesBMP);
-		P.writeAdjacency((data->mapPath + ("adjacency.csv")).c_str(), t.provinces);
+		terrainGenerator.evaluateNeighbours(&provincesBMP);
+		genericParser.writeAdjacency((data->mapPath + ("adjacency.csv")).c_str(), terrainGenerator.provinces);
 	}
 	//assign provinces to continents and dump them
 	{
-		t.evaluateContinents(minProvPerContinent);
-		t.prettyContinents(&continents);
-		P.writeContinents((data->mapPath + ("continent.txt")).c_str(), t.continents);
+		terrainGenerator.evaluateContinents(minProvPerContinent);
+		terrainGenerator.prettyContinents(&continents);
+		genericParser.writeContinents((data->mapPath + ("continent.txt")).c_str(), terrainGenerator.continents);
 	}
 	//assign provinces to regions and dump them
 	{
-		t.evaluateRegions(minProvPerRegion);
-		t.prettyRegions(&regionBMP);
-		P.writeRegions((data->mapPath + ("region.txt")).c_str(), t.regions);
+		terrainGenerator.evaluateRegions(minProvPerRegion);
+		terrainGenerator.prettyRegions(&regionBMP);
+		genericParser.writeRegions((data->mapPath + ("region.txt")).c_str(), terrainGenerator.regions);
 	}
 	//generate terrain and rivers according to simplistic climate model
 	{
-		t.prettyTerrain(terrainBMP, &heightMapBMP, seaLevel);
+		//terrainGenerator.prettyTerrain(terrainBMP, &heightMapBMP, seaLevel);
 		//generate rivers according to terrain and climate
-		t.prettyRivers(riverBMP, &heightMapBMP, riverAmount,elevationTolerance, seaLevel);
+		terrainGenerator.prettyRivers(riverBMP, &heightMapBMP, riverAmount,elevationTolerance, seaLevel);
 	}
 	//Dump all info into map folder
 	{
-		P.writeClimate((data->mapPath + ("climate.txt")).c_str(), t.provinces);//general
-		P.writeDefaultMapHeader((data->mapPath + ("default.map")).c_str(), t.provinces);//general
+		genericParser.writeClimate((data->mapPath + ("climate.txt")).c_str(), terrainGenerator.provinces);//general
+		genericParser.writeDefaultMapHeader((data->mapPath + ("default.map")).c_str(), terrainGenerator.provinces);//general
 
 		printf("Writing Bitmaps to %s folder\n", data->mapPath.c_str());
 		//save all the bmps
@@ -142,12 +143,12 @@ int main() {
 	Victoria2Parser::createFolders(data->modPath);
 	//Dump all info into map folder
 	{
-		P.writeDefinition((data->modPath + ("map/definition.csv")).c_str(), t.provinces);
-		P.writeAdjacency((data->modPath + ("map/adjacency.csv")).c_str(), t.provinces);
-		P.writeContinents((data->modPath + ("map/continent.txt")).c_str(), t.continents);
-		P.writeRegions((data->modPath + ("map/region.txt")).c_str(), t.regions);
-		P.writeClimate((data->modPath + ("map/climate.txt")).c_str(), t.provinces);//general
-		P.writeDefaultMapHeader((data->modPath + ("map/default.map")).c_str(), t.provinces);//general
+		genericParser.writeDefinition((data->modPath + ("map/definition.csv")).c_str(), terrainGenerator.provinces);
+		genericParser.writeAdjacency((data->modPath + ("map/adjacency.csv")).c_str(), terrainGenerator.provinces);
+		genericParser.writeContinents((data->modPath + ("map/continent.txt")).c_str(), terrainGenerator.continents);
+		genericParser.writeRegions((data->modPath + ("map/region.txt")).c_str(), terrainGenerator.regions);
+		genericParser.writeClimate((data->modPath + ("map/climate.txt")).c_str(), terrainGenerator.provinces);//general
+		genericParser.writeDefaultMapHeader((data->modPath + ("map/default.map")).c_str(), terrainGenerator.provinces);//general
 
 		printf("Writing Bitmaps to %s folder\n", data->modPath.c_str());
 		//save all the bmps
@@ -158,19 +159,20 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(&heightMapBMP, (data->modPath + ("map/heightmap.bmp")).c_str());
 		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (data->modPath + ("map/provinces.bmp")).c_str());
 	}
-	CountryCreation::distributeCountries(t.provinces);
-	Victoria2Parser::writeCountries(data->modPath, t.provinces);
-	Victoria2Parser::writePops(data->modPath, t.provinces);
-	Victoria2Parser::writeClimate(data->modPath, (data->VicPath + ("map/climate.txt")).c_str() , t.provinces);
-	Victoria2Parser::writeDefaultMapHeader(data->modPath, (data->VicPath + ("map/default.map")).c_str(), t.provinces);
-	Victoria2Parser::writePositions(data->modPath, t.provinces);
+	CountryCreation::distributeCountries(terrainGenerator.provinces);
+	Victoria2Parser::writeCountries(data->modPath, terrainGenerator.provinces);
+	Victoria2Parser::writePops(data->modPath, terrainGenerator.provinces);
+	Victoria2Parser::writeClimate(data->modPath, (data->VicPath + ("map/climate.txt")).c_str() , terrainGenerator.provinces);
+	Victoria2Parser::writeDefaultMapHeader(data->modPath, (data->VicPath + ("map/default.map")).c_str(), terrainGenerator.provinces);
+	Victoria2Parser::writePositions(data->modPath, terrainGenerator.provinces);
 	Victoria2Parser::writeAdjacencies(data->modPath);
 
 	//errors:
-
-
+		//climate.txt misses header
+		//deleting small province (prettyprovinces) messes up seastarts
+		//simple lakes crash loading textures
+		//naval bases
 	/*
-
 	Prerequisites: 
 		-religions for continents
 

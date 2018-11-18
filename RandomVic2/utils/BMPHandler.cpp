@@ -47,7 +47,6 @@ bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 			return false;
 		}
 	}
-
 	else {
 		paddedsize = (B->bitmapinfoheader.biWidth)*(B->bitmapinfoheader.biHeight);
 		if (WriteFile(file, B->colourtable, 1024, &bwritten, NULL) == false)

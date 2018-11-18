@@ -197,7 +197,7 @@ void Victoria2Parser::writePositions(string modPath, vector<Prov*> provinces)
 			completeFile.append(to_string(x1temp));
 			completeFile.append("\n\t\ty=");
 			completeFile.append(to_string(y1temp));
-			completeFile.append("\n\t}\n\ttext_rotation=0\n\ttextscale=1\n\t");
+			completeFile.append("\n\t}\n\ttext_rotation=0\n\ttext_scale=1\n\t");
 			//building_construction
 			completeFile.append("building_construction=\n\t{\n\t\tx=");
 			completeFile.append(to_string(x1temp));
@@ -223,11 +223,11 @@ void Victoria2Parser::writePositions(string modPath, vector<Prov*> provinces)
 			completeFile.append("\n\t\ty=");
 			completeFile.append(to_string(y1temp));
 			completeFile.append("\n\t}\n");
-			completeFile.append("naval_base=\n\t{\n\t\tx=");
-			completeFile.append(to_string(x1temp));
-			completeFile.append("\n\t\ty=");
-			completeFile.append(to_string(y1temp));
-			completeFile.append("\n\t}\n");
+			//completeFile.append("naval_base=\n\t{\n\t\tx=");
+			//completeFile.append(to_string(x1temp));
+			//completeFile.append("\n\t\ty=");
+			//completeFile.append(to_string(y1temp));
+			//completeFile.append("\n\t}\n");
 			completeFile.append("railroad=\n\t{\n\t\tx=");
 			completeFile.append(to_string(x1temp));
 			completeFile.append("\n\t\ty=");
@@ -249,7 +249,7 @@ void Victoria2Parser::writePositions(string modPath, vector<Prov*> provinces)
 			completeFile.append(to_string(x1temp));
 			completeFile.append("\n\t\ty=");
 			completeFile.append(to_string(y1temp));
-			completeFile.append("\n\t}\n\ttextscale=1\n}\n\n");
+			completeFile.append("\n\t}\n\ttext_scale=1\n}\n\n");
 		}
 	}
 	ofstream position;
