@@ -1,0 +1,40 @@
+{
+	"module": 
+	{
+		"genV2" : 1
+	},
+
+	"map": 
+	{
+		"seed" : 2,
+        "height" : 2160,
+		"width" : 5616,
+		"seaLevel" : 140,
+		
+		"rivers" : 
+		{
+			"elevationTolerance" : 5,
+			"numRivers" : 100
+		},
+		"heightmap" : {
+			"fractalFrequency" : 0.0006,
+			"fractalOctaves" : 11,
+			"fractalGain" : 0.3
+		},
+		
+		"provinces" : {
+			"landProvinces" : 2000,
+			"minProvPerContinent" : 1,
+			"minProvPerRegion" : 5,
+			"seaProvinces" : 3000,
+			"minProvSize" : 100
+		}
+		
+    },
+
+    "v2": 
+	{
+        "source": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Victoria 2\\",
+        "destination": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Victoria 2\\mod\\myMod\\"
+    }
+}

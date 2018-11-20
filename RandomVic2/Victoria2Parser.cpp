@@ -142,7 +142,7 @@ void Victoria2Parser::writeClimate(string filePath, string originalClimatePath, 
 	completeFile.append(harshClimate);
 	completeFile.append(inhospitableClimate);
 	ofstream climate;
-	climate.open(filePath);
+	climate.open(filePath + "/map/climate.txt");
 	climate << completeFile;
 	climate.close();
 }

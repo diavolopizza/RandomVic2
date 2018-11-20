@@ -1,6 +1,5 @@
 #pragma once
 using namespace std;
-#include "boost/multi_array.hpp"
 #include <string>
 #include <iostream>
 #include <fstream>
