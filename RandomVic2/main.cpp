@@ -106,7 +106,7 @@ int main() {
 	}
 	//generate terrain and rivers according to simplistic climate model
 	{
-		//terrainGenerator.prettyTerrain(terrainBMP, &heightMapBMP, data->seaLevel);
+		terrainGenerator.prettyTerrain(terrainBMP, &heightMapBMP, data->seaLevel);
 		//generate rivers according to terrain and climate
 		terrainGenerator.prettyRivers(riverBMP, &heightMapBMP, data->numRivers, data->elevationTolerance, data->seaLevel);
 	}

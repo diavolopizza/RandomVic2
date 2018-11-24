@@ -19,7 +19,7 @@
 		"heightmap" : {
 			"fractalFrequency" : 0.0006,
 			"fractalOctaves" : 11,
-			"fractalGain" : 0.3
+			"fractalGain" : 0.5
 		},
 		
 		"provinces" : {
