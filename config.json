@@ -1,12 +1,15 @@
 {
 	"module": 
 	{
-		"genV2" : 1
+		"genHeight" : 1,
+		"genSimpleTerrain" : 1,
+		"genComplexTerrain" : 1,
+		"genV2" : 0
 	},
 
 	"map": 
 	{
-		"seed" : 2,
+		"seed" : 5,
         "height" : 2160,
 		"width" : 5616,
 		"seaLevel" : 140,
@@ -14,17 +17,19 @@
 		"rivers" : 
 		{
 			"elevationTolerance" : 5,
-			"numRivers" : 100
+			"numRivers" : 1000
 		},
 		"heightmap" : {
-			"fractalFrequency" : 0.0006,
+			"fractalFrequency" : 0.0008,
 			"fractalOctaves" : 11,
-			"fractalGain" : 0.5
+			"fractalGain" : 0.5,
+			"complexHeight" : 1,
+			"divideThreshold" : 50
 		},
 		
 		"provinces" : {
 			"landProvinces" : 2000,
-			"minProvPerContinent" : 1,
+			"minProvPerContinent" : 100,
 			"minProvPerRegion" : 5,
 			"seaProvinces" : 3000,
 			"minProvSize" : 100

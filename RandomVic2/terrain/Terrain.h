@@ -14,7 +14,7 @@
 #include "../terrain/VoronoiDiagramGenerator.h"
 #include "boost\multi_array.hpp"
 #include "../entities/River.h"
-#include "../Buffer.h"
+#include "../utils/Buffer.h"
 
 using namespace std;
 //static array_type provinceMap(boost::extents[256][256][256]);
@@ -47,7 +47,7 @@ public:
 	void provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint32_t numOfLandProv, uint32_t offset, uint32_t greyval);
 	void fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached);
 	BYTE* createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer, uint32_t seaLevel);
-	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter, uint32_t seaLevel);
+	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter, uint32_t seaLevel, bool complexHeight);
 	void evaluateContinents(uint32_t minProvPerContinent);
 	void evaluateNeighbours(Bitmap * provinceBMP);
 	void evaluateRegions(uint32_t minProvPerRegion);

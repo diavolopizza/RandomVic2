@@ -16,7 +16,11 @@ public:
 	string mapSource = "";
 	string modPath = "";
 	string mapDest = "";
-	string debugMapFolder = "map\\";
+	string debugMapFolder = "debugMap\\";
+
+
+	//program flow params
+	bool genHeight, genSimpleTerrain, genComplexTerrain, genV2, complexHeight;
 
 
 	//Map params
@@ -34,7 +38,7 @@ public:
 	float fractalFrequency = 0;
 	uint32_t fractalOctaves = 0;
 	float fractalGain = 0;
-	uint32_t borderLimiter = 10;//TODO
+	uint32_t divideThreshold = 0;//TODO
 
 
 	//rivers

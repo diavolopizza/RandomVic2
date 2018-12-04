@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-#include "entities/Prov.h"
+#include "../entities/Prov.h"
 class Victoria2Parser
 {
 public:

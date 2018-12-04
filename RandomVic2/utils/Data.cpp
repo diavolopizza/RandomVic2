@@ -19,12 +19,17 @@ void Data::getConfig(string configPath) {
 
 	// Create a root
 	pt::ptree root;
-
 	pt::read_json(configPath, root);
+
+	//MODULES
+	genHeight = root.get<bool>("module.genHeight");
+	genSimpleTerrain = root.get<bool>("module.genSimpleTerrain");
+	genComplexTerrain = root.get<bool>("module.genComplexTerrain");
+	genV2 = root.get<bool>("module.genV2");
+
 
 	//PATHS
 	string victoriaSource = root.get<string>("v2.source");
-	cout << victoriaSource << endl;
 	VicPath = victoriaSource;
 	mapSource = victoriaSource + "map\\";
 	modPath = root.get<string>("v2.destination");
@@ -52,6 +57,8 @@ void Data::getConfig(string configPath) {
 		fractalFrequency = root.get<float>("map.heightmap.fractalFrequency");
 		fractalOctaves = root.get<int>("map.heightmap.fractalOctaves");
 		fractalGain = root.get<float>("map.heightmap.fractalGain");
+		divideThreshold = root.get<int>("map.heightmap.divideThreshold");
+		complexHeight = root.get<bool>("map.heightmap.complexHeight");
 	}
 
 	this->random = new ranlux48();

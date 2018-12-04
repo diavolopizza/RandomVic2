@@ -435,12 +435,11 @@ BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer, uint32_
 	return terrainBuffer;
 }
 //creates the heightmap with a given seed
-BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter, uint32_t seaLevel)
+BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t divideThreshold, uint32_t seaLevel, bool complexHeight)
 {
 	cout << "Creating Heightmap" << endl;
 	FastNoise myNoise; // Create a FastNoise object
-	myNoise.SetNoiseType(FastNoise::SimplexFractal); // Set the desired noise type
-	//myNoise.SetSeed((*random)() % 1000000);
+	myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
 
 	if (seed)
 		myNoise.SetSeed(seed);
@@ -450,9 +449,18 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 	myNoise.SetFractalOctaves(fractalOctaves);
 	myNoise.SetFractalGain(fractalGain);
 	myNoise.SetFractalType(FastNoise::FBM);
+
+	FastNoise myNoise2; // Create a FastNoise object
+	myNoise2.SetNoiseType(FastNoise::SimplexFractal); // Set the desired noise type
+	myNoise2.SetSeed(3);
+	myNoise2.SetFrequency(0.0036f);
+	myNoise2.SetFractalOctaves(fractalOctaves);
+	myNoise2.SetFractalGain(fractalGain);
+	myNoise2.SetFractalType(FastNoise::FBM);
+
 	const uint32_t width = RGBBMP->bitmapinfoheader.biWidth;
 	const uint32_t height = RGBBMP->bitmapinfoheader.biHeight;
-	uint32_t delimiter = generalBmpWidth / borderLimiter;
+	uint32_t delimiter = generalBmpWidth / divideThreshold;
 	for (uint32_t x = 0; x < height; x++)
 	{
 		for (uint32_t y = 0; y < width; y++)
@@ -465,11 +473,24 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 			{
 				factor = ((float)width - (float)y) / delimiter;
 			}
-			RGBBMP->setSingle((x * width + y) * 3, (myNoise.GetNoise(x, y) + 1) * 128 * factor);
-			RGBBMP->setSingle((x * width + y) * 3 + 1, (myNoise.GetNoise(x, y) + 1) * 128 * factor);
-			RGBBMP->setSingle((x * width + y) * 3 + 2, (myNoise.GetNoise(x, y) + 1) * 128 * factor);
+			FN_DECIMAL noiseLevel = (myNoise.GetNoise(x, y) + 1) * 128 * factor;
+			FN_DECIMAL completeNoise;
+			if (noiseLevel >= seaLevel && complexHeight) {
+				FN_DECIMAL noiseLevel2 = (myNoise2.GetNoise(x, y) + 1) * 128 * factor;
+				completeNoise = (noiseLevel + (noiseLevel2 * 0.5)) *0.67;
+				if (completeNoise < seaLevel+1)
+					completeNoise = seaLevel + 1;
+			}
+			else {
+				completeNoise = noiseLevel;
+			}
+
+			RGBBMP->setSingle((x * width + y) * 3, completeNoise);
+			RGBBMP->setSingle((x * width + y) * 3 + 1, completeNoise);
+			RGBBMP->setSingle((x * width + y) * 3 + 2, completeNoise);
 		}
 	}
+
 	/*uint32_t maxHeight = 256;
 	double maxFactor = pow(maxHeight - seaLevel, 2);
 	for (int i = 0; i < RGBBMP->bitmapinfoheader.biSizeImage; i++)

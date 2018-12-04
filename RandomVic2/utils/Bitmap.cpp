@@ -8,7 +8,6 @@ Bitmap::Bitmap()
 
 Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE* colourtable)
 {
-	cout << "BITMAP CONSTRUCTOR" << endl;
 	//create bitmap file header
 	((unsigned char *)&bitmapfileheader.bfType)[0] = 'B';
 	((unsigned char *)&bitmapfileheader.bfType)[1] = 'M';
