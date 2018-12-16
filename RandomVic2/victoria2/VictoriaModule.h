@@ -10,7 +10,7 @@
 class VictoriaModule
 {
 public:
-	VictoriaModule(Data *data, Terrain terraingenerator);
+	VictoriaModule(Data *data, Terrain *terraingenerator);
 	~VictoriaModule();
 	void dumpMapFiles(Data* data, Bitmap* terrainbmp, Bitmap* riverBMP, Bitmap* continents, Bitmap* regionBMP, Bitmap* heightmapBMP, Bitmap* provincesBMP);
 };

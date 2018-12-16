@@ -60,11 +60,11 @@ namespace DirectX
     enum CP_FLAGS
     {
         CP_FLAGS_NONE               = 0x0,      // Normal operation
-        CP_FLAGS_LEGACY_DWORD       = 0x1,      // Assume pitch is DWORD aligned instead of BYTE aligned
-        CP_FLAGS_PARAGRAPH          = 0x2,      // Assume pitch is 16-byte aligned instead of BYTE aligned
-        CP_FLAGS_YMM                = 0x4,      // Assume pitch is 32-byte aligned instead of BYTE aligned
-        CP_FLAGS_ZMM                = 0x8,      // Assume pitch is 64-byte aligned instead of BYTE aligned
-        CP_FLAGS_PAGE4K             = 0x200,    // Assume pitch is 4096-byte aligned instead of BYTE aligned
+        CP_FLAGS_LEGACY_DWORD       = 0x1,      // Assume pitch is DWORD aligned instead of unsigned char aligned
+        CP_FLAGS_PARAGRAPH          = 0x2,      // Assume pitch is 16-unsigned char aligned instead of unsigned char aligned
+        CP_FLAGS_YMM                = 0x4,      // Assume pitch is 32-unsigned char aligned instead of unsigned char aligned
+        CP_FLAGS_ZMM                = 0x8,      // Assume pitch is 64-unsigned char aligned instead of unsigned char aligned
+        CP_FLAGS_PAGE4K             = 0x200,    // Assume pitch is 4096-unsigned char aligned instead of unsigned char aligned
         CP_FLAGS_BAD_DXTN_TAILS     = 0x1000,   // BC formats with malformed mipchain blocks smaller than 4x4
         CP_FLAGS_24BPP              = 0x10000,  // Override with a legacy 24 bits-per-pixel format size
         CP_FLAGS_16BPP              = 0x20000,  // Override with a legacy 16 bits-per-pixel format size
@@ -145,7 +145,7 @@ namespace DirectX
         DDS_FLAGS_NONE                  = 0x0,
 
         DDS_FLAGS_LEGACY_DWORD          = 0x1,
-            // Assume pitch is DWORD aligned instead of BYTE aligned (used by some legacy DDS files)
+            // Assume pitch is DWORD aligned instead of unsigned char aligned (used by some legacy DDS files)
 
         DDS_FLAGS_NO_LEGACY_EXPANSION   = 0x2,
             // Do not implicitly convert legacy formats that result in larger pixel sizes (24 bpp, 3:3:2, A8L8, A4L4, P8, A8P8) 
@@ -208,7 +208,7 @@ namespace DirectX
     };
 
     HRESULT __cdecl GetMetadataFromDDSMemory(
-        _In_reads_bytes_(size) const void* pSource, _In_ size_t size,
+        _In_reads_unsigned chars_(size) const void* pSource, _In_ size_t size,
         _In_ DWORD flags,
         _Out_ TexMetadata& metadata);
     HRESULT __cdecl GetMetadataFromDDSFile(
@@ -217,21 +217,21 @@ namespace DirectX
         _Out_ TexMetadata& metadata);
 
     HRESULT __cdecl GetMetadataFromHDRMemory(
-        _In_reads_bytes_(size) const void* pSource, _In_ size_t size,
+        _In_reads_unsigned chars_(size) const void* pSource, _In_ size_t size,
         _Out_ TexMetadata& metadata);
     HRESULT __cdecl GetMetadataFromHDRFile(
         _In_z_ const wchar_t* szFile,
         _Out_ TexMetadata& metadata);
 
     HRESULT __cdecl GetMetadataFromTGAMemory(
-        _In_reads_bytes_(size) const void* pSource, _In_ size_t size,
+        _In_reads_unsigned chars_(size) const void* pSource, _In_ size_t size,
         _Out_ TexMetadata& metadata);
     HRESULT __cdecl GetMetadataFromTGAFile(
         _In_z_ const wchar_t* szFile,
         _Out_ TexMetadata& metadata);
 
     HRESULT __cdecl GetMetadataFromWICMemory(
-        _In_reads_bytes_(size) const void* pSource, _In_ size_t size,
+        _In_reads_unsigned chars_(size) const void* pSource, _In_ size_t size,
         _In_ DWORD flags,
         _Out_ TexMetadata& metadata,
         _In_opt_ std::function<void __cdecl(IWICMetadataQueryReader*)> getMQR = nullptr);
@@ -304,7 +304,7 @@ namespace DirectX
     };
 
     //---------------------------------------------------------------------------------
-    // Memory blob (allocated buffer pointer is always 16-byte aligned)
+    // Memory blob (allocated buffer pointer is always 16-unsigned char aligned)
     class Blob
     {
     public:
@@ -336,7 +336,7 @@ namespace DirectX
 
     // DDS operations
     HRESULT __cdecl LoadFromDDSMemory(
-        _In_reads_bytes_(size) const void* pSource, _In_ size_t size,
+        _In_reads_unsigned chars_(size) const void* pSource, _In_ size_t size,
         _In_ DWORD flags,
         _Out_opt_ TexMetadata* metadata, _Out_ ScratchImage& image);
     HRESULT __cdecl LoadFromDDSFile(
@@ -360,7 +360,7 @@ namespace DirectX
 
     // HDR operations
     HRESULT __cdecl LoadFromHDRMemory(
-        _In_reads_bytes_(size) const void* pSource, _In_ size_t size,
+        _In_reads_unsigned chars_(size) const void* pSource, _In_ size_t size,
         _Out_opt_ TexMetadata* metadata, _Out_ ScratchImage& image);
     HRESULT __cdecl LoadFromHDRFile(
         _In_z_ const wchar_t* szFile,
@@ -371,7 +371,7 @@ namespace DirectX
 
     // TGA operations
     HRESULT __cdecl LoadFromTGAMemory(
-        _In_reads_bytes_(size) const void* pSource, _In_ size_t size,
+        _In_reads_unsigned chars_(size) const void* pSource, _In_ size_t size,
         _Out_opt_ TexMetadata* metadata, _Out_ ScratchImage& image);
     HRESULT __cdecl LoadFromTGAFile(
         _In_z_ const wchar_t* szFile,
@@ -382,7 +382,7 @@ namespace DirectX
 
     // WIC operations
     HRESULT __cdecl LoadFromWICMemory(
-        _In_reads_bytes_(size) const void* pSource, _In_ size_t size,
+        _In_reads_unsigned chars_(size) const void* pSource, _In_ size_t size,
         _In_ DWORD flags,
         _Out_opt_ TexMetadata* metadata, _Out_ ScratchImage& image,
         _In_opt_ std::function<void __cdecl(IWICMetadataQueryReader*)> getMQR = nullptr);

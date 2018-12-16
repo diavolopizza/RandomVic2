@@ -2,27 +2,27 @@
 
 
 
-VictoriaModule::VictoriaModule(Data *data, Terrain terrainGenerator)
+VictoriaModule::VictoriaModule(Data *data, Terrain *terrainGenerator)
 {
 	Parser genericParser;
 	//VIC2 stuff starts here
 	Victoria2Parser::createFolders(data->modPath);
 	//Dump all info into map folder
 	{
-		genericParser.writeDefinition((data->modPath + ("map/definition.csv")).c_str(), terrainGenerator.provinces);
-		genericParser.writeAdjacency((data->modPath + ("map/adjacency.csv")).c_str(), terrainGenerator.provinces);
-		genericParser.writeContinents((data->modPath + ("map/continent.txt")).c_str(), terrainGenerator.continents);
-		genericParser.writeRegions((data->modPath + ("map/region.txt")).c_str(), terrainGenerator.regions);
-		genericParser.writeClimate((data->modPath + ("map/climate.txt")).c_str(), terrainGenerator.provinces);//general
-		genericParser.writeDefaultMapHeader((data->modPath + ("map/default.map")).c_str(), terrainGenerator.provinces);//general
+		genericParser.writeDefinition((data->modPath + ("map/definition.csv")).c_str(), terrainGenerator->provinces);
+		genericParser.writeAdjacency((data->modPath + ("map/adjacency.csv")).c_str(), terrainGenerator->provinces);
+		genericParser.writeContinents((data->modPath + ("map/continent.txt")).c_str(), terrainGenerator->continents);
+		genericParser.writeRegions((data->modPath + ("map/region.txt")).c_str(), terrainGenerator->regions);
+		genericParser.writeClimate((data->modPath + ("map/climate.txt")).c_str(), terrainGenerator->provinces);//general
+		genericParser.writeDefaultMapHeader((data->modPath + ("map/default.map")).c_str(), terrainGenerator->provinces);//general
 
 	}
-	CountryCreation::distributeCountries(terrainGenerator.provinces);
-	Victoria2Parser::writeCountries(data->modPath, terrainGenerator.provinces);
-	Victoria2Parser::writePops(data->modPath, terrainGenerator.provinces);
-	Victoria2Parser::writeClimate(data->modPath, (data->mapSource + ("/climate.txt")).c_str(), terrainGenerator.provinces);
-	Victoria2Parser::writeDefaultMapHeader(data->modPath, (data->mapSource + ("/default.map")).c_str(), terrainGenerator.provinces);
-	Victoria2Parser::writePositions(data->modPath, terrainGenerator.provinces);
+	CountryCreation::distributeCountries(terrainGenerator->provinces);
+	Victoria2Parser::writeCountries(data->modPath, terrainGenerator->provinces);
+	Victoria2Parser::writePops(data->modPath, terrainGenerator->provinces);
+	Victoria2Parser::writeClimate(data->modPath, (data->mapSource + ("/climate.txt")).c_str(), terrainGenerator->provinces);
+	Victoria2Parser::writeDefaultMapHeader(data->modPath, (data->mapSource + ("/default.map")).c_str(), terrainGenerator->provinces);
+	Victoria2Parser::writePositions(data->modPath, terrainGenerator->provinces);
 	Victoria2Parser::writeAdjacencies(data->modPath);
 }
 

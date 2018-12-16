@@ -34,7 +34,6 @@ public:
 	string tradegood;
 
 	unordered_set <Prov*> neighbourProvinces;//contains all the province Ids of the neighbouring provinces
-	unordered_set<uint32_t> neighbourRegions;
 	vector<uint32_t> pixels;
 	unordered_set<uint32_t> positionCandidates;
 	void setNeighbour(Prov*P);

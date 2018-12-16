@@ -25,8 +25,6 @@ class Terrain
 	typedef boost::multi_array<Prov*, 3> array_type;
 	typedef array_type::index index;
 	array_type provinceMap;
-	uint32_t generalBmpWidth;
-	uint32_t generalBmpHeight;
 	//boost::multi_array<Prov*, 3> provhashes();//reads definitions.csv and calculates the hashes of the rgb values, creates province with provnr,r,g,b,saves it in hashmap
 
 public:
@@ -34,11 +32,11 @@ public:
 	vector<Region*> regions;
 	vector<Continent*> continents;
 	vector<River*> rivers;
-	Terrain(ranlux48* random, uint32_t generalBmpWidth, uint32_t generalBmpHeight);
+	Terrain(ranlux48* random);
 	~Terrain();
 
 	//Utilities
-	uint32_t Terrain::GetMinDistanceToProvince(uint32_t position);
+	uint32_t Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height);
 	void determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize);
 	void assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, bool sea);
 	//void assignColour(RGBTRIPLE provinceColour, BYTE* provinceBuffer, uint32_t currentPixel, uint32_t modifier = 1);
@@ -48,9 +46,10 @@ public:
 	void fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached);
 	BYTE* createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer, uint32_t seaLevel);
 	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter, uint32_t seaLevel, bool complexHeight);
-	void evaluateContinents(uint32_t minProvPerContinent);
+	BYTE* humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t seaLevel);
+	void evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height);
 	void evaluateNeighbours(Bitmap * provinceBMP);
-	void evaluateRegions(uint32_t minProvPerRegion);
+	void evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_t height);
 	void evaluateCoasts(Bitmap * provinceBMP);
 	void provPixels(Bitmap * provinceBMP);
 	void prettyContinents(Bitmap * continents);

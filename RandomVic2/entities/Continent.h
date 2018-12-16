@@ -4,6 +4,7 @@
 #include <vector>
 using namespace std;
 class Prov;
+class Region;
 class Continent
 {
 
@@ -11,6 +12,7 @@ public:
 	string name;
 	uint32_t ID;
 	vector<Prov*> provinces;
+	vector<Region*> regions;
 	Continent(string name, uint32_t ID);
 	~Continent();
 	void addProvince(Prov*P);

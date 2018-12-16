@@ -1,7 +1,7 @@
 {
 	"module": 
 	{
-		"genHeight" : 1,
+		"genHeight" : 0,
 		"genSimpleTerrain" : 1,
 		"genComplexTerrain" : 1,
 		"genV2" : 0
@@ -9,10 +9,10 @@
 
 	"map": 
 	{
-		"seed" : 5,
-        "height" : 2160,
-		"width" : 5616,
-		"seaLevel" : 140,
+		"seed" : 10,
+        "height" : 2000,
+		"width" : 2000,
+		"seaLevel" : 94,
 		
 		"rivers" : 
 		{
@@ -24,7 +24,7 @@
 			"fractalOctaves" : 11,
 			"fractalGain" : 0.5,
 			"complexHeight" : 1,
-			"divideThreshold" : 50
+			"divideThreshold" : 10
 		},
 		
 		"provinces" : {

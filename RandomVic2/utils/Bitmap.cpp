@@ -6,7 +6,7 @@ Bitmap::Bitmap()
 {
 }
 
-Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE* colourtable)
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable)
 {
 	//create bitmap file header
 	((unsigned char *)&bitmapfileheader.bfType)[0] = 'B';
@@ -28,7 +28,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE* colourt
 		this->bitmapinfoheader.biWidth = width;
 		this->bitmapinfoheader.biHeight = height;
 		this->bitmapinfoheader.biSizeImage = width * height*(bitCount / 8);
-		this->Buffer = new BYTE[width*height*(bitCount / 8)];
+		this->Buffer = new unsigned char[width*height*(bitCount / 8)];
 		this->bitmapinfoheader.biBitCount = 24;
 		bitmapinfo.bmiHeader = bitmapinfoheader;
 	}
@@ -38,7 +38,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE* colourt
 		this->bitmapinfoheader.biWidth = width;
 		this->bitmapinfoheader.biHeight = height;
 		this->bitmapinfoheader.biSizeImage = width * height*(bitCount / 8);
-		this->Buffer = new BYTE[width*height*(bitCount / 8)];
+		this->Buffer = new unsigned char[width*height*(bitCount / 8)];
 		this->colourtable = colourtable;
 		bitmapinfo.bmiHeader = bitmapinfoheader;
 	}
@@ -71,14 +71,14 @@ void Bitmap::setBitmapSize(uint32_t width, uint32_t height)
 		this->bitmapinfoheader.biWidth = width;
 		this->bitmapinfoheader.biHeight = height;
 		this->bitmapinfoheader.biSizeImage = width * height*(bitmapinfoheader.biBitCount / 8);
-		this->Buffer = new BYTE[width*height*(bitmapinfoheader.biBitCount / 8)];
+		this->Buffer = new unsigned char[width*height*(bitmapinfoheader.biBitCount / 8)];
 	}
 	else {
 		this->bitmapfileheader.bfSize = 54 + 256 * 4 + height * width * (bitmapinfoheader.biBitCount / 8);
 		this->bitmapinfoheader.biWidth = width;
 		this->bitmapinfoheader.biHeight = height;
 		this->bitmapinfoheader.biSizeImage = width * height*(bitmapinfoheader.biBitCount / 8);
-		this->Buffer = new BYTE[width*height*(bitmapinfoheader.biBitCount / 8)];
+		this->Buffer = new unsigned char[width*height*(bitmapinfoheader.biBitCount / 8)];
 	}
 }
 
@@ -87,6 +87,14 @@ uint32_t Bitmap::getValueAt(int32_t index, uint32_t mode)
 	if (index < 0 || (uint32_t)index > this->bitmapinfoheader.biSizeImage)
 		return NULL;
 	return Buffer[index + mode];
+}
+
+int Bitmap::getValueAtPositions(uint32_t heightPos, uint32_t widthPos)
+{
+	int position = (heightPos * bitmapinfoheader.biWidth + widthPos) * (bitmapinfoheader.biBitCount / 8);
+	if (position < 0 || position > bitmapinfoheader.biSizeImage)
+		return -1;
+	return Buffer[position];
 }
 
 void Bitmap::setSingle(uint32_t bufferIndex, uint32_t value)
@@ -114,13 +122,14 @@ void Bitmap::setTriple(uint32_t bufferIndex, uint32_t bufferIndexNew)
 	}
 }
 
-void Bitmap::setBuffer(BYTE * Buffer)
+void Bitmap::setBuffer(unsigned char * Buffer)
 {
 	this->Buffer = Buffer;
 }
 
-BYTE * Bitmap::getBuffer()
+unsigned char * Bitmap::getBuffer()
 {
 	return this->Buffer;
 }
+
 

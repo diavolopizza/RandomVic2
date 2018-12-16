@@ -147,7 +147,6 @@ Bitmap* BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 	}
 
 	CloseHandle(file);// everything successful here: close file and return buffer
-
 	bitmaps.insert(pair<string, Bitmap*>(key, B));
 	return B;
 }
@@ -157,7 +156,7 @@ Bitmap* BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 {
 	Bitmap* B = new Bitmap();
 	long* size = new long(0);
-	B->colourtable = new BYTE[1024];
+	B->colourtable = new unsigned char[1024];
 	DWORD bytesread;	// value to be used in ReadFile funcs
 	HANDLE file = CreateFile(input, GENERIC_READ, FILE_SHARE_READ,
 		NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);	// open file to read from
