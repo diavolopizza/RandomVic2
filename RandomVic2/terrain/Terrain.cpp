@@ -104,7 +104,7 @@ void Terrain::determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels
 	provincePixels.push_back(startingPixel * 3);
 }
 //generates all land provinces
-BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap * provinceBMP)
+BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap * provinceBMP, uint32_t updateThreshold)
 {
 	cout << "Generating landprovinces" << endl;
 	uint32_t bmpWidth = terrainBMP->bitmapinfoheader.biWidth;
@@ -144,7 +144,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	for (uint32_t i = 0; i < numThreads; ++i) {
 		uint32_t from = i * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
 		uint32_t to = (i + 1) * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
-		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), (uint32_t)1, (uint32_t)0, from, to, std::ref(randomValuesCached)));
+		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), (uint32_t)1, (uint32_t)0, from, to, std::ref(randomValuesCached), updateThreshold));
 	}
 	//wait for threads to finish
 	for (auto& t : threads) {
@@ -154,7 +154,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	return provinceBuffer;
 }
 //generates all land provinces
-BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap * provinceBMP)
+BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap * provinceBMP, uint32_t updateThreshold)
 {
 	uint32_t bmpWidth = terrainBMP->bitmapinfoheader.biWidth;
 	uint32_t bmpHeight = terrainBMP->bitmapinfoheader.biHeight;
@@ -178,7 +178,7 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	for (uint32_t i = 0; i < numThreads; ++i) {
 		uint32_t from = i * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
 		uint32_t to = (i + 1) * (provinceBMP->bitmapinfoheader.biSizeImage / numThreads);
-		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), (uint32_t)255, (uint32_t)254, from, to, std::ref(randomValuesCached)));
+		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), (uint32_t)255, (uint32_t)254, from, to, std::ref(randomValuesCached), updateThreshold));
 	}
 	//wait for threads to finish
 	for (auto& t : threads) {
@@ -255,8 +255,9 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 	}
 }
 //fills unassigned pixels in iterations, so provinces grow
-void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached)
+void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached, uint32_t updateThreshold)
 {
+	Visualizer::initializeWindow();
 	cout << "Starting filling of unassigned pixels from pixel " << from << " to pixel " << to << endl;
 	uint32_t bmpWidth = provinceBMP->bitmapinfoheader.biWidth;
 	uint32_t bmpHeight = provinceBMP->bitmapinfoheader.biHeight;
@@ -264,6 +265,7 @@ void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint
 	uint32_t unassignedPixels = bmpSize;
 	uint32_t previousUnassignedPixels = unassignedPixels + 1;
 	uint32_t randomValueIndex = 0;
+	uint32_t imageDrawn = 0;
 	while (unassignedPixels > 0 && unassignedPixels < previousUnassignedPixels)
 	{
 		if (unassignedPixels == 0)
@@ -321,7 +323,12 @@ void Terrain::fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint
 				}
 			}
 		}
+		if (unassignedPixels < imageDrawn - updateThreshold * 50) {
+			Visualizer::displayImage(provinceBMP);
+			imageDrawn = unassignedPixels;
+		}
 	}
+	cvDestroyAllWindows();
 }
 //creates continents from the random landmasses and assigns
 //provinces to those continents
@@ -482,29 +489,42 @@ void Terrain::evaluateCoasts(Bitmap * provinceBMP)
 	}
 }
 //creates the terrain, factoring in heightmap and some climate calculations
-BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer, uint32_t seaLevel)
+BYTE* Terrain::createTerrain(Bitmap * terrainBMP, BYTE* heightMapBuffer, uint32_t &seaLevel, double landPercentage)
 {
-	cout << "Creating basic terrain from heightmap" << endl;
-	BYTE* terrainBuffer = new BYTE[terrainBMP->bitmapinfoheader.biSizeImage];
-	uint32_t width = terrainBMP->bitmapinfoheader.biWidth;
-	uint32_t height = terrainBMP->bitmapinfoheader.biHeight;
-	for (uint32_t x = 0; x < height; x++)
-	{
-		for (uint32_t y = 0; y < width; y++)
+	double tempLandPercentage = 0;
+	uint32_t landPixels = 0;
+	BYTE* terrainBuffer = terrainBMP->getBuffer();// new BYTE[terrainBMP->bitmapinfoheader.biSizeImage];
+	while (tempLandPercentage < landPercentage) {
+		seaLevel--;
+		cout << "Creating basic terrain from heightmap" << endl;
+		uint32_t width = terrainBMP->bitmapinfoheader.biWidth;
+		uint32_t height = terrainBMP->bitmapinfoheader.biHeight;
+		for (uint32_t x = 0; x < height; x++)
 		{
-			if (heightMapBuffer[(x * width + y) * 3] > seaLevel) {
-				terrainBuffer[(x * width + y)] = 13;
-			}
-			else {
-				terrainBuffer[(x * width + y)] = 254;
+			for (uint32_t y = 0; y < width; y++)
+			{
+				if (heightMapBuffer[(x * width + y) * 3] > seaLevel) {
+					terrainBuffer[(x * width + y)] = 13;
+					landPixels++;
+				}
+				else {
+					terrainBuffer[(x * width + y)] = 254;
+				}
 			}
 		}
+		tempLandPercentage = (double)landPixels / (double)(terrainBMP->bitmapinfoheader.biSizeImage);
+		cout << "Landpercentage: " << tempLandPercentage << endl;
+		landPixels = 0;
+
 	}
 	return terrainBuffer;
 }
 //creates the heightmap with a given seed
-BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t divideThreshold, uint32_t seaLevel, bool complexHeight)
+BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t divideThreshold, uint32_t seaLevel, bool complexHeight, uint32_t updateThreshold)
 {
+	Visualizer::initializeWindow();
+	char redo;
+	/*do {*/
 	cout << "Creating Heightmap" << endl;
 	FastNoise myNoise; // Create a FastNoise object
 	myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
@@ -557,8 +577,12 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 			RGBBMP->setSingle((x * width + y) * 3 + 1, completeNoise);
 			RGBBMP->setSingle((x * width + y) * 3 + 2, completeNoise);
 		}
+		if (x % updateThreshold == 0)
+			Visualizer::displayImage(RGBBMP);
 	}
-
+	/*'n' >> redo;*/
+//} /*while (redo == 'y');*/
+	cvDestroyAllWindows();
 	/*uint32_t maxHeight = 256;
 	double maxFactor = pow(maxHeight - seaLevel, 2);
 	for (int i = 0; i < RGBBMP->bitmapinfoheader.biSizeImage; i++)
@@ -575,9 +599,10 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 	return RGBBMP->getBuffer();
 }
 
-double windShadow(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t widthPos, int currentDirection, uint32_t seaLevel, double windIntensity) {
+double calcMountainShadowAridity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t widthPos, int currentDirection, uint32_t seaLevel, double windIntensity) {
 	uint32_t width = heightmapBMP->bitmapinfoheader.biWidth;
-	uint32_t maxEffectDistance = width / 50;
+	//in regions with low windintensity, this effect has a lower range
+	uint32_t maxEffectDistance = ((double)width / 100.0) * windIntensity;
 	uint32_t mountainPixelsInRange = 0;
 	for (int i = 0; i < maxEffectDistance; i++)
 	{
@@ -589,22 +614,17 @@ double windShadow(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t widthPos, 
 	return windIntensity * ((double)mountainPixelsInRange / (double)maxEffectDistance);
 }
 
-double calcCoastalEffect(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t widthPos, int currentDirection, uint32_t seaLevel, double windIntensity, uint32_t width, uint32_t height) {
+double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t widthPos, int currentDirection, uint32_t seaLevel, double windIntensity, uint32_t width, uint32_t height) {
+	//the more continental, the less of an influence the distance to a coast has
+	uint32_t continentality = 0;
 	//East/west directions are more important that north/south, as important winds travel east/west more often
-	uint32_t maxEffectDistance = 50;
-	uint32_t windFactor = 10;
+	uint32_t maxEffectDistance = width / 200;
+	//in the opposite direction of the major global winds, the distance to look at is much larger
+	uint32_t windFactor = 20 * windIntensity;
 	uint32_t coastDistance = maxEffectDistance;
-	uint32_t windDistance = maxEffectDistance;
+	uint32_t windDistance = maxEffectDistance * windFactor;
 
-	//vector<uint32_t> pixInRange = 
-	//uint32_t pixInRange = checkRange(maxEffectDistance, heightPos, widthPos, heightmapBMP, width, height, seaLevel);
-	//return (double)pixInRange / (maxEffectDistance*maxEffectDistance / 1.0);
-	//for (auto i : pixInRange)
-	//{
-	//	if (i < seaLevel)
-	//		return 1;
-	//}
-
+	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
 	for (int i = 0; i < maxEffectDistance * windFactor; i++)
 	{
 		int value = heightmapBMP->getValueAtPositions(heightPos, widthPos + (i * currentDirection));
@@ -613,7 +633,26 @@ double calcCoastalEffect(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t wid
 			if (i < windDistance)
 				windDistance = i;
 		}
+
 	}
+	for (int x = 0; x < maxEffectDistance * windFactor; x++) {
+		int value = heightmapBMP->getValueAtPositions(heightPos, widthPos + ((windDistance + x) * currentDirection));
+		if (value != -1 && value > seaLevel) {
+			continentality++;
+		}
+	}
+	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
+	for (int i = 0; i < maxEffectDistance; i++)
+	{
+		int value = heightmapBMP->getValueAtPositions(heightPos, widthPos + (i * currentDirection));
+		if (value != -1 && value < seaLevel)
+		{
+			if (i < coastDistance)
+				coastDistance = i;
+		}
+
+	}
+	//the direction the winds are going(e.g. east in case of west winds)
 	for (int i = 0; i < maxEffectDistance; i++)
 	{
 		int value = heightmapBMP->getValueAtPositions(heightPos, widthPos + (i * currentDirection * -1));
@@ -623,37 +662,44 @@ double calcCoastalEffect(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t wid
 				coastDistance = i;
 		}
 	}
-	//for (int i = 0; i < maxEffectDistance; i++)
-	//{
-	//	int value = heightmapBMP->getValueAtPositions(heightPos + i, widthPos);
-	//	if (value != -1 && value < seaLevel)
-	//	{
-	//		if (i < coastDistance)
-	//			coastDistance = i;
-	//	}
-	//}
-	//for (int i = 0; i < maxEffectDistance; i++)
-	//{
-	//	int value = heightmapBMP->getValueAtPositions(heightPos - i, widthPos);
-	//	if (value != -1 && value < seaLevel)
-	//	{
-	//		if (i < coastDistance)
-	//			coastDistance = i;
-	//	}
-	//}
-	//find the smallest factor:
-	if ((double)windDistance / (double)windFactor < coastDistance)
+	//north
+	for (int i = 0; i < maxEffectDistance; i++)
 	{
-		return 1 - ((((double)windDistance/(double)windFactor) / (double)maxEffectDistance)) * windIntensity;
+		int value = heightmapBMP->getValueAtPositions(heightPos + i, widthPos);
+		if (value != -1 && value < seaLevel)
+		{
+			if (i < coastDistance)
+				coastDistance = i;
+		}
 	}
-	else {
-		return 1 - (((double)coastDistance / (double)maxEffectDistance)) * windIntensity;
+	//south
+	for (int i = 0; i < maxEffectDistance; i++)
+	{
+		int value = heightmapBMP->getValueAtPositions(heightPos - i, widthPos);
+		if (value != -1 && value < seaLevel)
+		{
+			if (i < coastDistance)
+				coastDistance = i;
+		}
 	}
+	//the more is returned, the more humid the pixel
+	//find the smallest factor:
+		//higher means less humid
+	double continentalityFactor = 1 * (((double)continentality / ((double)maxEffectDistance* (double)windFactor)));
+	//higher means less humid
+	double windDistanceFactor = (((double)windDistance / ((double)maxEffectDistance * (double)windFactor)));// *windIntensity;
+	//higher means less humid
+	double coastDistanceFactor = (double)coastDistance / (double)maxEffectDistance;
+	if (windDistanceFactor + continentalityFactor > coastDistanceFactor)
+		return 1 - coastDistanceFactor;
+	else return 1 - (windDistanceFactor + continentalityFactor);
+
 }
 
-BYTE * Terrain::humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t seaLevel)
+BYTE * Terrain::humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t seaLevel, uint32_t updateThreshold)
 {
-	BYTE* humidityBuffer = new BYTE[heightmapBMP->bitmapinfoheader.biSizeImage];
+	Visualizer::initializeWindow();
+	cout << "Creating humidity map" << endl;
 	double polarEasterlies = 0.3;
 	double westerlies = 0.7;
 	double tradeWinds = 1;
@@ -662,7 +708,6 @@ BYTE * Terrain::humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t
 
 	for (uint32_t x = 0; x < height; x++)
 	{
-		cout << x << endl;
 		int windDirection = 1;
 		//the height of the image scaled between 0 and 2
 		double heightf = (double)x / ((double)height / 2);
@@ -677,12 +722,12 @@ BYTE * Terrain::humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t
 			else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - westerlies), (double)(2 - polarEasterlies))) {
 				double a = (heightf - (1.99 - westerlies));
 				double b = (2 - polarEasterlies) - (1.99 - westerlies);
-				windIntensity = 0.4 + (0.6 * (a / b));
+				windIntensity = 0.4 + (0.6 * ((a / b)));
 			}
 		}
 		else if (heightf == boost::algorithm::clamp(heightf, westerlies, tradeWinds) || heightf == boost::algorithm::clamp(heightf, (double)(2 - tradeWinds), (double)(2 - westerlies)))
 		{   //... in tradewinds range
-			windDirection = -1;
+			windDirection = 1;
 			if (heightf == boost::algorithm::clamp(heightf, westerlies, tradeWinds))
 				windIntensity = 0.4 + (0.6 * (((heightf - westerlies) / (tradeWinds - westerlies))));
 			else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - tradeWinds), (double)(2 - westerlies))) {
@@ -693,7 +738,7 @@ BYTE * Terrain::humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t
 		}
 		else if (heightf == boost::algorithm::clamp(heightf, 0, polarEasterlies) || heightf == boost::algorithm::clamp(heightf, (double)(2 - polarEasterlies), (double)(2)))
 		{   // ... in polar easterlies range
-			windDirection = -1;
+			windDirection = 1;
 			if (heightf == boost::algorithm::clamp(heightf, 0, polarEasterlies))
 				windIntensity = 0.4 + (0.6 * (((heightf) / (polarEasterlies))));
 			else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - polarEasterlies), (double)(2))) {
@@ -706,43 +751,82 @@ BYTE * Terrain::humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t
 		{
 			if (heightmapBMP->getValueAt((x * width + y) * 3) > seaLevel)
 			{
-				double shadowEffect = windShadow(heightmapBMP, x, y, windDirection, seaLevel, windIntensity);
-				double coastalEffect = calcCoastalEffect(heightmapBMP, x, y, windDirection, seaLevel, windIntensity, width, height);
-				double heatEffect = 0;
+				//the higher, the drier
+				double mountainShadowAridity = calcMountainShadowAridity(heightmapBMP, x, y, windDirection, seaLevel, windIntensity);
+				//the higher, the damper
+				double coastalHumidity = calcCoastalHumidity(heightmapBMP, x, y, windDirection, seaLevel, windIntensity, width, height);
+				coastalHumidity = boost::algorithm::clamp(coastalHumidity, 0, 1);
+				//the higher, the drier
+				double heatAridity = 0;
 
 				if (heightf < 1)
 				{
 					double dryArea = westerlies + ((tradeWinds - westerlies) / 4);
-					heatEffect = 1 - abs(heightf - dryArea);
+					heatAridity = 0.5 - abs(heightf - dryArea);
+					heatAridity *= 2;
+					heatAridity = boost::algorithm::clamp(heatAridity, 0, 1);
+					if (abs(heightf - tradeWinds) < 0.3)
+					{
+						heatAridity -= 0.3 - abs(heightf - tradeWinds);
+					}
 				}
 				else {
 					double dryArea = 2 - (westerlies + ((tradeWinds - westerlies) / 4));
-					heatEffect = 1 - abs(heightf - dryArea);
+					heatAridity = 0.5 - abs(heightf - dryArea);
+					heatAridity *= 2;
+					heatAridity = boost::algorithm::clamp(heatAridity, 0, 1);
+					if (abs(heightf - tradeWinds) < 0.3)
+					{
+						heatAridity -= 0.3 - abs(heightf - tradeWinds);
+					}
 				}
 
-
-				double totalEffect = shadowEffect / 2 + heatEffect / 1.75 - (0.5 * (double)coastalEffect);
-				//cannot get drier than super dry
-				if (totalEffect > 1)
-					totalEffect = 1;
-				else if (totalEffect < 0)
-				{
-					totalEffect = 0;
-				}
-
+				double totalAridity = 0;
+				//incorporate temperature
+				totalAridity += heatAridity;
+				//incorporate the fact that precipitation falls on mountains and is not carried inwards
+				totalAridity += mountainShadowAridity / 2;
+				totalAridity = totalAridity * 0.2 + 0.8 * (totalAridity * (1 - coastalHumidity));
+				//cannot get drier than super dry or less dry than humid
+				totalAridity = boost::algorithm::clamp(totalAridity, 0, 1);
 
 				{
-					RGBTRIPLE colour = { 255.0 * (1.0 - totalEffect),totalEffect * 255,totalEffect * 255 };
+					RGBTRIPLE colour = { 255.0 * (1.0 - totalAridity),totalAridity * 255,totalAridity * 255 };
 					humidityBMP->setTriple(colour, (x * width + y) * 3);
 				}
 			}
 		}
+		if (x % updateThreshold == 0)
+			Visualizer::displayImage(humidityBMP);
 	}
+	Bitmap tempBMP(width, height, 24, nullptr);
+	for (int i = 0; i < width*height * 3; i++)
+	{
+		tempBMP.getBuffer()[i] = humidityBMP->getBuffer()[i];
+	}
+	uint32_t smoothDistance = 2;
+	for (int i = width * 3 * smoothDistance + smoothDistance; i < humidityBMP->bitmapinfoheader.biSizeImage - width * 3 * smoothDistance - smoothDistance; i += 3)
+	{
+		RGBTRIPLE north = humidityBMP->getTriple(i - width * 3 * smoothDistance);
+		RGBTRIPLE northwest = humidityBMP->getTriple(i - width * 3 * smoothDistance - smoothDistance * 3);
+		RGBTRIPLE northeast = humidityBMP->getTriple(i - width * 3 * smoothDistance + smoothDistance * 3);
+		RGBTRIPLE south = humidityBMP->getTriple(i + width * 3 * smoothDistance);
+		RGBTRIPLE southwest = humidityBMP->getTriple(i + width * 3 * smoothDistance - smoothDistance * 3);
+		RGBTRIPLE southeast = humidityBMP->getTriple(i + width * 3 * smoothDistance + smoothDistance * 3);
+		RGBTRIPLE west = humidityBMP->getTriple(i + smoothDistance * 3);
+		RGBTRIPLE east = humidityBMP->getTriple(i - smoothDistance * 3);
+		RGBTRIPLE colour;
+		colour.rgbtBlue = (double)((int)north.rgbtBlue + (int)northwest.rgbtBlue + (int)northeast.rgbtBlue + (int)southwest.rgbtBlue + (int)southeast.rgbtBlue + (int)south.rgbtBlue + (int)west.rgbtBlue + (int)east.rgbtBlue) / 8;
+		colour.rgbtGreen = (double)((int)north.rgbtGreen + (int)northwest.rgbtGreen + (int)northeast.rgbtGreen + (int)southwest.rgbtGreen + (int)southeast.rgbtGreen + (int)south.rgbtGreen + (int)west.rgbtGreen + (int)east.rgbtGreen) / 8;
+		colour.rgbtRed = (double)((int)north.rgbtRed + (int)northwest.rgbtRed + (int)northeast.rgbtRed + (int)southwest.rgbtRed + (int)southeast.rgbtRed + (int)south.rgbtRed + (int)west.rgbtRed + (int)east.rgbtRed) / 8;
 
+		humidityBMP->setTriple(colour, i);
+	}
 	return humidityBMP->getBuffer();
 }
 //assigns all unassigned pixels to the nearest province
 void Terrain::assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, bool sea) {
+	cout << "Assigning remaining pixels provinces" << endl;
 	//Assign remaining pixels
 	uint32_t bmpWidth = provinceBMP->bitmapinfoheader.biWidth;
 	uint32_t width = provinceBMP->bitmapinfoheader.biWidth;
@@ -881,6 +965,7 @@ void Terrain::provPixels(Bitmap * provinceBMP)
 //writes the continents to a bitmap, non-unique colours
 void Terrain::prettyContinents(Bitmap * continentBMP)
 {
+	cout << "Creating continent" << endl;
 	delete continentBMP->getBuffer();
 	continentBMP->setBuffer(new BYTE[continentBMP->bitmapinfoheader.biSizeImage]);
 	for (auto continent : continents) {
@@ -902,6 +987,7 @@ void Terrain::prettyContinents(Bitmap * continentBMP)
 //writes the regions to a bitmap, non-unique colours
 void Terrain::prettyRegions(Bitmap * regionBMP)
 {
+	cout << "Creating regions" << endl;
 	regionBMP->setBuffer(new BYTE[regionBMP->bitmapinfoheader.biSizeImage]);
 	for (auto region : regions) {
 		RGBTRIPLE regionColour;
@@ -918,8 +1004,9 @@ void Terrain::prettyRegions(Bitmap * regionBMP)
 	}
 }
 //evaluates province size to define wether it should be deleted in case it is too small
-void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize)
+void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize, uint32_t updateThreshold)
 {
+	cout << "Beautifying provinces" << endl;
 	for (auto province : provinces)
 	{
 		if (province->pixels.size() < minProvSize && !province->sea) {
@@ -946,13 +1033,15 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize)
 	for (uint32_t i = 0; i < provinceBMP->bitmapinfoheader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
-	fill(provinceBMP, 1, 0, 0, provinceBMP->bitmapinfoheader.biSizeImage, std::ref(randomValuesCached));
+	fill(provinceBMP, 1, 0, 0, provinceBMP->bitmapinfoheader.biSizeImage, std::ref(randomValuesCached), updateThreshold);
 	assignRemainingPixels(provinceBMP, provinceBMP->getBuffer(), false);
 	provPixels(provinceBMP);
 }
 //creates terrain around simplistic climate model
-void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t seaLevel)
+void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t seaLevel, uint32_t updateThreshold)
 {
+	cout << "Creating complex terrain" << endl;
+	Visualizer::initializeWindow();
 	//TODO CONFIG FOR ALL PARAMS
 	uint32_t coastalDistanceInfluence = 30;
 	uint32_t mountainStart = seaLevel + 40;
@@ -979,9 +1068,11 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t se
 	uint32_t desert = 48;
 	uint32_t desertRange = 4;
 	uint32_t coastal_desert = 52;
+	uint32_t displayCounter = 0;
 
 	for (auto prov : provinces)
 	{
+		displayCounter++;
 		if (prov->sea)
 			continue;
 		vector<double> likelyHoods;
@@ -1182,11 +1273,16 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t se
 				else { terrainBMP->setSingle(pixel / 3, 31); }
 			}
 		}
+		if (displayCounter % updateThreshold == 0) {
+			Visualizer::displayImage(terrainBMP->get24BitRepresentation());
+		}
 	}
+	destroyAllWindows();
 }
 //creates rivers 
 void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t riverAmount, uint32_t elevationTolerance, uint32_t seaLevel)
 {
+	cout << "Creating rivers" << endl;
 	std::unordered_set<uint32_t> riverPixels;
 	uint32_t maxRiverColour = 10;
 	//TODO PARAMETRISATION

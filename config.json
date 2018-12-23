@@ -1,18 +1,20 @@
 {
 	"module": 
 	{
-		"genHeight" : 0,
+		"genHeight" : 1,
 		"genSimpleTerrain" : 1,
 		"genComplexTerrain" : 1,
-		"genV2" : 0
+		"genV2" : 0,
+		"opencvVisualisation" : 1
 	},
 
 	"map": 
 	{
 		"seed" : 10,
-        "height" : 2000,
-		"width" : 2000,
-		"seaLevel" : 94,
+        "height" : 2160,
+		"width" : 3840,
+		"seaLevel" : 140,
+		"landMassPercentage" : 20,
 		
 		"rivers" : 
 		{
@@ -26,13 +28,16 @@
 			"complexHeight" : 1,
 			"divideThreshold" : 10
 		},
-		
 		"provinces" : {
-			"landProvinces" : 2000,
+			"landProvinces" : 4000,
 			"minProvPerContinent" : 100,
 			"minProvPerRegion" : 5,
-			"seaProvinces" : 3000,
+			"seaProvinces" : 4000,
 			"minProvSize" : 100
+		},
+		"humidity" : {
+			"coastalEffectRange" : -1,
+			"windEffectRange" : -1
 		}
 		
     },
@@ -41,5 +46,10 @@
 	{
         "source": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Victoria 2\\",
         "destination": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Victoria 2\\mod\\myMod\\"
-    }
+    },
+	
+	"visualisation":
+	{
+		"updateThreshold" : 200
+	}
 }

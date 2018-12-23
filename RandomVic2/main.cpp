@@ -5,6 +5,7 @@
 #include "victoria2/VictoriaModule.h"
 #include <memory.h>
 #include <random>
+#include "utils/Visualizer.h"
 /*
 Step 1: Generate Terrain/continent shape/rivers
 	-continents(check)
@@ -57,9 +58,10 @@ int main() {
 	Bitmap *heightMapBMP = new Bitmap(data->width, data->height, 24);
 	string heightmapSourceString = data->debugMapFolder + ("heightmap.bmp");
 	const char* heightmapsource = heightmapSourceString.c_str();
+	heightMapBMP->path = heightmapsource;
 	//generate noise map
 	if (data->genHeight) {
-		heightMapBMP->setBuffer(terrainGenerator->heightMap(heightMapBMP, data->seed, data->fractalFrequency, data->fractalOctaves, data->fractalGain, data->divideThreshold, data->seaLevel, data->complexHeight));
+		heightMapBMP->setBuffer(terrainGenerator->heightMap(heightMapBMP, data->seed, data->fractalFrequency, data->fractalOctaves, data->fractalGain, data->divideThreshold, data->seaLevel, data->complexHeight, data->updateThreshold));
 
 		BMPHandler::getInstance().SaveBMPToFile(heightMapBMP, (data->debugMapFolder + ("heightmap.bmp")).c_str());
 	}
@@ -87,11 +89,9 @@ int main() {
 	riverBMP->setBitmapSize(data->width, data->height);
 
 
-	humidityBMP.setBuffer(terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, data->seaLevel));
-	BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (data->debugMapFolder + ("humidity.bmp")).c_str());
 	if (data->genSimpleTerrain) {
 		//create simplistic terrain shape from noise map
-		terrainBMP->setBuffer(terrainGenerator->createTerrain(terrainBMP, heightMapBMP->getBuffer(), data->seaLevel));
+		terrainBMP->setBuffer(terrainGenerator->createTerrain(terrainBMP, heightMapBMP->getBuffer(), data->seaLevel, (double)data->landMassPercentage/100.0));
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (data->debugMapFolder + ("simpleterrain.bmp")).c_str());
 	}
 	else {
@@ -99,8 +99,8 @@ int main() {
 	}
 	//create provinces
 	{
-		provincesBMP.setBuffer(terrainGenerator->landProvinces(data->landProv, terrainBMP, &provincesBMP));
-		provincesBMP.setBuffer(terrainGenerator->seaProvinces(data->seaProv, data->landProv, terrainBMP, &provincesBMP));
+		provincesBMP.setBuffer(terrainGenerator->landProvinces(data->landProv, terrainBMP, &provincesBMP, data->updateThreshold));
+		provincesBMP.setBuffer(terrainGenerator->seaProvinces(data->seaProv, data->landProv, terrainBMP, &provincesBMP, data->updateThreshold));
 		terrainGenerator->createProvinceMap();
 		terrainGenerator->provPixels(&provincesBMP);
 		//terrainGenerator->prettyProvinces(&provincesBMP, data->minProvSize);
@@ -126,8 +126,10 @@ int main() {
 		genericParser.writeContinents((data->debugMapFolder + ("continent.txt")).c_str(), terrainGenerator->continents);
 	}
 	if (data->genComplexTerrain) {
+		terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, data->seaLevel, data->updateThreshold);
+		BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (data->debugMapFolder + ("humidity.bmp")).c_str());
 		//generate terrain and rivers according to simplistic climate model
-		terrainGenerator->prettyTerrain(terrainBMP, heightMapBMP, data->seaLevel);
+		terrainGenerator->prettyTerrain(terrainBMP, heightMapBMP, data->seaLevel, data->updateThreshold);
 		//generate rivers according to terrain and climate
 		terrainGenerator->prettyRivers(riverBMP, heightMapBMP, data->numRivers, data->elevationTolerance, data->seaLevel);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (data->debugMapFolder + ("terrain.bmp")).c_str());

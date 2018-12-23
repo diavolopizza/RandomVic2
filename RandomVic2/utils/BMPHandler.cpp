@@ -16,6 +16,8 @@ Bitmap* BMPHandler::findBitmapByKey(string key) {
 }
 
 
+
+
 //BASIC BITMAP OPERATIONS START
 bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 {

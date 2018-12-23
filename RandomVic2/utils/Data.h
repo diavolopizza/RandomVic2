@@ -20,7 +20,7 @@ public:
 
 
 	//program flow params
-	bool genHeight, genSimpleTerrain, genComplexTerrain, genV2, complexHeight;
+	bool genHeight, genSimpleTerrain, genComplexTerrain, genV2, complexHeight, opencvVisualisation;
 
 
 	//Map params
@@ -28,6 +28,7 @@ public:
 	uint32_t height = 0;
 	uint32_t seed = 0;
 	uint32_t seaLevel = 0;
+	uint32_t landMassPercentage = 0;
 	uint32_t seaProv = 0;
 	uint32_t landProv = 0;
 	uint32_t minProvPerContinent = 0;
@@ -40,10 +41,19 @@ public:
 	float fractalGain = 0;
 	uint32_t divideThreshold = 0;//TODO
 
+	//land mass
+
+
+	//humidity
+
+
 
 	//rivers
 	uint32_t elevationTolerance = 0;
 	uint32_t numRivers = 0;
+
+	//visualisation with openCV
+	uint32_t updateThreshold = 0;
 
 	ranlux48* random;
 	int maxNumOfCountries = 113;

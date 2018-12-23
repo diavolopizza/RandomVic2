@@ -7,7 +7,7 @@ class Bitmap
 {
 private:
 	BYTE * Buffer;
-
+	Bitmap * bit24Representation = nullptr;
 
 
 public:
@@ -15,11 +15,13 @@ public:
 	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable = nullptr);
 	~Bitmap();
 
+	string path;
 	BITMAPINFO bitmapinfo;
 	BITMAPFILEHEADER bitmapfileheader;
 	BITMAPINFOHEADER bitmapinfoheader;
 
 	unsigned char* colourtable;
+	RGBTRIPLE getColourTableEntry(uint32_t index);
 	RGBTRIPLE getTriple(uint32_t bufferIndex);
 	void setBitmapSize(uint32_t width, uint32_t height);
 	uint32_t getValueAt(int32_t index, uint32_t mode = 0);
@@ -29,5 +31,6 @@ public:
 	void setTriple(uint32_t bufferIndex, uint32_t bufferIndexNew);
 	void setBuffer(unsigned char* Buffer);
 	BYTE* getBuffer();
+	Bitmap * get24BitRepresentation();
 };
 

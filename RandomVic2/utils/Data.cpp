@@ -26,6 +26,7 @@ void Data::getConfig(string configPath) {
 	genSimpleTerrain = root.get<bool>("module.genSimpleTerrain");
 	genComplexTerrain = root.get<bool>("module.genComplexTerrain");
 	genV2 = root.get<bool>("module.genV2");
+	opencvVisualisation = root.get<bool>("module.opencvVisualisation");
 
 
 	//PATHS
@@ -40,6 +41,7 @@ void Data::getConfig(string configPath) {
 	height = root.get<int>("map.height");
 	seed = root.get<int>("map.seed");
 	seaLevel = root.get<int>("map.seaLevel");
+	landMassPercentage = root.get<int>("map.landMassPercentage");
 	{ //PROVINCE PARAMS
 		landProv = root.get<int>("map.provinces.landProvinces");
 		seaProv = root.get<int>("map.provinces.seaProvinces");
@@ -51,6 +53,9 @@ void Data::getConfig(string configPath) {
 	{ //RIVERS
 		numRivers = root.get<int>("map.rivers.numRivers");
 		elevationTolerance = root.get<int>("map.rivers.elevationTolerance");
+	}
+	{ //Visualisation
+		updateThreshold = root.get<int>("visualisation.updateThreshold");
 	}
 
 	{ //HEIGHTMAP
