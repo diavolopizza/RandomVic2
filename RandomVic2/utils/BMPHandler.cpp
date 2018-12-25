@@ -30,19 +30,19 @@ bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 		return false;
 	}
 	unsigned long bwritten;
-	if (WriteFile(file, &B->bitmapfileheader, sizeof(BITMAPFILEHEADER), &bwritten, NULL) == false)
+	if (WriteFile(file, &B->bFileHeader, sizeof(BITMAPFILEHEADER), &bwritten, NULL) == false)
 	{
 		CloseHandle(file);
 		return false;
 	}
-	if (WriteFile(file, &B->bitmapinfoheader, sizeof(BITMAPINFOHEADER), &bwritten, NULL) == false)
+	if (WriteFile(file, &B->bInfoHeader, sizeof(BITMAPINFOHEADER), &bwritten, NULL) == false)
 	{
 		CloseHandle(file);
 		return false;
 	}
-	if (B->bitmapinfoheader.biBitCount == 24)
+	if (B->bInfoHeader.biBitCount == 24)
 	{
-		paddedsize = B->bitmapinfoheader.biSizeImage;
+		paddedsize = B->bInfoHeader.biSizeImage;
 		if (WriteFile(file, B->getBuffer(), (paddedsize), &bwritten, NULL) == false)
 		{
 			CloseHandle(file);
@@ -50,7 +50,7 @@ bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 		}
 	}
 	else {
-		paddedsize = (B->bitmapinfoheader.biWidth)*(B->bitmapinfoheader.biHeight);
+		paddedsize = (B->bInfoHeader.biWidth)*(B->bInfoHeader.biHeight);
 		if (WriteFile(file, B->colourtable, 1024, &bwritten, NULL) == false)
 		{
 			CloseHandle(file);
@@ -111,31 +111,31 @@ Bitmap* BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 	if (NULL == file)
 		return NULL; // coudn't open file
 	// read file header
-	if (ReadFile(file, &B->bitmapfileheader, sizeof(BITMAPFILEHEADER), &bytesread, NULL) == false)
+	if (ReadFile(file, &B->bFileHeader, sizeof(BITMAPFILEHEADER), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
 		return NULL;
 	}
 	//read bitmap info
-	if (ReadFile(file, &B->bitmapinfoheader, sizeof(BITMAPINFOHEADER), &bytesread, NULL) == false)
+	if (ReadFile(file, &B->bInfoHeader, sizeof(BITMAPINFOHEADER), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
 		return NULL;
 	}
-	if (ReadFile(file, &B->bitmapinfo, sizeof(BITMAPINFO), &bytesread, NULL) == false)
+	if (ReadFile(file, &B->bInfo, sizeof(BITMAPINFO), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
 		return NULL;
 	}
 
 	// check if bmp is uncompressed
-	if (B->bitmapinfoheader.biCompression != BI_RGB)
+	if (B->bInfoHeader.biCompression != BI_RGB)
 	{
 		CloseHandle(file);
 		return NULL;
 	}
 	int offset = 54;
-	*size = B->bitmapinfoheader.biSizeImage;	// create buffer to hold the data,-Offsetbits
+	*size = B->bInfoHeader.biSizeImage;	// create buffer to hold the data,-Offsetbits
 
 	B->setBuffer(new BYTE[*size]);
 	paddedsize = *size;
@@ -166,31 +166,31 @@ Bitmap* BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 		return NULL; // coudn't open file
 					 // read file header
 
-	if (ReadFile(file, &B->bitmapfileheader, sizeof(BITMAPFILEHEADER), &bytesread, NULL) == false)
+	if (ReadFile(file, &B->bFileHeader, sizeof(BITMAPFILEHEADER), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
 		return NULL;
 	}
 	//read bitmap info
-	if (ReadFile(file, &B->bitmapinfoheader, sizeof(BITMAPINFOHEADER), &bytesread, NULL) == false)
+	if (ReadFile(file, &B->bInfoHeader, sizeof(BITMAPINFOHEADER), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
 		return NULL;
 	}
-	if (ReadFile(file, &B->bitmapinfo, sizeof(BITMAPINFO), &bytesread, NULL) == false)
+	if (ReadFile(file, &B->bInfo, sizeof(BITMAPINFO), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
 		return NULL;
 	}
 
 	// check if bmp is uncompressed
-	if (B->bitmapinfoheader.biCompression != BI_RGB)
+	if (B->bInfoHeader.biCompression != BI_RGB)
 	{
 		CloseHandle(file);
 		return NULL;
 	}
 	int offset = 54;
-	*size = B->bitmapfileheader.bfSize - 1078;	// create buffer to hold the data,-headerbyte-colourablebyte
+	*size = B->bFileHeader.bfSize - 1078;	// create buffer to hold the data,-headerbyte-colourablebyte
 	B->setBuffer(new BYTE[*size]);
 
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //start reading at beginning of colourtable

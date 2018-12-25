@@ -69,7 +69,10 @@ void Data::getConfig(string configPath) {
 	this->random = new ranlux48();
 	if (seed)
 		random->seed(seed);
-	else
-		random->seed(time(NULL));
+	else {
+		seed = time(NULL);
+	}
+	random->seed(seed);
+	cout << "Seeding with " << seed << endl;
 
 }

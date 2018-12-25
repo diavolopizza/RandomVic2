@@ -9,46 +9,46 @@ Bitmap::Bitmap()
 Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable)
 {
 	//create bitmap file header
-	((unsigned char *)&bitmapfileheader.bfType)[0] = 'B';
-	((unsigned char *)&bitmapfileheader.bfType)[1] = 'M';
-	bitmapfileheader.bfReserved1 = 0;
-	bitmapfileheader.bfReserved2 = 0;
+	((unsigned char *)&bFileHeader.bfType)[0] = 'B';
+	((unsigned char *)&bFileHeader.bfType)[1] = 'M';
+	bFileHeader.bfReserved1 = 0;
+	bFileHeader.bfReserved2 = 0;
 
 	//create bitmap information header
-	bitmapinfoheader.biSize = 40;
-	bitmapinfoheader.biPlanes = 1;
-	bitmapinfoheader.biCompression = 0;
-	bitmapinfoheader.biXPelsPerMeter = 3800;
-	bitmapinfoheader.biYPelsPerMeter = 3800;
+	bInfoHeader.biSize = 40;
+	bInfoHeader.biPlanes = 1;
+	bInfoHeader.biCompression = 0;
+	bInfoHeader.biXPelsPerMeter = 3800;
+	bInfoHeader.biYPelsPerMeter = 3800;
 
 	if (bitCount == 24) {
 
-		bitmapfileheader.bfOffBits = 54;
-		this->bitmapfileheader.bfSize = 54 + height * width * (bitCount / 8);
-		this->bitmapinfoheader.biWidth = width;
-		this->bitmapinfoheader.biHeight = height;
-		this->bitmapinfoheader.biSizeImage = width * height*(bitCount / 8);
+		bFileHeader.bfOffBits = 54;
+		this->bFileHeader.bfSize = 54 + height * width * (bitCount / 8);
+		this->bInfoHeader.biWidth = width;
+		this->bInfoHeader.biHeight = height;
+		this->bInfoHeader.biSizeImage = width * height*(bitCount / 8);
 		this->Buffer = new unsigned char[width*height*(bitCount / 8)];
 		for (int i = 0; i < width*height*(bitCount / 8); i++)
 		{
 			Buffer[i] = 0;
 		}
-		this->bitmapinfoheader.biBitCount = 24;
-		bitmapinfo.bmiHeader = bitmapinfoheader;
+		this->bInfoHeader.biBitCount = 24;
+		bInfo.bmiHeader = bInfoHeader;
 	}
 	else {
-		bitmapfileheader.bfOffBits = 54 + 256 * 4;
-		this->bitmapfileheader.bfSize = 54 + 256 * 4 + height * width * (bitCount / 8);
-		this->bitmapinfoheader.biWidth = width;
-		this->bitmapinfoheader.biHeight = height;
-		this->bitmapinfoheader.biSizeImage = width * height*(bitCount / 8);
+		bFileHeader.bfOffBits = 54 + 256 * 4;
+		this->bFileHeader.bfSize = 54 + 256 * 4 + height * width * (bitCount / 8);
+		this->bInfoHeader.biWidth = width;
+		this->bInfoHeader.biHeight = height;
+		this->bInfoHeader.biSizeImage = width * height*(bitCount / 8);
 		this->Buffer = new unsigned char[width*height*(bitCount / 8)];
 		for (int i = 0; i < width*height*(bitCount / 8); i++)
 		{
 			Buffer[i] = 0;
 		}
 		this->colourtable = colourtable;
-		bitmapinfo.bmiHeader = bitmapinfoheader;
+		bInfo.bmiHeader = bInfoHeader;
 	}
 }
 
@@ -63,9 +63,9 @@ RGBTRIPLE Bitmap::getColourTableEntry(uint32_t index)
 	return colour;
 }
 
-RGBTRIPLE Bitmap::getTriple(uint32_t bufferIndex)
+RGBTRIPLE Bitmap::getTripleAtIndex(uint32_t bufferIndex)
 {
-	if (bitmapinfoheader.biBitCount == 24)
+	if (bInfoHeader.biBitCount == 24)
 	{
 		RGBTRIPLE retVal;
 		retVal.rgbtBlue = Buffer[bufferIndex];
@@ -80,45 +80,58 @@ RGBTRIPLE Bitmap::getTriple(uint32_t bufferIndex)
 
 void Bitmap::setBitmapSize(uint32_t width, uint32_t height)
 {
-	if (this->bitmapinfoheader.biBitCount == 24) {
-		this->bitmapfileheader.bfSize = 54 + height * width * (bitmapinfoheader.biBitCount / 8);
-		this->bitmapinfoheader.biWidth = width;
-		this->bitmapinfoheader.biHeight = height;
-		this->bitmapinfoheader.biSizeImage = width * height*(bitmapinfoheader.biBitCount / 8);
-		this->Buffer = new unsigned char[width*height*(bitmapinfoheader.biBitCount / 8)];
+	if (this->bInfoHeader.biBitCount == 24) {
+		this->bFileHeader.bfSize = 54 + height * width * (bInfoHeader.biBitCount / 8);
+		this->bInfoHeader.biWidth = width;
+		this->bInfoHeader.biHeight = height;
+		this->bInfoHeader.biSizeImage = width * height*(bInfoHeader.biBitCount / 8);
+		this->Buffer = new unsigned char[width*height*(bInfoHeader.biBitCount / 8)];
 	}
 	else {
-		this->bitmapfileheader.bfSize = 54 + 256 * 4 + height * width * (bitmapinfoheader.biBitCount / 8);
-		this->bitmapinfoheader.biWidth = width;
-		this->bitmapinfoheader.biHeight = height;
-		this->bitmapinfoheader.biSizeImage = width * height*(bitmapinfoheader.biBitCount / 8);
-		this->Buffer = new unsigned char[width*height*(bitmapinfoheader.biBitCount / 8)];
+		this->bFileHeader.bfSize = 54 + 256 * 4 + height * width * (bInfoHeader.biBitCount / 8);
+		this->bInfoHeader.biWidth = width;
+		this->bInfoHeader.biHeight = height;
+		this->bInfoHeader.biSizeImage = width * height*(bInfoHeader.biBitCount / 8);
+		this->Buffer = new unsigned char[width*height*(bInfoHeader.biBitCount / 8)];
 	}
 }
 
-uint32_t Bitmap::getValueAt(int32_t index, uint32_t mode)
+uint32_t Bitmap::getValueAtIndex(int32_t index, uint32_t mode)
 {
-	if (index < 0 || (uint32_t)index > this->bitmapinfoheader.biSizeImage)
+	if (bInfoHeader.biBitCount == 24)
+	{
+		index *= 1;
+	}
+	if (index < 0 || (uint32_t)index > this->bInfoHeader.biSizeImage)
 		return NULL;
 	return Buffer[index + mode];
 }
 
-int Bitmap::getValueAtPositions(uint32_t heightPos, uint32_t widthPos)
+int Bitmap::getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos)
 {
-	int position = (heightPos * bitmapinfoheader.biWidth + widthPos) * (bitmapinfoheader.biBitCount / 8);
-	if (position < 0 || position > bitmapinfoheader.biSizeImage)
+	int position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
+	if (position < 0 || position > bInfoHeader.biSizeImage)
 		return -1;
 	return Buffer[position];
 }
 
-void Bitmap::setSingle(uint32_t bufferIndex, uint32_t value)
+void Bitmap::setValueAtXYPosition(uint32_t value, uint32_t heightPos, uint32_t widthPos)
+{
+	int position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
+	if (position >= 0 || position < bInfoHeader.biSizeImage)
+	{
+		Buffer[position] = value;
+	}
+}
+
+void Bitmap::setValueAtIndex(uint32_t bufferIndex, uint32_t value)
 {
 	this->Buffer[bufferIndex] = value;
 }
 
-void Bitmap::setTriple(RGBTRIPLE colour, uint32_t bufferIndex)
+void Bitmap::setTripleAtIndex(RGBTRIPLE colour, uint32_t bufferIndex)
 {
-	if (bitmapinfoheader.biBitCount == 24)
+	if (bInfoHeader.biBitCount == 24)
 	{
 		//if ((int)colour.rgbtBlue > 0)
 		//	cout << "here";
@@ -129,13 +142,28 @@ void Bitmap::setTriple(RGBTRIPLE colour, uint32_t bufferIndex)
 	}
 }
 
-void Bitmap::setTriple(uint32_t bufferIndex, uint32_t bufferIndexNew)
+void Bitmap::copyTripleToIndex(uint32_t bufferIndex, uint32_t bufferIndexNew)
 {
-	if (bitmapinfoheader.biBitCount == 24)
+	if (bInfoHeader.biBitCount == 24)
 	{
 		Buffer[bufferIndex] = Buffer[bufferIndexNew];
 		Buffer[bufferIndex + 1] = Buffer[bufferIndexNew + 1];
 		Buffer[bufferIndex + 2] = Buffer[bufferIndexNew + 2];
+	}
+}
+
+void Bitmap::setTripleAtXYPosition(RGBTRIPLE colour, uint32_t heightPos, uint32_t widthPos)
+{
+	int position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
+	if (position < 0 || position > bInfoHeader.biSizeImage) {
+		cerr << "Invalid position" << endl;
+		return;
+	}
+	if (bInfoHeader.biBitCount == 24)
+	{
+		Buffer[position] = colour.rgbtBlue;
+		Buffer[position + 1] = colour.rgbtGreen;
+		Buffer[position + 2] = colour.rgbtRed;
 	}
 }
 
@@ -153,13 +181,13 @@ Bitmap * Bitmap::get24BitRepresentation()
 {
 	if (bit24Representation == nullptr)
 	{
-		bit24Representation = new Bitmap(this->bitmapinfoheader.biWidth, this->bitmapinfoheader.biHeight, 24);
+		bit24Representation = new Bitmap(this->bInfoHeader.biWidth, this->bInfoHeader.biHeight, 24);
 	}
-	for (uint32_t i = 0; i < this->bitmapinfoheader.biSizeImage-2000; i++)
+	for (uint32_t i = 0; i < this->bInfoHeader.biSizeImage-2000; i++)
 	{
-		bit24Representation->setSingle(i * 3, this->getColourTableEntry(this->getValueAt(i)).rgbtBlue);
-		bit24Representation->setSingle(i * 3 + 1, this->getColourTableEntry(this->getValueAt(i)).rgbtGreen);
-		bit24Representation->setSingle(i * 3 + 2, this->getColourTableEntry(this->getValueAt(i)).rgbtRed);
+		bit24Representation->setValueAtIndex(i * 3, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtBlue);
+		bit24Representation->setValueAtIndex(i * 3 + 1, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtGreen);
+		bit24Representation->setValueAtIndex(i * 3 + 2, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
 	}
 	return bit24Representation;
 }

@@ -11,8 +11,9 @@ Step 1: Generate Terrain/continent shape/rivers
 	-continents(check)
 		-happy, but add more options for fractal generation
 	-climate(check)
+	-humidity/precipitation
 	-terrain(acceptable)
-		-add westwinds/coastal region
+		-add precipitation into calculation
 	-rivers(good)
 Step 2: Generate Provinces on new terrain
 			-provinces.bmp (check)
@@ -58,7 +59,6 @@ int main() {
 	Bitmap *heightMapBMP = new Bitmap(data->width, data->height, 24);
 	string heightmapSourceString = data->debugMapFolder + ("heightmap.bmp");
 	const char* heightmapsource = heightmapSourceString.c_str();
-	heightMapBMP->path = heightmapsource;
 	//generate noise map
 	if (data->genHeight) {
 		heightMapBMP->setBuffer(terrainGenerator->heightMap(heightMapBMP, data->seed, data->fractalFrequency, data->fractalOctaves, data->fractalGain, data->divideThreshold, data->seaLevel, data->complexHeight, data->updateThreshold));
@@ -67,8 +67,8 @@ int main() {
 	}
 	else {
 		heightMapBMP = BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap");
-		data->height = heightMapBMP->bitmapinfoheader.biHeight;
-		data->width = heightMapBMP->bitmapinfoheader.biWidth;
+		data->height = heightMapBMP->bInfoHeader.biHeight;
+		data->width = heightMapBMP->bInfoHeader.biWidth;
 	}
 	//create new bmps{
 	Bitmap provincesBMP(data->width, data->height, 24);
@@ -91,7 +91,7 @@ int main() {
 
 	if (data->genSimpleTerrain) {
 		//create simplistic terrain shape from noise map
-		terrainBMP->setBuffer(terrainGenerator->createTerrain(terrainBMP, heightMapBMP->getBuffer(), data->seaLevel, (double)data->landMassPercentage/100.0));
+		terrainGenerator->createTerrain(terrainBMP, heightMapBMP, data->seaLevel, (double)data->landMassPercentage/100.0);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (data->debugMapFolder + ("simpleterrain.bmp")).c_str());
 	}
 	else {
@@ -103,7 +103,7 @@ int main() {
 		provincesBMP.setBuffer(terrainGenerator->seaProvinces(data->seaProv, data->landProv, terrainBMP, &provincesBMP, data->updateThreshold));
 		terrainGenerator->createProvinceMap();
 		terrainGenerator->provPixels(&provincesBMP);
-		//terrainGenerator->prettyProvinces(&provincesBMP, data->minProvSize);
+		terrainGenerator->prettyProvinces(&provincesBMP, data->minProvSize);
 		terrainGenerator->evaluateCoasts(&provincesBMP);
 		//dump to file
 		genericParser.writeDefinition((data->debugMapFolder + ("definition.csv")).c_str(), terrainGenerator->provinces);

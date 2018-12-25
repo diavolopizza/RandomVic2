@@ -1,7 +1,7 @@
 {
 	"module": 
 	{
-		"genHeight" : 1,
+		"genHeight" : 0,
 		"genSimpleTerrain" : 1,
 		"genComplexTerrain" : 1,
 		"genV2" : 0,
@@ -10,10 +10,10 @@
 
 	"map": 
 	{
-		"seed" : 10,
+		"seed" : 1545741989,
         "height" : 2160,
-		"width" : 3840,
-		"seaLevel" : 140,
+		"width" : 5616,
+		"seaLevel" : 160,
 		"landMassPercentage" : 20,
 		
 		"rivers" : 
@@ -50,6 +50,6 @@
 	
 	"visualisation":
 	{
-		"updateThreshold" : 200
+		"updateThreshold" : 50
 	}
 }
