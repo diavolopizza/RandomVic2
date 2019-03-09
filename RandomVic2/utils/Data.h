@@ -60,5 +60,18 @@ public:
 
 
 	void getConfig(string configPath);
+
+public:
+	Data(Data const&) = delete;
+	void operator=(Data const&) = delete;
+	//variable info
+	uint32_t amountOfRegions = 0;
+
+
+	static Data& getInstance()
+	{
+		static Data instance; // Guaranteed to be destroyed.
+		return instance;
+	}
 };
 

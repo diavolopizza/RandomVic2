@@ -3,33 +3,33 @@
 	{
 		"genHeight" : 0,
 		"genSimpleTerrain" : 1,
-		"genComplexTerrain" : 1,
+		"genComplexTerrain" : 0,
 		"genV2" : 0,
-		"opencvVisualisation" : 1
+		"opencvVisualisation" : 0
 	},
 
 	"map": 
 	{
-		"seed" : 1545741989,
-        "height" : 2160,
-		"width" : 5616,
+		"seed" : 5,
+        "height" : 2000,
+		"width" : 4000,
 		"seaLevel" : 160,
 		"landMassPercentage" : 20,
 		
 		"rivers" : 
 		{
 			"elevationTolerance" : 5,
-			"numRivers" : 1000
+			"numRivers" : 300
 		},
 		"heightmap" : {
-			"fractalFrequency" : 0.0008,
+			"fractalFrequency" : 0.0006,
 			"fractalOctaves" : 11,
 			"fractalGain" : 0.5,
 			"complexHeight" : 1,
 			"divideThreshold" : 10
 		},
 		"provinces" : {
-			"landProvinces" : 4000,
+			"landProvinces" : 1000,
 			"minProvPerContinent" : 100,
 			"minProvPerRegion" : 5,
 			"seaProvinces" : 4000,

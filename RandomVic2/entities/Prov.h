@@ -1,10 +1,11 @@
 #pragma once
 #include <vector>
 #include <iostream>
-#include <unordered_set>
+#include <set>
 #include <Windows.h>
 #include "Continent.h"
 #include "Region.h"
+#include "Country.h"
 #include <random>
 using namespace std;
 
@@ -19,25 +20,30 @@ public:
 	~Prov();
 	RGBTRIPLE colour;
 
-	uint32_t provID;
-	uint32_t center;
-	Continent* continent;
-	Region* region;
+	uint32_t provID = 0;
+	uint32_t center = 0;
+	Continent* continent = nullptr;
+	Region* region = nullptr;
+	Country * country = nullptr;
 	bool placed = false, coastal = false, island = false, sea = false;
-	bool developed = false;
 	bool operator==(const Prov& right) const;
-	string terrain_type;
-	string climate;
-	string owner;//tag who owns prov
+	string terrain_type = "";
+	string climate = "";
+	string owner = "";//tag who owns prov
 	vector<string>cores;
+
+
+
+	//VIC2
 	uint32_t lifeRating;
 	string tradegood;
-
-	unordered_set <Prov*> neighbourProvinces;//contains all the province Ids of the neighbouring provinces
-	vector<uint32_t> pixels;
-	unordered_set<uint32_t> positionCandidates;
-	void setNeighbour(Prov*P);
+	bool developed = false;
 	void checkDeveloped(vector <int> developed_continent);
+
+	vector <Prov*> neighbourProvinces;//contains all the province Ids of the neighbouring provinces
+	vector<uint32_t> pixels;
+	set<uint32_t> positionCandidates;
+	void setNeighbour(Prov*P, bool level);
 	void assignContinent(Continent *C);
 	void assignRegion(Region *R, bool recursive, uint32_t minProvPerRegion);
 	void computeCandidates();

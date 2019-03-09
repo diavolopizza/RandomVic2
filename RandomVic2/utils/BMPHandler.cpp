@@ -62,41 +62,13 @@ bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 			return false;
 		}
 	}
+	for (int i = 0; i < B->bInfoHeader.biSizeImage; i++)
+	{
+		if (B->getBuffer()[i] == 0)
+			cout << "0 value in bitmap " << outputFile << endl;
+	}
 	CloseHandle(file);
 	return true;
-}
-
-Bitmap * BMPHandler::create24bitBMP(uint32_t width, uint32_t height, string key, uint32_t bitCount)
-{
-	//BITMAPFILEHEADER    bmfh;  //stores information about the file format
-	//BITMAPINFOHEADER    bmih;  //stores information about the bitmap
-	//FILE                *file; //stores file pointer
-
-	//						   //create bitmap file header
-	//((unsigned char *)&bmfh.bfType)[0] = 'B';
-	//((unsigned char *)&bmfh.bfType)[1] = 'M';
-	//bmfh.bfSize = 54 + height * width * (bitCount / 8);
-	//bmfh.bfReserved1 = 0;
-	//bmfh.bfReserved2 = 0;
-	//bmfh.bfOffBits = 54;
-
-	////create bitmap information header
-	//bmih.biSize = 40;
-	//bmih.biWidth = width;
-	//bmih.biHeight = height;
-	//bmih.biPlanes = 1;
-	//bmih.biBitCount = bitCount;
-	//bmih.biCompression = 0;
-	//bmih.biSizeImage = 0;
-	//bmih.biXPelsPerMeter = 3800;
-	//bmih.biYPelsPerMeter = 3800;
-	//bmih.biClrUsed = 0;
-	//bmih.biClrImportant = 0;
-	//BYTE* BUFFER = new BYTE[width * height * (bitCount / 8)];
-	//Bitmap * B;
-	//B->bitmapinfoheader.
-	////HBITMAP bitmap = CreateBitmap(width, height, 3, 24, BUFFER);
-	return nullptr;
 }
 
 Bitmap* BMPHandler::Load24bitBMP(LPCTSTR input, string key)

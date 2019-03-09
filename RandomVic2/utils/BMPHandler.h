@@ -14,7 +14,6 @@ public:
 	BMPHandler();
 	~BMPHandler();
 	bool SaveBMPToFile(Bitmap*, LPCTSTR bmpfile);
-	Bitmap* create24bitBMP(uint32_t width, uint32_t height, string key, uint32_t bitCount);
 	Bitmap* Load24bitBMP(LPCTSTR input, string key);
 	Bitmap* Load8bitBMP(LPCTSTR input, string key);
 	Bitmap* findBitmapByKey(string key);

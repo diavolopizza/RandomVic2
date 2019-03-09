@@ -8,7 +8,6 @@
 #include <vector>
 #include <Windows.h>
 #include <random>
-#include <unordered_set>
 #include "../utils/Bitmap.h"
 #include "../entities/Prov.h"
 #include "../terrain/VoronoiDiagramGenerator.h"
@@ -40,23 +39,26 @@ public:
 	boost::multi_array<Prov*, 3> createProvinceMap();
 	uint32_t Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height);
 	void determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize);
-	void assignRemainingPixels(Bitmap * provinceBMP, BYTE* provinceBuffer, bool sea);
+	void assignRemainingPixels(Bitmap * provinceBMP, bool sea);
 	void evaluateCoasts(Bitmap * provinceBMP);
 	void evaluateNeighbours(Bitmap * provinceBMP);
 	void provPixels(Bitmap * provinceBMP);
 	//void assignColour(RGBTRIPLE provinceColour, BYTE* provinceBuffer, uint32_t currentPixel, uint32_t modifier = 1);
 	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter, uint32_t seaLevel, bool complexHeight, uint32_t updateThreshold);
 	void createTerrain(Bitmap * terrainBMP, Bitmap * heightMapBmp, uint32_t & seaLevel, double landPercentage);
-	BYTE* landProvinces(uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, uint32_t updateThreshold);
-	BYTE* seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, uint32_t updateThreshold);
+	BYTE* landProvinces(uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);
+	BYTE* seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);
 	void provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint32_t numOfLandProv, uint32_t offset, uint32_t greyval);
-	void fill(Bitmap* provinceBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached, uint32_t updateThreshold);
+	void fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached, uint32_t updateThreshold);
 	void evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_t height);
 	void prettyRegions(Bitmap * regions);
 	void evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height);
 	void prettyContinents(Bitmap * continents);
-	void prettyProvinces(Bitmap * provinceBMP, uint32_t minProvSize);
+	void prettyProvinces(Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t minProvSize);
 	BYTE* humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t seaLevel, uint32_t updateThreshold);
 	void prettyTerrain(Bitmap * provinceBMP, Bitmap * heightmap, uint32_t seaLevel, uint32_t updateThreshold);
 	void prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t riverAmount, uint32_t elevationTolerance, uint32_t seaLevel);
+
+
+	void sanityChecks(Bitmap * provinceBMP);
 };

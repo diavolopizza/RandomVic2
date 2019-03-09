@@ -44,10 +44,19 @@ bool Prov::operator==(const Prov& right) const
 
 
 
-void Prov::setNeighbour(Prov*P)
+void Prov::setNeighbour(Prov*P, bool level = false)
 {
-	neighbourProvinces.insert(P);
-	P->neighbourProvinces.insert(this);
+	bool found = false;
+	for (auto neighbour : neighbourProvinces)
+	{
+		if (P->provID == neighbour->provID)
+			found = true;
+	}
+	if (!found) {
+		neighbourProvinces.push_back(P);
+	}
+	if(level)
+		P->setNeighbour(this, false);
 }
 
 void Prov::checkDeveloped(vector <int> developed_continent) {
@@ -77,7 +86,23 @@ void Prov::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)
 {
 	this->region = R;
 	R->provinces.push_back(this);
-	if (recursive) {
+	if (recursive && R->provinces.size() < minProvPerRegion) {
+
+		//for (auto neighbour : this->neighbourProvinces)
+		//{
+		//	if (neighbour->region == nullptr && !neighbour->sea && R->provinces.size() < minProvPerRegion) {
+		//		neighbour->assignRegion(R, true, minProvPerRegion);
+		//	}
+		//}
+		//vector<Prov*> neighboursVector;
+		//for (auto neighbour : neighbourProvinces)
+		//{
+		//	if (!neighbour->sea)
+		//		neighboursVector.push_back(neighbour);
+		//}
+		//Prov * randomNeighbour = neighboursVector[(*random)() % neighboursVector.size()];
+		//randomNeighbour->assignRegion(R, true, minProvPerRegion);
+
 		for (auto neighbour : this->neighbourProvinces)
 		{
 			if (neighbour->region == nullptr && !neighbour->sea && R->provinces.size() < minProvPerRegion) {
@@ -93,7 +118,7 @@ void Prov::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)
 
 void Prov::computeCandidates()
 {
-	while (positionCandidates.size() < 20 && positionCandidates.size()<pixels.size()-1)
+	while (positionCandidates.size() < 20 && positionCandidates.size() < pixels.size() - 1)
 	{
 		positionCandidates.insert(pixels[(*random)() % pixels.size()]);
 	}

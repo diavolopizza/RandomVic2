@@ -2,21 +2,22 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include <unordered_set>
 #include "Continent.h"
 #include "Prov.h"
+#include "Country.h"
 using namespace std;
-//class Prov;
 class Region
 {
 public:
 	string name;
 	uint32_t ID;
 	vector<Prov*> provinces;	
-	unordered_set<Region*> neighbourRegions;
-	void setNeighbour(Region*R);
-	Continent* continent;
+	Country * country = nullptr;
+	vector<Region*> neighbourRegions;
+	void setNeighbour(Region*R, bool level);
+	Continent* continent = nullptr;
 	void assignContinent(Continent *C, uint32_t recursionDepth, uint32_t minProvPerContinent);
+	void setCountry(Country * C);
 	Region(string name, uint32_t ID);
 	~Region();
 };

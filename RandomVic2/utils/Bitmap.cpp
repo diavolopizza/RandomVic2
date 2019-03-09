@@ -59,7 +59,7 @@ Bitmap::~Bitmap()
 
 RGBTRIPLE Bitmap::getColourTableEntry(uint32_t index)
 {
-	RGBTRIPLE colour{ colourtable[index*4], colourtable[index * 4 + 1], colourtable[index * 4 + 2] };
+	RGBTRIPLE colour{ colourtable[index * 4], colourtable[index * 4 + 1], colourtable[index * 4 + 2] };
 	return colour;
 }
 
@@ -67,6 +67,7 @@ RGBTRIPLE Bitmap::getTripleAtIndex(uint32_t bufferIndex)
 {
 	if (bInfoHeader.biBitCount == 24)
 	{
+		bufferIndex *= 3;
 		RGBTRIPLE retVal;
 		retVal.rgbtBlue = Buffer[bufferIndex];
 		retVal.rgbtGreen = Buffer[bufferIndex + 1];
@@ -100,7 +101,7 @@ uint32_t Bitmap::getValueAtIndex(int32_t index, uint32_t mode)
 {
 	if (bInfoHeader.biBitCount == 24)
 	{
-		index *= 1;
+		index *= 3;
 	}
 	if (index < 0 || (uint32_t)index > this->bInfoHeader.biSizeImage)
 		return NULL;
@@ -126,6 +127,7 @@ void Bitmap::setValueAtXYPosition(uint32_t value, uint32_t heightPos, uint32_t w
 
 void Bitmap::setValueAtIndex(uint32_t bufferIndex, uint32_t value)
 {
+	bufferIndex *= bInfoHeader.biBitCount / 8;
 	this->Buffer[bufferIndex] = value;
 }
 
@@ -133,6 +135,7 @@ void Bitmap::setTripleAtIndex(RGBTRIPLE colour, uint32_t bufferIndex)
 {
 	if (bInfoHeader.biBitCount == 24)
 	{
+		bufferIndex *= 3;
 		//if ((int)colour.rgbtBlue > 0)
 		//	cout << "here";
 		Buffer[bufferIndex] = colour.rgbtBlue;
@@ -146,6 +149,8 @@ void Bitmap::copyTripleToIndex(uint32_t bufferIndex, uint32_t bufferIndexNew)
 {
 	if (bInfoHeader.biBitCount == 24)
 	{
+		bufferIndex *= 3;
+		bufferIndexNew *= 3;
 		Buffer[bufferIndex] = Buffer[bufferIndexNew];
 		Buffer[bufferIndex + 1] = Buffer[bufferIndexNew + 1];
 		Buffer[bufferIndex + 2] = Buffer[bufferIndexNew + 2];
@@ -183,11 +188,11 @@ Bitmap * Bitmap::get24BitRepresentation()
 	{
 		bit24Representation = new Bitmap(this->bInfoHeader.biWidth, this->bInfoHeader.biHeight, 24);
 	}
-	for (uint32_t i = 0; i < this->bInfoHeader.biSizeImage-2000; i++)
+	for (uint32_t i = 0; i < this->bInfoHeader.biSizeImage - 2000; i++)
 	{
-		bit24Representation->setValueAtIndex(i * 3, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtBlue);
-		bit24Representation->setValueAtIndex(i * 3 + 1, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtGreen);
-		bit24Representation->setValueAtIndex(i * 3 + 2, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
+		bit24Representation->setValueAtIndex(i, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
+		bit24Representation->setValueAtIndex(i + 1, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
+		bit24Representation->setValueAtIndex(i + 2, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
 	}
 	return bit24Representation;
 }
