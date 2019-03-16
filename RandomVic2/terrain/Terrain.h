@@ -10,8 +10,8 @@
 #include <random>
 #include "../utils/Bitmap.h"
 #include "../entities/Prov.h"
-#include "../terrain/VoronoiDiagramGenerator.h"
-#include "boost\multi_array.hpp"
+//#include "boost\multi_array.hpp"
+#include "../utils/MultiArray.h"
 #include "../entities/River.h"
 #include "../utils/Buffer.h"
 #include "../utils/Visualizer.h"
@@ -22,9 +22,7 @@ class Terrain
 {
 	ranlux48* random;
 	hash <int> prov_hash;
-	typedef boost::multi_array<Prov*, 3> array_type;
-	typedef array_type::index index;
-	array_type provinceMap;
+	MultiArray provinceMap;
 	//boost::multi_array<Prov*, 3> provhashes();//reads definitions.csv and calculates the hashes of the rgb values, creates province with provnr,r,g,b,saves it in hashmap
 
 public:
@@ -36,7 +34,7 @@ public:
 	~Terrain();
 
 	//Utilities
-	boost::multi_array<Prov*, 3> createProvinceMap();
+	MultiArray createProvinceMap();
 	uint32_t Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height);
 	void determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize);
 	void assignRemainingPixels(Bitmap * provinceBMP, bool sea);

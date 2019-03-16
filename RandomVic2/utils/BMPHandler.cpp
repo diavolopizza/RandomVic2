@@ -62,11 +62,6 @@ bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 			return false;
 		}
 	}
-	for (int i = 0; i < B->bInfoHeader.biSizeImage; i++)
-	{
-		if (B->getBuffer()[i] == 0)
-			cout << "0 value in bitmap " << outputFile << endl;
-	}
 	CloseHandle(file);
 	return true;
 }

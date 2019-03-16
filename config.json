@@ -12,7 +12,7 @@
 	{
 		"seed" : 5,
         "height" : 2000,
-		"width" : 4000,
+		"width" : 2000,
 		"seaLevel" : 160,
 		"landMassPercentage" : 20,
 		
@@ -32,7 +32,7 @@
 			"landProvinces" : 1000,
 			"minProvPerContinent" : 100,
 			"minProvPerRegion" : 5,
-			"seaProvinces" : 4000,
+			"seaProvinces" : 2000,
 			"minProvSize" : 100
 		},
 		"humidity" : {
@@ -41,6 +41,7 @@
 		}
 		
     },
+	
 
     "v2": 
 	{
