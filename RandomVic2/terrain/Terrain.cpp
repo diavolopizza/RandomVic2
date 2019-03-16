@@ -109,7 +109,7 @@ void Terrain::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provinceP
 	while (!(startingPixel >= bmpWidth && startingPixel <= bmpSize - bmpWidth && bitmap->getValueAtIndex(startingPixel) == provinceColour.rgbtBlue - 1)
 		&& !GetMinDistanceToProvince(startingPixel, bmpWidth, bmpHeight) < 3 * sqrt(provinceSize / (std::atan(1) * 4)))
 	{
-		startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
+		startingPixel = (*random)() % bmpSize; //startingpixel is anywhere in the file
 	}
 	bitmap->setTripleAtIndex(provinceColour, startingPixel);
 	provincePixels.push_back(startingPixel);
@@ -245,13 +245,13 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 	cvDestroyAllWindows();
 	return RGBBMP->getBuffer();
 }
-//creates the terrain, factoring in heightmap and some climate calculations
-void Terrain::createTerrain(Bitmap * terrainBMP, Bitmap* heightMapBmp, uint32_t &seaLevel, double landPercentage)
+//creates the terrain, factoring in heightmap
+void Terrain::createTerrain(Bitmap * terrainBMP, Bitmap* heightMapBmp)
 {
 	double tempLandPercentage = 0;
 	uint32_t landPixels = 0;
-	while (tempLandPercentage < landPercentage) {
-		seaLevel--;
+	while (tempLandPercentage < (double)Data::getInstance().landMassPercentage / 100.0) {
+		Data::getInstance().seaLevel--;
 		cout << "Creating basic terrain from heightmap" << endl;
 		uint32_t width = terrainBMP->bInfoHeader.biWidth;
 		uint32_t height = terrainBMP->bInfoHeader.biHeight;
@@ -259,7 +259,7 @@ void Terrain::createTerrain(Bitmap * terrainBMP, Bitmap* heightMapBmp, uint32_t 
 		{
 			for (uint32_t y = 0; y < width; y++)
 			{
-				if (heightMapBmp->getValueAtXYPosition(x, y) > seaLevel) {
+				if (heightMapBmp->getValueAtXYPosition(x, y) > Data::getInstance().seaLevel) {
 					terrainBMP->setValueAtXYPosition(13, x, y);
 					landPixels++;
 				}
@@ -354,7 +354,6 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	for (auto& t : threads) {
 		t.join();
 	}
-	//fill(provinceBMP, 255, 254, 0);
 	assignRemainingPixels(provinceBMP, true);
 	return provinceBuffer;
 }
@@ -382,7 +381,7 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255, this->random); //create new landprovince
 
 		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
-		for (uint32_t x = 0; x < provinceSize - 1; x++)
+		for (uint32_t x = 0; x < 2 - 1; x++)
 		{
 			uint32_t currentPixel = 0;
 			while (currentPixel <= bmpWidth || currentPixel >= bmpSize - bmpWidth)
@@ -419,8 +418,6 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 			}
 		}
 		P->center = P->pixels[0];
-		if (P->pixels.size() < 1)
-			cout << "´Zero size province" << endl;
 		provinces.push_back(P);
 	}
 }
@@ -462,7 +459,7 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 					if (unassignedPixel < bmpSize - 1 && provinceBMP->getValueAtIndex(RIGHT(unassignedPixel)) != 0 && provinceBMP->getValueAtIndex(RIGHT(unassignedPixel)) == greyVal)
 					{
 						//TODO: add river crossings to each province
-						if ((unassignedPixel + 1) % (bmpWidth) != 0 && riverBMP->getValueAtIndex(RIGHT(unassignedPixel)) >= 254)
+						if ((unassignedPixel + 1) % (bmpWidth) != 0 && !(riverBMP->getValueAtIndex(RIGHT(unassignedPixel)) <= 10))
 							provinceBMP->copyTripleToIndex(unassignedPixel, RIGHT(unassignedPixel));
 					}
 					break;
@@ -471,7 +468,7 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 				{
 					if (unassignedPixel > 1 && provinceBMP->getValueAtIndex(LEFT(unassignedPixel)) != 0 && provinceBMP->getValueAtIndex(LEFT(unassignedPixel)) == greyVal)
 					{
-						if (unassignedPixel % (bmpWidth) != 0 && riverBMP->getValueAtIndex(LEFT(unassignedPixel)) >= 254)
+						if (unassignedPixel % (bmpWidth) != 0 && !(riverBMP->getValueAtIndex(LEFT(unassignedPixel)) <= 10))
 							provinceBMP->copyTripleToIndex(unassignedPixel, LEFT(unassignedPixel));
 					}
 					break;
@@ -480,7 +477,7 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 				{
 					if (unassignedPixel < bmpSize - bmpWidth && provinceBMP->getValueAtIndex(ABOVE(unassignedPixel, bmpWidth)) != 0 && provinceBMP->getValueAtIndex(ABOVE(unassignedPixel, bmpWidth)) == greyVal)
 					{
-						if (riverBMP->getValueAtIndex(ABOVE(unassignedPixel, bmpWidth)) >= 254)
+						if (!(riverBMP->getValueAtIndex(ABOVE(unassignedPixel, bmpWidth)) <= 10))
 							provinceBMP->copyTripleToIndex(unassignedPixel, ABOVE(unassignedPixel, bmpWidth));
 					}
 					break;
@@ -489,7 +486,7 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 				{
 					if (unassignedPixel > bmpWidth && provinceBMP->getValueAtIndex(BELOW(unassignedPixel, bmpWidth)) != 0 && provinceBMP->getValueAtIndex(BELOW(unassignedPixel, bmpWidth)) == greyVal)
 					{
-						if (riverBMP->getValueAtIndex(BELOW(unassignedPixel, bmpWidth)) >= 254)
+						if (!(riverBMP->getValueAtIndex(BELOW(unassignedPixel, bmpWidth)) <= 10))
 							provinceBMP->copyTripleToIndex(unassignedPixel, BELOW(unassignedPixel, bmpWidth));
 					}
 					break;
@@ -1277,23 +1274,22 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t se
 	destroyAllWindows();
 }
 //creates rivers 
-void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t riverAmount, uint32_t elevationTolerance, uint32_t seaLevel)
+void Terrain::generateRivers(Bitmap * riverBMP, Bitmap * heightmap)
 {
 	cout << "Creating rivers" << endl;
 	set<uint32_t> riverPixels;
-	uint32_t maxRiverColour = 10;
 	//TODO PARAMETRISATION
 		//ELEVATION
 		//COLOURRANGE
 	uint32_t heightmapWidth = heightmap->bInfoHeader.biWidth;
-	for (uint32_t i = 0; i < riverAmount; i++) {
+	for (uint32_t i = 0; i < Data::getInstance().numRivers; i++) {
 		//start a new river
 		River* R = new River();
 		this->rivers.push_back(R);
 
 		//find random start point
 		uint32_t start = 0;
-		while (!(heightmap->getValueAtIndex(start) > seaLevel) && riverPixels.find(start) == riverPixels.end())
+		while (!(heightmap->getValueAtIndex(start) > Data::getInstance().seaLevel) && riverPixels.find(start) == riverPixels.end())
 		{
 			start = ((*random)() % heightmap->bInfoHeader.biSizeImage);
 		}
@@ -1313,11 +1309,11 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 
 		int previous = 0; //this variable is used to avoid rectangles in the river
 		//continue the river until the sealevel is reached, either at a lake or the ocean
-		while (heightmap->getValueAtIndex(R->getCurrentEnd()) > seaLevel - 1) {
+		while (heightmap->getValueAtIndex(R->getCurrentEnd()) > Data::getInstance().seaLevel - 1) {
 			uint32_t elevationToleranceOffset = 0;
 			vector<uint32_t> candidates;
 			//now expand to lower or equal pixel as long as possible
-			while (elevationToleranceOffset < elevationTolerance && !candidates.size()) {
+			while (elevationToleranceOffset < Data::getInstance().elevationTolerance && !candidates.size()) {
 				if (heightmap->getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth)) < heightmap->getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth)) && favDirection != 1) {
 					if (ABOVE(R->getCurrentEnd(), heightmapWidth) < riverBMP->bInfoHeader.biSizeImage && previous != -(int)heightmapWidth)
 						candidates.push_back(ABOVE(R->getCurrentEnd(), heightmapWidth));
@@ -1336,7 +1332,7 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 				}
 				if (candidates.size() == 0) {
 					elevationToleranceOffset++;
-					if (elevationToleranceOffset >= elevationTolerance) {
+					if (elevationToleranceOffset >= Data::getInstance().elevationTolerance) {
 						//cout << "RIVER stopped due to elevation with length: " << R->pixels.size() << endl;
 						break;
 					}
@@ -1375,12 +1371,12 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 				riverPixels.insert(newPixel);
 				for (auto river : rivers)
 				{
-					if (river->contains(newPixel))
+					if (river->contains(neighbouringRiverPixels[0]))
 					{
-						river->addIngoing(R, newPixel);
+						river->addIngoing(R, neighbouringRiverPixels[0]);
 					}
 				}
-				cout << "1::RIVER ENDED IN OTHER river with length: " << R->pixels.size() << endl;
+				//cout << "1::RIVER ENDED IN OTHER river with length: " << R->pixels.size() << endl;
 				break;
 			}
 
@@ -1408,67 +1404,32 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 				break;
 			}
 
-			//}
-			//{ //this block checks each direction for neighbouring rivers, to eventually terminate the river in another river
-			//	vector<uint32_t> directions;
-			//	directions.push_back(LEFT(newPixel));
-			//	directions.push_back(RIGHT(newPixel));
-			//	directions.push_back(BELOW(newPixel, heightmapWidth));
-			//	directions.push_back(ABOVE(newPixel, heightmapWidth));
-			//	uint32_t neighbouringRiverPixels = 0;
-			//	for (auto directionPixel : directions) {
-			//		if (riverPixels.find(directionPixel) != riverPixels.end())
-			//			neighbouringRiverPixels++;
-			//	}
-
-			//	if (neighbouringRiverPixels > 1) { //any river contains newPixel, which means we terminate this river inside the other river
-			//		if (R->pixels.size() > 1)
-			//			previous = (R->pixels[R->pixels.size() - 1]) - (R->pixels[R->pixels.size() - 2]);
-			//		R->setcurrentEnd(newPixel);
-			//		R->pixels.push_back(newPixel);
-			//		riverPixels.insert(newPixel);
-			//		for (auto river : rivers)
-			//		{
-			//			if (river->contains(newPixel))
-			//			{
-			//				river->addIngoing(R, newPixel);
-			//			}
-			//		}
-			//		cout << "1::RIVER ENDED IN OTHER river with length: " << R->pixels.size() << endl;
-			//		break;
-			//	}
-			//}
-			//// if is already a river pixel, end this river
-			//if (riverPixels.find(newPixel) == riverPixels.end()) {
-			//	if (R->pixels.size() > 1)
-			//		previous = (R->pixels[R->pixels.size() - 1]) - (R->pixels[R->pixels.size() - 2]);
-			//	R->setcurrentEnd(newPixel);
-			//	R->pixels.push_back(newPixel);
-			//	riverPixels.insert(newPixel);
-			//}
-
-			//else {
-			//	for (auto river : rivers)
-			//	{
-			//		if (river->contains(newPixel))
-			//		{
-			//			river->addIngoing(R, newPixel);
-			//		}
-			//	}
-			//	cout << "RIVER ENDED IN OTHER river with length: " << R->pixels.size() << endl;
-			//	break;
-			//}
-
-			if (heightmap->getValueAtIndex(R->getCurrentEnd()) <= seaLevel) {
+			if (heightmap->getValueAtIndex(R->getCurrentEnd()) <= Data::getInstance().seaLevel) {
 				//cout << "RIVER ENDED IN SEA with length: " << R->pixels.size() << endl;
 				break;
 			}
 		}
 	}
 
+	for (uint32_t i = 0; i < rivers.size(); i++)
+	{
+		if (rivers[i]->pixels.size() < 10) {
+			rivers.erase(rivers.begin() + i);
+			i--;
+		}
+	}
+
+
+	//for (int i = 0; i < provinces.size(); i++)
+	//	provinces[i]->computeCandidates();
+}
+
+void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap)
+{
+	const uint32_t maxRiverColour = 10;
 	for (uint32_t i = 0; i < riverBMP->bInfoHeader.biWidth * riverBMP->bInfoHeader.biHeight; i++)
 	{
-		if (heightmap->getValueAtIndex(i) > seaLevel)
+		if (heightmap->getValueAtIndex(i) > Data::getInstance().seaLevel)
 			riverBMP->setValueAtIndex(i, 255);
 		else
 			riverBMP->setValueAtIndex(i, 254);
@@ -1477,7 +1438,6 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 		if (river->pixels.size() < 10)
 			continue;
 		uint32_t riverColour = 2;
-		riverBMP->setValueAtIndex(river->getSource(), 0);
 		for (uint32_t pix : river->pixels) {
 			if (riverColour < maxRiverColour && river->getIngoingForKey(pix) != nullptr) {
 				riverColour += river->getIngoingForKey(pix)->getIngoing().size() + 1;
@@ -1487,10 +1447,9 @@ void Terrain::prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t river
 			riverBMP->setValueAtIndex(pix, riverColour);
 		}
 	}
-
-
-	//for (int i = 0; i < provinces.size(); i++)
-	//	provinces[i]->computeCandidates();
+	for (River* river : rivers) {
+		riverBMP->setValueAtIndex(river->getSource(), 0);
+	}
 }
 
 void Terrain::sanityChecks(Bitmap * provinceBMP)

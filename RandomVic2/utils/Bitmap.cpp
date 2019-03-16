@@ -145,15 +145,15 @@ void Bitmap::setTripleAtIndex(RGBTRIPLE colour, uint32_t bufferIndex)
 	}
 }
 
-void Bitmap::copyTripleToIndex(uint32_t bufferIndex, uint32_t bufferIndexNew)
+void Bitmap::copyTripleToIndex(uint32_t bufferIndexTo, uint32_t bufferIndexFrom)
 {
 	if (bInfoHeader.biBitCount == 24)
 	{
-		bufferIndex *= 3;
-		bufferIndexNew *= 3;
-		Buffer[bufferIndex] = Buffer[bufferIndexNew];
-		Buffer[bufferIndex + 1] = Buffer[bufferIndexNew + 1];
-		Buffer[bufferIndex + 2] = Buffer[bufferIndexNew + 2];
+		bufferIndexTo *= 3;
+		bufferIndexFrom *= 3;
+		Buffer[bufferIndexTo] = Buffer[bufferIndexFrom];
+		Buffer[bufferIndexTo + 1] = Buffer[bufferIndexFrom + 1];
+		Buffer[bufferIndexTo + 2] = Buffer[bufferIndexFrom + 2];
 	}
 }
 

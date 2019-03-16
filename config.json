@@ -11,14 +11,14 @@
 	"map": 
 	{
 		"seed" : 5,
-        "height" : 2000,
-		"width" : 2000,
+        "height" : 1000,
+		"width" : 1000,
 		"seaLevel" : 160,
 		"landMassPercentage" : 20,
 		
 		"rivers" : 
 		{
-			"elevationTolerance" : 5,
+			"elevationTolerance" : 4,
 			"numRivers" : 300
 		},
 		"heightmap" : {

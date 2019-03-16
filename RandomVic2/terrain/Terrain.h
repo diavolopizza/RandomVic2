@@ -43,7 +43,7 @@ public:
 	void provPixels(Bitmap * provinceBMP);
 	//void assignColour(RGBTRIPLE provinceColour, BYTE* provinceBuffer, uint32_t currentPixel, uint32_t modifier = 1);
 	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter, uint32_t seaLevel, bool complexHeight, uint32_t updateThreshold);
-	void createTerrain(Bitmap * terrainBMP, Bitmap * heightMapBmp, uint32_t & seaLevel, double landPercentage);
+	void createTerrain(Bitmap * terrainBMP, Bitmap * heightMapBmp);
 	BYTE* landProvinces(uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);
 	BYTE* seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);
 	void provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint32_t numOfLandProv, uint32_t offset, uint32_t greyval);
@@ -55,7 +55,8 @@ public:
 	void prettyProvinces(Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t minProvSize);
 	BYTE* humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t seaLevel, uint32_t updateThreshold);
 	void prettyTerrain(Bitmap * provinceBMP, Bitmap * heightmap, uint32_t seaLevel, uint32_t updateThreshold);
-	void prettyRivers(Bitmap * riverBMP, Bitmap * heightmap, uint32_t riverAmount, uint32_t elevationTolerance, uint32_t seaLevel);
+	void generateRivers(Bitmap * riverBMP, Bitmap * heightmap);
+	void prettyRivers(Bitmap* riverBMP, Bitmap* heightmap);
 
 
 	void sanityChecks(Bitmap * provinceBMP);

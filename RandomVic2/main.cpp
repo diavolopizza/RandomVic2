@@ -7,6 +7,7 @@
 #include <memory.h>
 #include <random>
 #include "utils/Visualizer.h"
+#include "utils/MapMerger.h"
 /*
 Step 1: Generate Terrain/continent shape/rivers
 	-continents(check)
@@ -93,10 +94,11 @@ int main() {
 
 	if (Data::getInstance().genSimpleTerrain) {
 		//create simplistic terrain shape from noise map
-		terrainGenerator->createTerrain(terrainBMP, heightMapBMP, Data::getInstance().seaLevel, (double)Data::getInstance().landMassPercentage/100.0);
+		terrainGenerator->createTerrain(terrainBMP, heightMapBMP);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapFolder + ("simpleterrain.bmp")).c_str());
 		//generate rivers according to terrain and climate
-		terrainGenerator->prettyRivers(riverBMP, heightMapBMP, Data::getInstance().numRivers, Data::getInstance().elevationTolerance, Data::getInstance().seaLevel);
+		terrainGenerator->generateRivers(riverBMP, heightMapBMP);
+		terrainGenerator->prettyRivers(riverBMP, heightMapBMP);
 	}
 	else {
 		terrainBMP = BMPHandler::getInstance().Load8bitBMP(simpleTerrainsource, "simpleterrain");
@@ -168,6 +170,13 @@ int main() {
 		vMod.dumpMapFiles(&Data::getInstance(), terrainBMP, riverBMP, &continents, &regionBMP, heightMapBMP, &provincesBMP);
 	}
 	terrainGenerator->sanityChecks(&provincesBMP);
+	MapMerger merger;
+	Bitmap * heightRiver = merger.mergeHeightRiver(heightMapBMP, riverBMP);
+	BMPHandler::getInstance().SaveBMPToFile(heightRiver, (Data::getInstance().debugMapFolder + ("heightRiver.bmp")).c_str());
+	Bitmap * countryRiver = merger.mergeCountryRiverProvince(&countryBMP, riverBMP, &provincesBMP);
+	BMPHandler::getInstance().SaveBMPToFile(countryRiver, (Data::getInstance().debugMapFolder + ("countryRiver.bmp")).c_str());
+
+
 
 	return 0;
 	//errors:
