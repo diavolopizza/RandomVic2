@@ -41,8 +41,7 @@ public:
 	void evaluateCoasts(Bitmap * provinceBMP);
 	void evaluateNeighbours(Bitmap * provinceBMP);
 	void provPixels(Bitmap * provinceBMP);
-	//void assignColour(RGBTRIPLE provinceColour, BYTE* provinceBuffer, uint32_t currentPixel, uint32_t modifier = 1);
-	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t borderLimiter, uint32_t seaLevel, bool complexHeight, uint32_t updateThreshold);
+	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed);
 	void createTerrain(Bitmap * terrainBMP, Bitmap * heightMapBmp);
 	BYTE* landProvinces(uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);
 	BYTE* seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);

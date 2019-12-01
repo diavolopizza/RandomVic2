@@ -2,8 +2,9 @@
 
 
 
-CountryGenerator::CountryGenerator(ranlux48* random)
+CountryGenerator::CountryGenerator(Terrain * terrain, ranlux48* random)
 {
+	this->terrain = terrain;
 	this->random = random;
 }
 
@@ -16,11 +17,44 @@ CountryGenerator::~CountryGenerator()
 
 void CountryGenerator::generateCountries(uint32_t amount)
 {
+
 	for (int i = 0; i < amount; i++)
 	{
-		Country * C = new Country("GER", i, random);
-		countries.push_back(C);
+		RGBTRIPLE colour = { 120 + (*random)() % 120, 120 + (*random)() % 120, 120 + (*random)() % 120 };
+		string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		string tag = "AAA";
+
+		for (int i = 0; i < tag.size(); i++)
+		{
+			tag[i] = alphabet[(*random)() % 26];
+		}
+		for (auto c : countriesV)
+		{
+			if (c->equalColour(colour))
+			{
+				i--;
+				continue;
+			}
+
+		}
+		if (countriesM.find(tag) != countriesM.end())
+		{
+			i--;
+			continue;
+		}
+
+		Country * C = new Country(tag, i, colour, random);
+		countriesV.push_back(C);
+		//		C->flag = createFlag();
 	}
+
+}
+
+Flag * CountryGenerator::createFlag()
+{
+	Flag * flag = new Flag();
+
+	return flag;
 }
 
 Country * CountryGenerator::GetClosestCountry(vector<Prov*> provinces, Prov * seekingProv) {
@@ -45,24 +79,13 @@ Country * CountryGenerator::GetClosestCountry(vector<Prov*> provinces, Prov * se
 void CountryGenerator::distributeCountries(uint32_t amount, uint32_t sizeVariation, vector<Region*> regions)
 {
 	generateCountries(amount);
-	for (auto C : countries)
+	for (auto C : countriesV)
 	{
 		uint32_t regionIndex = (*random)() % regions.size();
 		if (!regions[regionIndex]->country) {
 			C->addRegion(regions[regionIndex]);
 			regions[regionIndex]->setCountry(C);
-		}/*
-
-		vector<Region*> availableRegions;
-		for (auto region : C->regions)
-		{
-			for (auto neighbourProv : region->neighbourRegions) {
-				if (neighbourProv->country == nullptr)
-				{
-					availableRegions.push_back(neighbourProv);
-				}
-			}
-		}*/
+		}
 	}
 	bool allAssigned = false;
 	for (Region * R : regions)
@@ -105,8 +128,10 @@ void CountryGenerator::distributeCountries(uint32_t amount, uint32_t sizeVariati
 	}
 }
 
-Bitmap * CountryGenerator::countryBMP(Bitmap * countryBMP) {
-	for (auto country : countries)
+Bitmap * CountryGenerator::countryBMP() {
+
+	Bitmap * countryBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
+	for (auto country : countriesV)
 	{
 		for (auto region : country->regions)
 			for (auto prov : region->provinces)
@@ -118,4 +143,90 @@ Bitmap * CountryGenerator::countryBMP(Bitmap * countryBMP) {
 			}
 	}
 	return countryBMP;
+}
+
+Bitmap * CountryGenerator::wealthBMP()
+{
+	/*need:
+		-rivers
+		-coastal
+		-heat
+		-resources
+		-industry
+		-*/
+	return nullptr;
+}
+
+Bitmap * CountryGenerator::resourceBMP()
+{
+	RGBTRIPLE coal = { 0, 0, 0 };
+	RGBTRIPLE iron = { 128, 128, 128 };
+	RGBTRIPLE sulfur = { 200, 150, 50 };
+
+	RGBTRIPLE fish = { 200, 20, 20 };
+	RGBTRIPLE grain = { 255, 255, 0 };
+	Bitmap * resourceBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
+	return resourceBMP;
+}
+
+Bitmap * CountryGenerator::civilizationBMP()
+{
+	Bitmap * civilizationBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
+	uint32_t conIndex = 0;
+	for (auto continent : terrain->continents)
+	{
+		//lets make half uncivilized and round down.
+		if (conIndex < (terrain->continents.size() / 2))
+		{
+			continent->civilized = true;
+		}
+		else {
+			continent->civilized = false;
+		}
+		conIndex++;
+
+		//continent->civilized = (bool)(*random)() % 5;
+		if (!continent->civilized)
+		{
+			for (Prov* prov : continent->provinces)
+			{
+				prov->civilizationLevel = 0.5 + (double)((*random)() % 3) / 10;
+			}
+		}
+		else {
+			for (Prov* prov : continent->provinces)
+			{
+				prov->civilizationLevel = 0.0 + (double)((*random)() % 3)/10;
+			}
+		}
+	}
+	for(int i = 0; i < 3; i++)
+	for (auto country : countriesV)
+	{
+		for (auto region : country->regions)
+		{
+			for (auto prov : region->provinces)
+			{
+				prov->civilizationLevel *= (1 + (prov->neighbourProvinces[(*random)() % prov->neighbourProvinces.size()]->civilizationLevel)/10);
+				if (prov->civilizationLevel > 1)
+					prov->civilizationLevel = 1;
+			}
+		}
+	}
+
+	for (auto country : countriesV)
+	{
+		for (auto region : country->regions)
+		{
+			for (auto prov : region->provinces)
+			{
+				for (auto pixelIndex : prov->pixels)
+				{
+					RGBTRIPLE colour = { 255 * prov->civilizationLevel, 255 * prov->civilizationLevel, 0 };
+					civilizationBMP->setTripleAtIndex(colour, pixelIndex);
+				}
+			}
+		}
+	}
+	return civilizationBMP;
 }

@@ -4,6 +4,7 @@
 #include <vector>
 #include <Windows.h>
 #include <random>
+#include "Flag.h"
 using namespace std;
 class Prov;
 class Region;
@@ -14,12 +15,10 @@ class Country
 	string tag;
 	uint32_t ID;
 	Prov* capital;
-	//Flag * flag;
 	RGBTRIPLE colour;
 
-
 public:
-	Country(string tag, uint32_t ID, ranlux48* random);
+	Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux48* random);
 	~Country();
 
 	vector<Prov*> provinces;
@@ -27,6 +26,9 @@ public:
 	vector <Region*> regions;
 	void addRegion(Region * R);
 	RGBTRIPLE getColour();
+	bool equalColour(RGBTRIPLE other);
+	Flag * flag;
+	uint32_t partyPopularities[4] = { 0,0,0,0 };
 
 };
 

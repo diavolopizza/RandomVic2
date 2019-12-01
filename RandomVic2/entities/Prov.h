@@ -31,7 +31,7 @@ public:
 	string climate = "";
 	string owner = "";//tag who owns prov
 	vector<string>cores;
-
+	float civilizationLevel;
 
 
 	//VIC2

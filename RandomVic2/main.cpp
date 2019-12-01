@@ -64,7 +64,7 @@ int main() {
 	const char* heightmapsource = heightmapSourceString.c_str();
 	//generate noise map
 	if (Data::getInstance().genHeight) {
-		heightMapBMP->setBuffer(terrainGenerator->heightMap(heightMapBMP, Data::getInstance().seed, Data::getInstance().fractalFrequency, Data::getInstance().fractalOctaves, Data::getInstance().fractalGain, Data::getInstance().divideThreshold, Data::getInstance().seaLevel, Data::getInstance().complexHeight, Data::getInstance().updateThreshold));
+		heightMapBMP->setBuffer(terrainGenerator->heightMap(heightMapBMP, Data::getInstance().seed));
 
 		BMPHandler::getInstance().SaveBMPToFile(heightMapBMP, (Data::getInstance().debugMapFolder + ("heightmap.bmp")).c_str());
 	}
@@ -157,11 +157,12 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (Data::getInstance().debugMapFolder + ("provinces.bmp")).c_str());
 	}
 
-	CountryGenerator cG(Data::getInstance().random);
+	CountryGenerator cG(terrainGenerator, Data::getInstance().random);
 	cG.distributeCountries(100, 0, terrainGenerator->regions);
-	Bitmap countryBMP(Data::getInstance().width, Data::getInstance().height, 24);
-	cG.countryBMP(&countryBMP);
-	BMPHandler::getInstance().SaveBMPToFile(&countryBMP, (Data::getInstance().debugMapFolder + ("countries.bmp")).c_str());
+	Bitmap * countryBMP = cG.countryBMP();
+	BMPHandler::getInstance().SaveBMPToFile(countryBMP, (Data::getInstance().debugMapFolder + ("countries.bmp")).c_str());
+	Bitmap * developmentBMP = cG.civilizationBMP();
+	BMPHandler::getInstance().SaveBMPToFile(developmentBMP, (Data::getInstance().debugMapFolder + ("development.bmp")).c_str());
 
 
 	if (Data::getInstance().genV2)
@@ -173,14 +174,13 @@ int main() {
 	MapMerger merger;
 	Bitmap * heightRiver = merger.mergeHeightRiver(heightMapBMP, riverBMP);
 	BMPHandler::getInstance().SaveBMPToFile(heightRiver, (Data::getInstance().debugMapFolder + ("heightRiver.bmp")).c_str());
-	Bitmap * countryRiver = merger.mergeCountryRiverProvince(&countryBMP, riverBMP, &provincesBMP);
+	Bitmap * countryRiver = merger.mergeCountryRiverProvince(countryBMP, riverBMP, &provincesBMP);
 	BMPHandler::getInstance().SaveBMPToFile(countryRiver, (Data::getInstance().debugMapFolder + ("countryRiver.bmp")).c_str());
 
 
 
 	return 0;
 	//errors:
-		//deleting small province (prettyprovinces) messes up seastarts
 		//simple lakes crash loading textures
 		//naval bases
 	/*

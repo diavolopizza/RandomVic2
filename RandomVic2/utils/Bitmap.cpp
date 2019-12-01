@@ -72,6 +72,7 @@ RGBTRIPLE Bitmap::getTripleAtIndex(uint32_t bufferIndex)
 		retVal.rgbtBlue = Buffer[bufferIndex];
 		retVal.rgbtGreen = Buffer[bufferIndex + 1];
 		retVal.rgbtRed = Buffer[bufferIndex + 2];
+		//retVal = *(RGBTRIPLE*)(Buffer+bufferIndex);
 		return retVal;
 	}
 	else {
@@ -136,8 +137,6 @@ void Bitmap::setTripleAtIndex(RGBTRIPLE colour, uint32_t bufferIndex)
 	if (bInfoHeader.biBitCount == 24)
 	{
 		bufferIndex *= 3;
-		//if ((int)colour.rgbtBlue > 0)
-		//	cout << "here";
 		Buffer[bufferIndex] = colour.rgbtBlue;
 		colour.rgbtBlue = Buffer[bufferIndex];
 		Buffer[bufferIndex + 1] = colour.rgbtGreen;

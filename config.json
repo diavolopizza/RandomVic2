@@ -1,7 +1,7 @@
 {
 	"module": 
 	{
-		"genHeight" : 0,
+		"genHeight" : 1,
 		"genSimpleTerrain" : 1,
 		"genComplexTerrain" : 0,
 		"genV2" : 0,
@@ -10,11 +10,11 @@
 
 	"map": 
 	{
-		"seed" : 5,
-        "height" : 1000,
-		"width" : 1000,
-		"seaLevel" : 160,
-		"landMassPercentage" : 20,
+		"seed" : 1,
+        "height" : 2000,
+		"width" : 2000,
+		"seaLevel" : 128,
+		"landMassPercentage" : 35,
 		
 		"rivers" : 
 		{
@@ -22,7 +22,7 @@
 			"numRivers" : 300
 		},
 		"heightmap" : {
-			"fractalFrequency" : 0.0006,
+			"fractalFrequency" : 0.002,
 			"fractalOctaves" : 11,
 			"fractalGain" : 0.5,
 			"complexHeight" : 1,

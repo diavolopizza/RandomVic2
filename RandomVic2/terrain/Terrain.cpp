@@ -179,7 +179,7 @@ void Terrain::provPixels(Bitmap * provinceBMP)
 	}
 }
 //creates the heightmap with a given seed
-BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32_t fractalOctaves, float fractalGain, uint32_t divideThreshold, uint32_t seaLevel, bool complexHeight, uint32_t updateThreshold)
+BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed)
 {
 	if (Data::getInstance().opencvVisualisation)
 		Visualizer::initializeWindow();
@@ -189,23 +189,23 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 	FastNoise myNoise; // Create a FastNoise object
 	myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
 	myNoise.SetSeed(seed);
-	myNoise.SetFrequency(frequency);
-	myNoise.SetFractalOctaves(fractalOctaves);
-	myNoise.SetFractalGain(fractalGain);
+	myNoise.SetFrequency(Data::getInstance().fractalFrequency);
+	myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves);
+	myNoise.SetFractalGain(Data::getInstance().fractalGain);
 	myNoise.SetFractalType(FastNoise::FractalType::FBM);
 
 	FastNoise myNoise2; // Create a FastNoise object
 	myNoise2.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
 	myNoise.SetSeed(seed + 1337);
 	//myNoise2.SetSeed(3);
-	myNoise2.SetFrequency(0.0036f);
-	myNoise2.SetFractalOctaves(fractalOctaves);
-	myNoise2.SetFractalGain(fractalGain);
+	myNoise2.SetFrequency(0.0018f);
+	myNoise2.SetFractalOctaves(Data::getInstance().fractalOctaves);
+	myNoise2.SetFractalGain(Data::getInstance().fractalGain);
 	myNoise2.SetFractalType(FastNoise::FBM);
 
 	const uint32_t width = RGBBMP->bInfoHeader.biWidth;
 	const uint32_t height = RGBBMP->bInfoHeader.biHeight;
-	uint32_t delimiter = width / divideThreshold;
+	uint32_t delimiter = width / Data::getInstance().divideThreshold;
 	for (uint32_t x = 0; x < height; x++)
 	{
 		for (uint32_t y = 0; y < width; y++)
@@ -220,11 +220,11 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 			}
 			FN_DECIMAL noiseLevel = (myNoise.GetNoise(x, y) + 1) * 128 * factor;
 			uint32_t completeNoise;
-			if (noiseLevel >= seaLevel && complexHeight) {
+			if (noiseLevel >= Data::getInstance().seaLevel && Data::getInstance().complexHeight) {
 				FN_DECIMAL noiseLevel2 = (myNoise2.GetNoise(x, y) + 1) * 128 * factor;
 				completeNoise = (noiseLevel + (noiseLevel2 * 0.5)) *0.67;
-				if (completeNoise < seaLevel + 1) {
-					completeNoise = seaLevel + 1;/*
+				if (completeNoise < Data::getInstance().seaLevel + 1) {
+					completeNoise = Data::getInstance().seaLevel + 1;/*
 					completeNoise /= 4;
 					completeNoise *= 4;*/
 				}
@@ -237,7 +237,7 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, float frequency, uint32
 			RGBTRIPLE colour{ 1 + completeNoise, 1 + completeNoise, 1 + completeNoise };
 			RGBBMP->setTripleAtXYPosition(colour, x, y);
 		}
-		if (x % updateThreshold == 0 && Data::getInstance().opencvVisualisation)
+		if (x % Data::getInstance().updateThreshold == 0 && Data::getInstance().opencvVisualisation)
 			Visualizer::displayImage(RGBBMP);
 	}
 	/*'n' >> redo;*/
@@ -250,11 +250,16 @@ void Terrain::createTerrain(Bitmap * terrainBMP, Bitmap* heightMapBmp)
 {
 	double tempLandPercentage = 0;
 	uint32_t landPixels = 0;
-	while (tempLandPercentage < (double)Data::getInstance().landMassPercentage / 100.0) {
-		Data::getInstance().seaLevel--;
+	while (0.05 < fabs(tempLandPercentage - (double)Data::getInstance().landMassPercentage / 100.0)) {
+		if(tempLandPercentage - (double)Data::getInstance().landMassPercentage / 100.0 < 0)
+			Data::getInstance().seaLevel--;
+		else
+			Data::getInstance().seaLevel++;
+
 		cout << "Creating basic terrain from heightmap" << endl;
 		uint32_t width = terrainBMP->bInfoHeader.biWidth;
 		uint32_t height = terrainBMP->bInfoHeader.biHeight;
+
 		for (uint32_t x = 0; x < height; x++)
 		{
 			for (uint32_t y = 0; y < width; y++)
@@ -715,29 +720,28 @@ double calcMountainShadowAridity(Bitmap * heightmapBMP, uint32_t heightPos, uint
 	}
 	return windIntensity * ((double)mountainPixelsInRange / (double)maxEffectDistance);
 }
-double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t widthPos, int currentDirection, uint32_t seaLevel, double windIntensity, uint32_t width, uint32_t height) {
+double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t widthPos, int windDirection, uint32_t seaLevel, double windIntensity, uint32_t width, uint32_t height) {
 	//the more continental, the less of an influence the distance to a coast has
 	uint32_t continentality = 0;
 	//East/west directions are more important that north/south, as important winds travel east/west more often
 	uint32_t maxEffectDistance = width / 200;
 	//in the opposite direction of the major global winds, the distance to look at is much larger
 	uint32_t windFactor = 20 * windIntensity;
-	uint32_t coastDistance = maxEffectDistance;
+	uint32_t coastDistance = maxEffectDistance * windFactor;
 	uint32_t windDistance = maxEffectDistance * windFactor;
 
 	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
 	for (int i = 0; i < maxEffectDistance * windFactor; i++)
 	{
-		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * currentDirection));
+		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < windDistance)
 				windDistance = i;
 		}
-
 	}
 	for (int x = 0; x < maxEffectDistance * windFactor; x++) {
-		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + ((windDistance + x) * currentDirection));
+		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + ((windDistance + x) * windDirection));
 		if (value != -1 && value > seaLevel) {
 			continentality++;
 		}
@@ -745,7 +749,7 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
 	for (int i = 0; i < maxEffectDistance; i++)
 	{
-		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * currentDirection));
+		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < coastDistance)
@@ -756,7 +760,7 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 	//the direction the winds are going(e.g. east in case of west winds)
 	for (int i = 0; i < maxEffectDistance; i++)
 	{
-		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * currentDirection * -1));
+		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection * -1));
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < coastDistance)
@@ -877,7 +881,7 @@ BYTE * Terrain::humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t
 					heatAridity = 0.5 - abs(heightf - dryArea);
 					heatAridity *= 2;
 					heatAridity = boost::algorithm::clamp(heatAridity, 0, 1);
-					if (abs(heightf - tradeWinds) < 0.3)
+					if (abs(heightf - tradeWinds) < 0.3) // near equator
 					{
 						heatAridity -= 0.3 - abs(heightf - tradeWinds);
 					}
@@ -1045,8 +1049,8 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t se
 		Visualizer::initializeWindow();
 	//TODO CONFIG FOR ALL PARAMS
 	uint32_t coastalDistanceInfluence = 30;
-	uint32_t mountainStart = seaLevel + 50;
-	uint32_t hillStart = seaLevel + 30;
+	uint32_t mountainStart = seaLevel + (uint32_t)((float)seaLevel * 0.4);
+	uint32_t hillStart = seaLevel + (uint32_t)((float)seaLevel * 0.2);
 
 	uint32_t arctic = 0;//0-3
 	uint32_t arcticRange = 4;
@@ -1261,7 +1265,7 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, Bitmap * heightmap, uint32_t se
 			}
 			if (altitude > mountainStart)//mountains
 			{
-				if ((uint32_t)((float)(altitude - mountainStart) / (float)(210 - mountainStart) *(float)7 + 24) < 31) {
+				if ((uint32_t)((float)(altitude - mountainStart) / (float)(((float)mountainStart * 1.25) - mountainStart) *(float)7 + 24) < 31) {
 					terrainBMP->setValueAtIndex(pixel, (uint32_t)((float)(altitude - mountainStart) / (float)(210 - mountainStart) *(float)7 + 24));
 				}
 				else { terrainBMP->setValueAtIndex(pixel, 31); }

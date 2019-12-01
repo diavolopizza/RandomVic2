@@ -11,6 +11,7 @@ class Continent
 public:
 	string name;
 	uint32_t ID;
+	bool civilized;
 	vector<Prov*> provinces;
 	vector<Region*> regions;
 	Continent(string name, uint32_t ID);

@@ -4,6 +4,11 @@
 /RandomVic2/RandomVic2.*
 /RandomVic2/Release
 /RandomVic2/FastNoise/
+/RandomVic2/.vs/
+*.vcxproj
+*libtga
+/debugMap/
+/x64/
 
 
 
@@ -36,5 +41,3 @@ sysinfo.txt
 *.apk
 *.unitypackage
 
-# Gitignore for HoloLense toolkit
-/Assets/[Hh]olo[Tt]oolkit*
