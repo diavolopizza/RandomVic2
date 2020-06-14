@@ -103,6 +103,7 @@ int main() {
 	else {
 		terrainBMP = BMPHandler::getInstance().Load8bitBMP(simpleTerrainsource, "simpleterrain");
 	}
+	//return 0;
 	//create provinces
 	{
 		provincesBMP.setBuffer(terrainGenerator->landProvinces(Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
@@ -133,8 +134,8 @@ int main() {
 		genericParser.writeContinents((Data::getInstance().debugMapFolder + ("continent.txt")).c_str(), terrainGenerator->continents);
 	}
 	if (Data::getInstance().genComplexTerrain) {
-		terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
-		BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (Data::getInstance().debugMapFolder + ("humidity.bmp")).c_str());
+		//terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
+		//BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (Data::getInstance().debugMapFolder + ("humidity.bmp")).c_str());
 		//generate terrain and rivers according to simplistic climate model
 		terrainGenerator->prettyTerrain(terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapFolder + ("terrain.bmp")).c_str());

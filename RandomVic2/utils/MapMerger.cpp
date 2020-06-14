@@ -21,10 +21,9 @@ Bitmap * MapMerger::mergeHeightRiver(Bitmap * heightmapBMP, Bitmap * riverBMP)
 		}
 		else {
 			RGBTRIPLE colour = heightmapBMP->getTripleAtIndex(i);
-			if (colour.rgbtBlue < Data::getInstance().seaLevel)
+			if (colour.rgbtBlue <= Data::getInstance().seaLevel)
 				returnedBMP->setTripleAtIndex({ 0,0,0 }, i);
 			else {
-
 				colour.rgbtRed = (colour.rgbtRed / 5) * 5;
 				colour.rgbtGreen = (colour.rgbtGreen / 5) * 5;
 				colour.rgbtBlue = (colour.rgbtBlue / 5) * 5;

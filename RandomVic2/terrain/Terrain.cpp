@@ -197,15 +197,32 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed)
 	FastNoise myNoise2; // Create a FastNoise object
 	myNoise2.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
 	myNoise.SetSeed(seed + 1337);
-	//myNoise2.SetSeed(3);
-	myNoise2.SetFrequency(0.0018f);
+	myNoise2.SetFrequency(0.0060f);
 	myNoise2.SetFractalOctaves(Data::getInstance().fractalOctaves);
 	myNoise2.SetFractalGain(Data::getInstance().fractalGain);
 	myNoise2.SetFractalType(FastNoise::FBM);
 
+	FastNoise myNoise3; // Create a FastNoise object
+	myNoise3.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
+	myNoise3.SetSeed(seed + 20000);
+	myNoise3.SetFrequency(0.01f);
+	myNoise3.SetFractalOctaves(Data::getInstance().fractalOctaves);
+	myNoise3.SetFractalGain(Data::getInstance().fractalGain);
+	myNoise3.SetFractalType(FastNoise::FBM);
+
+	FastNoise myNoise4; // Create a FastNoise object
+	myNoise4.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
+	myNoise4.SetSeed(seed + 30000);
+	myNoise4.SetFrequency(0.01f);
+	myNoise4.SetFractalOctaves(Data::getInstance().fractalOctaves);
+	myNoise4.SetFractalGain(Data::getInstance().fractalGain);
+	myNoise4.SetFractalType(FastNoise::FBM);
+
 	const uint32_t width = RGBBMP->bInfoHeader.biWidth;
 	const uint32_t height = RGBBMP->bInfoHeader.biHeight;
-	uint32_t delimiter = width / Data::getInstance().divideThreshold;
+	// set the point at which heightvalues are reduced towards 0 
+	// this eliminates provinces overlapping at the east/west map boundaries
+	uint32_t delimiter = width / Data::getInstance().divideThreshold; 
 	for (uint32_t x = 0; x < height; x++)
 	{
 		for (uint32_t y = 0; y < width; y++)
@@ -218,21 +235,27 @@ BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed)
 			{
 				factor = ((float)width - (float)y) / delimiter;
 			}
-			FN_DECIMAL noiseLevel = (myNoise.GetNoise(x, y) + 1) * 128 * factor;
-			uint32_t completeNoise;
-			if (noiseLevel >= Data::getInstance().seaLevel && Data::getInstance().complexHeight) {
-				FN_DECIMAL noiseLevel2 = (myNoise2.GetNoise(x, y) + 1) * 128 * factor;
-				completeNoise = (noiseLevel + (noiseLevel2 * 0.5)) *0.67;
+			FN_DECIMAL noiseLevel = 40 + (myNoise.GetNoise(x, y) + 1) * 64 * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
+			uint32_t completeNoise = noiseLevel;
+			if (noiseLevel >= Data::getInstance().seaLevel + 1 && Data::getInstance().complexHeight) {
+				FN_DECIMAL noiseLevel4 = (myNoise4.GetNoise(x, y) + 1) * 24 * factor;
+				completeNoise = Data::getInstance().seaLevel + noiseLevel4;
+				if (completeNoise >= Data::getInstance().seaLevel + 20 && Data::getInstance().complexHeight) {
+					FN_DECIMAL noiseLevel2 = (myNoise2.GetNoise(x, y) + 1) * 12 * factor;
+					//completeNoise = (Data::getInstance().seaLevel + (noiseLevel - Data::getInstance().seaLevel) * 1 + (noiseLevel2 * 0.25)) * 0.8;
+					completeNoise = (completeNoise * 1 + noiseLevel2 * 1);
+					if (completeNoise >= Data::getInstance().seaLevel + 30 && Data::getInstance().complexHeight) {
+						FN_DECIMAL noiseLevel3 = (myNoise3.GetNoise(x, y) + 1) * 16 * factor;
+						completeNoise = (completeNoise * 1 + noiseLevel3 * 1);
+					}
+				}
 				if (completeNoise < Data::getInstance().seaLevel + 1) {
-					completeNoise = Data::getInstance().seaLevel + 1;/*
-					completeNoise /= 4;
-					completeNoise *= 4;*/
+					completeNoise = Data::getInstance().seaLevel + 1;
+					cout << "Over boundaries" << endl;
 				}
 			}
 			else {
-				completeNoise = noiseLevel;/*
-				completeNoise /= 4;
-				completeNoise *= 4;*/
+				completeNoise = noiseLevel;
 			}
 			RGBTRIPLE colour{ 1 + completeNoise, 1 + completeNoise, 1 + completeNoise };
 			RGBBMP->setTripleAtXYPosition(colour, x, y);
@@ -251,7 +274,7 @@ void Terrain::createTerrain(Bitmap * terrainBMP, Bitmap* heightMapBmp)
 	double tempLandPercentage = 0;
 	uint32_t landPixels = 0;
 	while (0.05 < fabs(tempLandPercentage - (double)Data::getInstance().landMassPercentage / 100.0)) {
-		if(tempLandPercentage - (double)Data::getInstance().landMassPercentage / 100.0 < 0)
+		if (tempLandPercentage - (double)Data::getInstance().landMassPercentage / 100.0 < 0)
 			Data::getInstance().seaLevel--;
 		else
 			Data::getInstance().seaLevel++;
@@ -305,7 +328,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	provinceCreation(provinceBMP, provincesize, numoflandprov, 0, 0);
 	//For multithreading: create vector of random values. Used for performance improvements, as ranlux48 is using locks, and new instances would remove determination.
 	vector<uint32_t> randomValuesCached;
-	for (uint32_t i = 0; i < bmpSize / 64; i++) {
+	for (uint32_t i = 0; i < bmpSize / 16; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
 	uint32_t threadCount = 1;
@@ -460,7 +483,8 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 						//not going out of buffer bounds
 						//only assign if neighbouring pixel is assigned and of same type
 						//not crossing the wrapping line in east/west direction
-				case 0: {
+				case 0:
+				{ //EAST
 					if (unassignedPixel < bmpSize - 1 && provinceBMP->getValueAtIndex(RIGHT(unassignedPixel)) != 0 && provinceBMP->getValueAtIndex(RIGHT(unassignedPixel)) == greyVal)
 					{
 						//TODO: add river crossings to each province
@@ -470,7 +494,7 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 					break;
 				}
 				case 1:
-				{
+				{ //WEST
 					if (unassignedPixel > 1 && provinceBMP->getValueAtIndex(LEFT(unassignedPixel)) != 0 && provinceBMP->getValueAtIndex(LEFT(unassignedPixel)) == greyVal)
 					{
 						if (unassignedPixel % (bmpWidth) != 0 && !(riverBMP->getValueAtIndex(LEFT(unassignedPixel)) <= 10))

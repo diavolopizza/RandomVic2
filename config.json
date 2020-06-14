@@ -3,16 +3,16 @@
 	{
 		"genHeight" : 1,
 		"genSimpleTerrain" : 1,
-		"genComplexTerrain" : 0,
+		"genComplexTerrain" : 1,
 		"genV2" : 0,
 		"opencvVisualisation" : 0
 	},
 
 	"map": 
 	{
-		"seed" : 1,
-        "height" : 2000,
-		"width" : 2000,
+		"seed" : 0,
+        "height" : 2160,
+		"width" : 5616,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		
@@ -22,7 +22,7 @@
 			"numRivers" : 300
 		},
 		"heightmap" : {
-			"fractalFrequency" : 0.002,
+			"fractalFrequency" : 0.0008,
 			"fractalOctaves" : 11,
 			"fractalGain" : 0.5,
 			"complexHeight" : 1,
