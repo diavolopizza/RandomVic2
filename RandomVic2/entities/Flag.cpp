@@ -5,7 +5,7 @@ Flag::Flag(ranlux48* random)
 {
 	this->random = random;
 
-	int type = 3;// (*random)() % 4;
+	int type = (*random)() % 4;
 	switch (type)
 	{
 	case 0:
@@ -143,18 +143,17 @@ void Flag::circle()
 //TODO: Return pretty colour combinations
 vector<RGBTRIPLE> Flag::generateColours()
 {
-
 	// NOTE: this is B, G , R!!!
 	vector<RGBTRIPLE> neutrals;
 	neutrals.push_back(RGBTRIPLE{ 0, 0, 0 }); // black
 	neutrals.push_back(RGBTRIPLE{ 255, 255, 255 }); // white
 	neutrals.push_back(RGBTRIPLE{ 192, 192, 192 }); // silver
-	neutrals.push_back(RGBTRIPLE{ 55, 175, 212 }); // gold
 
 	vector<RGBTRIPLE> brightColours;
 	brightColours.push_back(RGBTRIPLE{ 20, 20, 200 }); // red
 	brightColours.push_back(RGBTRIPLE{ 30, 220, 30 }); // green
 	brightColours.push_back(RGBTRIPLE{ 200, 30, 0 }); // blue
+	brightColours.push_back(RGBTRIPLE{ 55, 175, 212 }); // gold
 
 	vector<RGBTRIPLE> darkColours;
 	darkColours.push_back(RGBTRIPLE{ 90, 30, 30 }); // dark blue
@@ -172,28 +171,16 @@ vector<RGBTRIPLE> Flag::generateColours()
 		colours.push_back(neutrals[(*random)() % neutrals.size()]);
 		vector<RGBTRIPLE> middleColour = nonNeutralTypes[(*random)() % nonNeutralTypes.size()];
 		colours.push_back(middleColour[(*random)() % middleColour.size()]);
-
-
 		colours.push_back(neutrals[(*random)() % neutrals.size()]);
 
 	}
 	else {
 		vector<RGBTRIPLE> leftColours = nonNeutralTypes[(*random)() % nonNeutralTypes.size()];
 		colours.push_back(leftColours[(*random)() % leftColours.size()]);
-
 		colours.push_back(neutrals[(*random)() % neutrals.size()]);
-
 		vector<RGBTRIPLE> rightColours = nonNeutralTypes[(*random)() % nonNeutralTypes.size()];
 		colours.push_back(rightColours[(*random)() % rightColours.size()]);
 	}
-	//for (uint32_t i = 0; i < 10; i++)
-	//{
-	//	RGBTRIPLE colour;
-	//	colour.rgbtBlue = (*random)() % 256;
-	//	colour.rgbtGreen = (*random)() % 256;
-	//	colour.rgbtRed = (*random)() % 256;
-	//	colours.push_back(colour);
-	//}
 	return colours;
 }
 

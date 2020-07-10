@@ -138,11 +138,11 @@ Bitmap * CountryGenerator::countryBMP() {
 	Bitmap * countryBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
 	for (auto country : countriesV)
 	{
-		uint32_t countryXspan = country->maxX - country->minX;
-		uint32_t countryYspan = country->maxY - country->minY;
+		int countryXspan = country->maxX - country->minX;
+		int countryYspan = country->maxY - country->minY;
 		for (auto region : country->regions)
 			for (auto prov : region->provinces)
-			{  
+			{
 				for (auto pixelIndex : prov->pixels)
 				{
 					//if(pixelIndex % Data::getInstance().width > )
@@ -151,7 +151,6 @@ Bitmap * CountryGenerator::countryBMP() {
 					// easy: just determine a  x and y percentage, which can be mapped to the flag
 					float xPercent = (float)(pixelIndex % Data::getInstance().width - country->minX) / (float)countryXspan;
 					float yPercent = (float)(pixelIndex / Data::getInstance().width - country->minY) / (float)countryYspan;
-
 					int heightpos = country->flag->width * (int)(country->flag->height * yPercent);
 					int location = country->flag->width * xPercent + heightpos;
 					RGBTRIPLE colour = country->flag->getPixel(location);
@@ -214,23 +213,23 @@ Bitmap * CountryGenerator::civilizationBMP()
 		else {
 			for (Prov* prov : continent->provinces)
 			{
-				prov->civilizationLevel = 0.0 + (double)((*random)() % 3)/10;
+				prov->civilizationLevel = 0.0 + (double)((*random)() % 3) / 10;
 			}
 		}
 	}
-	for(int i = 0; i < 3; i++)
-	for (auto country : countriesV)
-	{
-		for (auto region : country->regions)
+	for (int i = 0; i < 3; i++)
+		for (auto country : countriesV)
 		{
-			for (auto prov : region->provinces)
+			for (auto region : country->regions)
 			{
-				prov->civilizationLevel *= (1 + (prov->neighbourProvinces[(*random)() % prov->neighbourProvinces.size()]->civilizationLevel)/10);
-				if (prov->civilizationLevel > 1)
-					prov->civilizationLevel = 1;
+				for (auto prov : region->provinces)
+				{
+					prov->civilizationLevel *= (1 + (prov->neighbourProvinces[(*random)() % prov->neighbourProvinces.size()]->civilizationLevel) / 10);
+					if (prov->civilizationLevel > 1)
+						prov->civilizationLevel = 1;
+				}
 			}
 		}
-	}
 
 	for (auto country : countriesV)
 	{
@@ -266,11 +265,11 @@ void CountryGenerator::determineDimensions()
 					country->maxX = pixel % Data::getInstance().width;
 				}
 
-				if (pixel / Data::getInstance().height < country->minY)
+				if (pixel / Data::getInstance().width < country->minY)
 				{
 					country->minY = pixel / Data::getInstance().width;
 				}
-				if (pixel / Data::getInstance().height > country->maxY)
+				if (pixel / Data::getInstance().width > country->maxY)
 				{
 					country->maxY = pixel / Data::getInstance().width;
 				}
