@@ -3,23 +3,23 @@
 	{
 		"genHeight" : 1,
 		"genSimpleTerrain" : 1,
-		"genComplexTerrain" : 1,
+		"genComplexTerrain" : 0,
 		"genV2" : 0,
 		"opencvVisualisation" : 0
 	},
 
 	"map": 
 	{
-		"seed" : 0,
-        "height" : 2160,
-		"width" : 5616,
+		"seed" : 1,
+        "height" : 1024,
+		"width" : 1024,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		
 		"rivers" : 
 		{
 			"elevationTolerance" : 4,
-			"numRivers" : 300
+			"numRivers" : 3
 		},
 		"heightmap" : {
 			"fractalFrequency" : 0.0008,
@@ -30,10 +30,10 @@
 		},
 		"provinces" : {
 			"landProvinces" : 1000,
-			"minProvPerContinent" : 100,
+			"minProvPerContinent" : 1,
 			"minProvPerRegion" : 5,
 			"seaProvinces" : 2000,
-			"minProvSize" : 100
+			"minProvSize" : 1
 		},
 		"humidity" : {
 			"coastalEffectRange" : -1,
@@ -45,12 +45,16 @@
 
     "v2": 
 	{
-        "source": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Victoria 2\\",
-        "destination": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Victoria 2\\mod\\myMod\\"
+        "source": "C:\\SteamLibrary\\steamapps\\common\\Victoria 2\\",
+        "destination": "C:\\SteamLibrary\\steamapps\\common\\Victoria 2\\mod\\myMod\\"
     },
 	
 	"visualisation":
 	{
 		"updateThreshold" : 50
+	},
+	"debug":
+	{
+		"debugMapsPath": "C:\\SteamLibrary\\steamapps\\common\\Victoria 2\\mod\\myMod\\DebugMap\\"
 	}
 }

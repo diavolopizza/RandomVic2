@@ -16,7 +16,7 @@ public:
 	string mapSource = "";
 	string modPath = "";
 	string mapDest = "";
-	string debugMapFolder = "debugMap\\";
+	string debugMapsPath = "";
 
 
 	//program flow params

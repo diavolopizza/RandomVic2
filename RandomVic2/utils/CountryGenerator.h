@@ -27,6 +27,8 @@ public:
 	Bitmap * resourceBMP();
 	Bitmap * civilizationBMP();
 
+	void determineDimensions();
+
 
 };
 

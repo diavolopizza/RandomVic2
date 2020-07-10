@@ -1,4 +1,6 @@
 #pragma once
+#define D_SCL_SECURE_NO_WARNINGS
+#define _SCL_SECURE_NO_WARNINGS
 #include <string>
 #include <iostream>
 #include <fstream>

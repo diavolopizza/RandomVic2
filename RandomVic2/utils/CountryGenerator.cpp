@@ -45,14 +45,19 @@ void CountryGenerator::generateCountries(uint32_t amount)
 
 		Country * C = new Country(tag, i, colour, random);
 		countriesV.push_back(C);
-		//		C->flag = createFlag();
+		C->flag = createFlag();
+		string path = "C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\" + tag + ".tga";
+		if (!tga_write_raw(path.c_str(), C->flag->width, C->flag->height, C->flag->flag, TGA_TRUECOLOR_32)) {
+			printf("Failed to write image!\n");
+			printf(tga_error_string(tga_get_last_error()));
+		}
 	}
 
 }
 
 Flag * CountryGenerator::createFlag()
 {
-	Flag * flag = new Flag();
+	Flag * flag = new Flag(random);
 
 	return flag;
 }
@@ -133,12 +138,25 @@ Bitmap * CountryGenerator::countryBMP() {
 	Bitmap * countryBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
 	for (auto country : countriesV)
 	{
+		uint32_t countryXspan = country->maxX - country->minX;
+		uint32_t countryYspan = country->maxY - country->minY;
 		for (auto region : country->regions)
 			for (auto prov : region->provinces)
-			{
+			{  
 				for (auto pixelIndex : prov->pixels)
 				{
+					//if(pixelIndex % Data::getInstance().width > )
 					countryBMP->setTripleAtIndex(country->getColour(), pixelIndex);
+					// need to map the position relative to the country dimensions to the position on the flag
+					// easy: just determine a  x and y percentage, which can be mapped to the flag
+					float xPercent = (float)(pixelIndex % Data::getInstance().width - country->minX) / (float)countryXspan;
+					float yPercent = (float)(pixelIndex / Data::getInstance().width - country->minY) / (float)countryYspan;
+
+					int heightpos = country->flag->width * (int)(country->flag->height * yPercent);
+					int location = country->flag->width * xPercent + heightpos;
+					RGBTRIPLE colour = country->flag->getPixel(location);
+					countryBMP->setTripleAtIndex(colour, pixelIndex);
+
 				}
 			}
 	}
@@ -229,4 +247,36 @@ Bitmap * CountryGenerator::civilizationBMP()
 		}
 	}
 	return civilizationBMP;
+}
+
+void CountryGenerator::determineDimensions()
+{
+	for (auto country : countriesV)
+	{
+		for (auto province : country->provinces)
+		{
+			for (auto pixel : province->pixels)
+			{
+				if (pixel % Data::getInstance().width < country->minX)
+				{
+					country->minX = pixel % Data::getInstance().width;
+				}
+				if (pixel % Data::getInstance().width > country->maxX)
+				{
+					country->maxX = pixel % Data::getInstance().width;
+				}
+
+				if (pixel / Data::getInstance().height < country->minY)
+				{
+					country->minY = pixel / Data::getInstance().width;
+				}
+				if (pixel / Data::getInstance().height > country->maxY)
+				{
+					country->maxY = pixel / Data::getInstance().width;
+				}
+			}
+		}
+		//cout << country->maxX - country->minX << endl;
+		cout << country->maxY - country->minY << endl;
+	}
 }

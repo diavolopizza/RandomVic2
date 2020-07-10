@@ -1,14 +1,26 @@
 #pragma once
 
 #include <iostream>
-#include "../libtga/tga.h"
-
+#include <random>
+#include <windows.h>
+#include "../utils/libtarga.h"
 using namespace std;
 class Flag
 {
-	TGA * tga;
+	ranlux48* random;
 public:
-	Flag();
+	int width;
+	int height;
+	unsigned char* flag;
+	Flag(ranlux48*random);
 	~Flag();
+	void tricolore();
+	void rotatedTricolore();
+	void squareSquared();
+	vector<RGBTRIPLE> generateColours();
+	void setPixel(RGBTRIPLE colour, uint32_t x, uint32_t y);
+	RGBTRIPLE getPixel(uint32_t x, uint32_t y);
+	RGBTRIPLE getPixel(uint32_t pos);
+
 };
 

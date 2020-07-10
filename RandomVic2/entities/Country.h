@@ -28,7 +28,14 @@ public:
 	RGBTRIPLE getColour();
 	bool equalColour(RGBTRIPLE other);
 	Flag * flag;
+	uint32_t minX = MAXUINT32, minY = MAXUINT32;
+	uint32_t maxX = 0, maxY = 0;
+
 	uint32_t partyPopularities[4] = { 0,0,0,0 };
+
+
+
+
 
 };
 

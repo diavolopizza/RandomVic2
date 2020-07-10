@@ -29,17 +29,17 @@ void Visualizer::displayImage(Bitmap * bitmap)
 	uint32_t yRes = 1080;
 	double xScaleFactor = (double)xRes / (double)bitmap->bInfoHeader.biWidth;
 	double yScaleFactor = (double)yRes / (double)bitmap->bInfoHeader.biHeight;
-	if (yScaleFactor < xScaleFactor)
-		resize(image, image, Size(bitmap->bInfoHeader.biWidth * yScaleFactor, bitmap->bInfoHeader.biHeight * yScaleFactor));
-	else {
-		resize(image, image, Size(bitmap->bInfoHeader.biWidth * xScaleFactor, bitmap->bInfoHeader.biHeight * xScaleFactor));
-	}
+	//if (yScaleFactor < xScaleFactor)
+	//	//cv::resize(image, image, Size(bitmap->bInfoHeader.biWidth * yScaleFactor, bitmap->bInfoHeader.biHeight * yScaleFactor));
+	//else {
+	//	//resize(image, image, Size(bitmap->bInfoHeader.biWidth * xScaleFactor, bitmap->bInfoHeader.biHeight * xScaleFactor));
+	//}
 	if (!image.data)                              // Check for invalid input
 	{
 		cout << "Could not open or find the image" << std::endl;
 		return;
 	}
-	imshow("Display window", image);
+	//imshow("Display window", image);
 	waitKey(1);/*
 	HWND hwnd = (HWND)cvGetWindowHandle("Display window");
 	BringWindowToTop(hwnd);
@@ -49,7 +49,7 @@ void Visualizer::displayImage(Bitmap * bitmap)
 
 void Visualizer::initializeWindow()
 {
-	namedWindow("Display window", CV_WINDOW_AUTOSIZE);// Create a window for display.
+	namedWindow("Display window");// Create a window for display.
 	moveWindow("Display window", 0, 0);
 	//resizeWindow("Display window", 1920, 1080);
 	//cvSetWindowProperty("Display window", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);

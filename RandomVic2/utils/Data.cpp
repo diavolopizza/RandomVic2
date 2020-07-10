@@ -58,6 +58,10 @@ void Data::getConfig(string configPath) {
 		updateThreshold = root.get<int>("visualisation.updateThreshold");
 	}
 
+	{ //Debug
+		debugMapsPath = root.get<string>("debug.debugMapsPath");
+	}
+
 	{ //HEIGHTMAP
 		fractalFrequency = root.get<float>("map.heightmap.fractalFrequency");
 		fractalOctaves = root.get<int>("map.heightmap.fractalOctaves");
