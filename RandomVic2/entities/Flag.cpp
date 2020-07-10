@@ -5,7 +5,7 @@ Flag::Flag(ranlux48* random)
 {
 	this->random = random;
 
-	int type = (*random)() % 3;
+	int type = 3;// (*random)() % 4;
 	switch (type)
 	{
 	case 0:
@@ -21,6 +21,11 @@ Flag::Flag(ranlux48* random)
 	case 2:
 	{
 		squareSquared();
+		break;
+	}
+	case 3:
+	{
+		circle();
 		break;
 	}
 	default:
@@ -102,6 +107,35 @@ void Flag::squareSquared()
 			setPixel(colours[colourIndex], i, j);
 			if (abs((int)j - width / 2) < 16 && abs((int)i - height / 2) < 16)
 				setPixel(colours[1], i, j);
+		}
+	}
+}
+
+void Flag::circle()
+{
+	unsigned char* targaimage;
+	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
+	this->flag = targaimage;
+	if (flag == NULL)
+	{
+		printf("Failed to read image!\n");
+		printf(tga_error_string(tga_get_last_error()));
+	}
+
+	vector<RGBTRIPLE> colours = generateColours();
+	struct Point { int x; int y; };
+	Point center{ width / 2, height / 2 };
+	for (unsigned int i = 0; i < height; i++)
+	{
+		for (unsigned int j = 0; j < width; j++)
+		{
+			unsigned short colourIndex = 0;
+			setPixel(colours[colourIndex], i, j);
+			Point curPos{ j, i };
+			int distance = abs(std::hypot(center.x - curPos.x, center.y - curPos.y));
+			if (distance < 15) {
+				setPixel(colours[1], i, j);
+			}
 		}
 	}
 }
