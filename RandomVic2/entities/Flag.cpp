@@ -10,31 +10,42 @@ Flag::Flag(ranlux48* random)
 	this->flag = targaimage;
 
 	int type = (*random)() % 4;
-	switch (type)
+
+
+	colours = generateColours();
+	for (unsigned int i = 0; i < height; i++)
 	{
-	case 0:
-	{
-		tricolore();
-		break;
+		for (unsigned int j = 0; j < width; j++)
+		{
+			switch (type)
+			{
+			case 0:
+			{
+				tricolore(i, j);
+				break;
+			}
+			case 1:
+			{
+				rotatedTricolore(i, j);
+				break;
+			}
+			case 2:
+			{
+				squareSquared(i, j);
+				break;
+			}
+			case 3:
+			{
+				circle(i, j);
+				break;
+			}
+			default:
+				break;
+			}
+		}
 	}
-	case 1:
-	{
-		rotatedTricolore();
-		break;
-	}
-	case 2:
-	{
-		squareSquared();
-		break;
-	}
-	case 3:
-	{
-		circle();
-		break;
-	}
-	default:
-		break;
-	}
+
+
 }
 
 
@@ -44,67 +55,37 @@ Flag::~Flag()
 {
 }
 
-void Flag::tricolore()
+void Flag::tricolore(int i, int j)
 {
-	vector<RGBTRIPLE> colours = generateColours();
+	unsigned short colourIndex = j / (width / 3);
+	setPixel(colours[colourIndex], i, j);
 
-	for (unsigned int i = 0; i < height; i++)
-	{
-		for (unsigned int j = 0; j < width; j++)
-		{
-			unsigned short colourIndex = j / (width / 3);
-			setPixel(colours[colourIndex], i, j);
-		}
-	}
 }
 
-void Flag::rotatedTricolore()
+void Flag::rotatedTricolore(int i, int j)
 {
-	vector<RGBTRIPLE> colours = generateColours();
-
-	for (unsigned int i = 0; i < height; i++)
-	{
-		for (unsigned int j = 0; j < width; j++)
-		{
-			unsigned short colourIndex = i / (height / 3);
-			setPixel(colours[colourIndex], i, j);
-		}
-	}
+	unsigned short colourIndex = i / (height / 3);
+	setPixel(colours[colourIndex], i, j);
 }
 
-void Flag::squareSquared()
+void Flag::squareSquared(int i, int j)
 {
-	vector<RGBTRIPLE> colours = generateColours();
-
-	for (unsigned int i = 0; i < height; i++)
-	{
-		for (unsigned int j = 0; j < width; j++)
-		{
-			unsigned short colourIndex = 0;
-			setPixel(colours[colourIndex], i, j);
-			if (abs((int)j - width / 2) < 16 && abs((int)i - height / 2) < 16)
-				setPixel(colours[1], i, j);
-		}
-	}
+	unsigned short colourIndex = 0;
+	setPixel(colours[colourIndex], i, j);
+	if (abs((int)j - width / 2) < 16 && abs((int)i - height / 2) < 16)
+		setPixel(colours[1], i, j);
 }
 
-void Flag::circle()
+void Flag::circle(int i, int j)
 {
-	vector<RGBTRIPLE> colours = generateColours();
 	struct Point { int x; int y; };
 	Point center{ width / 2, height / 2 };
-	for (unsigned int i = 0; i < height; i++)
-	{
-		for (unsigned int j = 0; j < width; j++)
-		{
-			unsigned short colourIndex = 0;
-			setPixel(colours[colourIndex], i, j);
-			Point curPos{ j, i };
-			int distance = abs(std::hypot(center.x - curPos.x, center.y - curPos.y));
-			if (distance < 15) {
-				setPixel(colours[1], i, j);
-			}
-		}
+	unsigned short colourIndex = 0;
+	setPixel(colours[colourIndex], i, j);
+	Point curPos{ j, i };
+	int distance = abs(std::hypot(center.x - curPos.x, center.y - curPos.y));
+	if (distance < 15) {
+		setPixel(colours[1], i, j);
 	}
 }
 

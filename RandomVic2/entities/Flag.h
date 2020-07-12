@@ -8,16 +8,19 @@ using namespace std;
 class Flag
 {
 	ranlux48* random;
+	vector<RGBTRIPLE> colours;
+	unsigned char* flag;
+
+
 public:
 	int width;
 	int height;
-	unsigned char* flag;
 	Flag(ranlux48*random);
 	~Flag();
-	void tricolore();
-	void rotatedTricolore();
-	void squareSquared();
-	void circle();
+	void tricolore(int i, int j);
+	void rotatedTricolore(int i, int j);
+	void squareSquared(int i, int j);
+	void circle(int i, int j);
 	vector<RGBTRIPLE> generateColours();
 	void setPixel(RGBTRIPLE colour, uint32_t x, uint32_t y);
 	RGBTRIPLE getPixel(uint32_t x, uint32_t y);
