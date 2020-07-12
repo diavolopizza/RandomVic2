@@ -5,6 +5,10 @@ Flag::Flag(ranlux48* random)
 {
 	this->random = random;
 
+	unsigned char* targaimage; // load the template
+	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
+	this->flag = targaimage;
+
 	int type = (*random)() % 4;
 	switch (type)
 	{
@@ -42,15 +46,6 @@ Flag::~Flag()
 
 void Flag::tricolore()
 {
-	unsigned char* targaimage;
-	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
-	this->flag = targaimage;
-	if (flag == NULL)
-	{
-		printf("Failed to read image!\n");
-		printf(tga_error_string(tga_get_last_error()));
-	}
-
 	vector<RGBTRIPLE> colours = generateColours();
 
 	for (unsigned int i = 0; i < height; i++)
@@ -65,15 +60,6 @@ void Flag::tricolore()
 
 void Flag::rotatedTricolore()
 {
-	unsigned char* targaimage;
-	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
-	this->flag = targaimage;
-	if (flag == NULL)
-	{
-		printf("Failed to read image!\n");
-		printf(tga_error_string(tga_get_last_error()));
-	}
-
 	vector<RGBTRIPLE> colours = generateColours();
 
 	for (unsigned int i = 0; i < height; i++)
@@ -88,15 +74,6 @@ void Flag::rotatedTricolore()
 
 void Flag::squareSquared()
 {
-	unsigned char* targaimage;
-	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
-	this->flag = targaimage;
-	if (flag == NULL)
-	{
-		printf("Failed to read image!\n");
-		printf(tga_error_string(tga_get_last_error()));
-	}
-
 	vector<RGBTRIPLE> colours = generateColours();
 
 	for (unsigned int i = 0; i < height; i++)
@@ -113,15 +90,6 @@ void Flag::squareSquared()
 
 void Flag::circle()
 {
-	unsigned char* targaimage;
-	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
-	this->flag = targaimage;
-	if (flag == NULL)
-	{
-		printf("Failed to read image!\n");
-		printf(tga_error_string(tga_get_last_error()));
-	}
-
 	vector<RGBTRIPLE> colours = generateColours();
 	struct Point { int x; int y; };
 	Point center{ width / 2, height / 2 };

@@ -162,6 +162,7 @@ int main() {
 	CountryGenerator cG(terrainGenerator, Data::getInstance().random);
 	cG.distributeCountries(100, 0, terrainGenerator->regions);
 	cG.determineDimensions();
+	cG.sanityChecks();
 	Bitmap * countryBMP = cG.countryBMP();
 	BMPHandler::getInstance().SaveBMPToFile(countryBMP, (Data::getInstance().debugMapsPath + ("countries.bmp")).c_str());
 	Bitmap * developmentBMP = cG.civilizationBMP();

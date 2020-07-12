@@ -275,7 +275,20 @@ void CountryGenerator::determineDimensions()
 				}
 			}
 		}
-		//cout << country->maxX - country->minX << endl;
-		cout << country->maxY - country->minY << endl;
 	}
+}
+
+void CountryGenerator::sanityChecks()
+{
+	for (auto country : countriesV)
+	{
+		if (country->provinces.size() == 0)
+			cout << "ERROR: Country has no provinces" << std::endl;
+		if (country->provinces.size() < 5)
+			cout << "INFO: Tiny country detected" << std::endl;
+		if(country->flag == nullptr)
+			cout << "ERROR: Country without flag" << std::endl;
+
+	}
+
 }
