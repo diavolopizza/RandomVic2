@@ -5,11 +5,12 @@ Flag::Flag(ranlux48* random)
 {
 	this->random = random;
 
-	unsigned char* targaimage; // load the template
+	// load the template
+	unsigned char* targaimage; 
 	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
 	this->flag = targaimage;
 
-	int type = (*random)() % 4;
+	int type = 4;// (*random)() % 5;
 
 
 	colours = generateColours();
@@ -21,22 +22,32 @@ Flag::Flag(ranlux48* random)
 			{
 			case 0:
 			{
+				flagType = TRICOLORE;
 				tricolore(i, j);
 				break;
 			}
 			case 1:
 			{
+				flagType = ROTATEDTRICOLORE;
 				rotatedTricolore(i, j);
 				break;
 			}
 			case 2:
 			{
+				flagType = SQUARE;
 				squareSquared(i, j);
 				break;
 			}
 			case 3:
 			{
+				flagType = CIRCLE;
 				circle(i, j);
+				break;
+			}
+			case 4:
+			{
+				flagType = MOON;
+				halfMoon(i, j);
 				break;
 			}
 			default:
@@ -44,12 +55,7 @@ Flag::Flag(ranlux48* random)
 			}
 		}
 	}
-
-
 }
-
-
-
 
 Flag::~Flag()
 {
@@ -59,7 +65,6 @@ void Flag::tricolore(int i, int j)
 {
 	unsigned short colourIndex = j / (width / 3);
 	setPixel(colours[colourIndex], i, j);
-
 }
 
 void Flag::rotatedTricolore(int i, int j)
@@ -86,6 +91,25 @@ void Flag::circle(int i, int j)
 	int distance = abs(std::hypot(center.x - curPos.x, center.y - curPos.y));
 	if (distance < 15) {
 		setPixel(colours[1], i, j);
+	}
+}
+
+void Flag::halfMoon(int i, int j)
+{
+	float radius = 15;
+	struct Point { int x; int y; };
+	Point center{ width / 2, height / 2 };
+	unsigned short colourIndex = 0;
+	setPixel(colours[colourIndex], i, j);
+	Point curPos{ j, i };
+	if (curPos.x < center.x + radius)
+	{
+		float distanceFromLeftMost = fabs(curPos.x - (center.x - radius));
+		float factor = (distanceFromLeftMost / (radius));
+		int distance = std::hypot(center.x - curPos.x, center.y - curPos.y);
+		if (distance < radius && distance > radius*0.5*(factor)) {
+			setPixel(colours[1], i, j);
+		}
 	}
 }
 
@@ -158,4 +182,9 @@ RGBTRIPLE Flag::getPixel(uint32_t pos)
 	colour.rgbtGreen = flag[pos * 4 + 1];
 	colour.rgbtBlue = flag[pos * 4 + 2];
 	return colour;
+}
+
+unsigned char * Flag::getFlag()
+{
+	return flag;;
 }
