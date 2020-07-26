@@ -43,7 +43,7 @@ public:
 	void evaluateCoasts(Bitmap * provinceBMP);
 	void evaluateNeighbours(Bitmap * provinceBMP);
 	void provPixels(Bitmap * provinceBMP);
-	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed);
+	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, uint32_t &layer);
 	void createTerrain(Bitmap * terrainBMP, Bitmap * heightMapBmp);
 	BYTE* landProvinces(uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);
 	BYTE* seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);

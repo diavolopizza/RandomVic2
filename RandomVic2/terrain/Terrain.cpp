@@ -272,20 +272,89 @@ void Terrain::provPixels(Bitmap * provinceBMP)
 
 BYTE* mountains(Bitmap * RGBBMP, uint32_t seed)
 {
-	cout << "Creating Mountains" << endl;
+	//cout << "Creating Mountains" << endl;
+	//FastNoise myNoise; // Create a FastNoise object
+	//myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
+	//myNoise.SetSeed(seed);
+	//myNoise.SetFrequency(Data::getInstance().fractalFrequency);
+	//myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves);
+	//myNoise.SetFractalGain(Data::getInstance().fractalGain);
+	//myNoise.SetFractalType(FastNoise::FractalType::FBM);
+
+	//const uint32_t width = RGBBMP->bInfoHeader.biWidth;
+	//const uint32_t height = RGBBMP->bInfoHeader.biHeight;
+	//// set the point at which heightvalues are reduced towards 0 
+	//// this eliminates provinces overlapping at the east/west map boundaries
+	//uint32_t delimiter = width / Data::getInstance().divideThreshold;
+	//for (uint32_t x = 0; x < height; x++)
+	//{
+	//	for (uint32_t y = 0; y < width; y++)
+	//	{
+	//		float factor = 1;
+	//		if (y < delimiter) {
+	//			factor = (float)y / (float)delimiter;
+	//		}
+	//		else if (y > width - delimiter)
+	//		{
+	//			factor = ((float)width - (float)y) / delimiter;
+	//		}
+	//		FN_DECIMAL noiseLevel = 0 + (myNoise.GetNoise(x, y) + 1) * 64 * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
+	//		uint32_t completeNoise = noiseLevel;
+	//		completeNoise = noiseLevel;
+	//		RGBTRIPLE colour{ 1 + completeNoise, 1 + completeNoise, 1 + completeNoise };
+	//		RGBBMP->setTripleAtXYPosition(colour, x, y);
+	//	}
+	//	if (x % Data::getInstance().updateThreshold == 0 && Data::getInstance().opencvVisualisation)
+	//		Visualizer::displayImage(RGBBMP);
+	//}
+	return RGBBMP->getBuffer();
+}
+
+//creates the heightmap with a given seed
+BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed, uint32_t &layer)
+{
+	//uint32_t maxLayers = 2;
+	cout << "Creating Heightmap" << endl;
 	FastNoise myNoise; // Create a FastNoise object
-	myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
 	myNoise.SetSeed(seed);
-	myNoise.SetFrequency(Data::getInstance().fractalFrequency);
-	myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves);
-	myNoise.SetFractalGain(Data::getInstance().fractalGain);
-	myNoise.SetFractalType(FastNoise::FractalType::FBM);
+	uint32_t type = Data::getInstance().type[layer];
+	myNoise.SetFrequency(Data::getInstance().fractalFrequency[layer]);
+	myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves[layer]);
+	myNoise.SetFractalGain(Data::getInstance().fractalGain[layer]);
+	switch (type)
+	{
+	case 1:
+	{
+		myNoise.SetNoiseType(FastNoise::NoiseType::ValueFractal); // Set the desired noise type
+		myNoise.SetFractalType(FastNoise::FractalType::FBM);
+		break;
+	}
+	case 2:
+	{
+		myNoise.SetNoiseType(FastNoise::NoiseType::CubicFractal); // Set the desired noise type
+		myNoise.SetFractalType(FastNoise::FractalType::RigidMulti);
+		break;
+	}
+	case 3:
+	{
+		myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
+		myNoise.SetFractalType(FastNoise::FractalType::Billow);
+		break;
+	}
+
+	default:
+	{
+		myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
+		myNoise.SetFractalType(FastNoise::FractalType::FBM);
+		break;
+	}
+	}
 
 	const uint32_t width = RGBBMP->bInfoHeader.biWidth;
 	const uint32_t height = RGBBMP->bInfoHeader.biHeight;
 	// set the point at which heightvalues are reduced towards 0 
 	// this eliminates provinces overlapping at the east/west map boundaries
-	uint32_t delimiter = width / Data::getInstance().divideThreshold;
+	uint32_t delimiter = width / Data::getInstance().divideThreshold[layer];
 	for (uint32_t x = 0; x < height; x++)
 	{
 		for (uint32_t y = 0; y < width; y++)
@@ -298,55 +367,17 @@ BYTE* mountains(Bitmap * RGBBMP, uint32_t seed)
 			{
 				factor = ((float)width - (float)y) / delimiter;
 			}
-			FN_DECIMAL noiseLevel = 0 + (myNoise.GetNoise(x, y) + 1) * 64 * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
+			FN_DECIMAL noiseLevel = RGBBMP->getValueAtXYPosition(x, y) + (myNoise.GetNoise(x, y) + 1) * 64 * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
 			uint32_t completeNoise = noiseLevel;
-			completeNoise = noiseLevel;
 			RGBTRIPLE colour{ 1 + completeNoise, 1 + completeNoise, 1 + completeNoise };
 			RGBBMP->setTripleAtXYPosition(colour, x, y);
 		}
 		if (x % Data::getInstance().updateThreshold == 0 && Data::getInstance().opencvVisualisation)
 			Visualizer::displayImage(RGBBMP);
 	}
-	return RGBBMP->getBuffer();
-}
-
-//creates the heightmap with a given seed
-BYTE* Terrain::heightMap(Bitmap * RGBBMP, uint32_t seed)
-{
-	cout << "Creating Heightmap" << endl;
-	FastNoise myNoise; // Create a FastNoise object
-	myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
-	myNoise.SetSeed(seed);
-	myNoise.SetFrequency(Data::getInstance().fractalFrequency);
-	myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves);
-	myNoise.SetFractalGain(Data::getInstance().fractalGain);
-	myNoise.SetFractalType(FastNoise::FractalType::FBM);
-
-	const uint32_t width = RGBBMP->bInfoHeader.biWidth;
-	const uint32_t height = RGBBMP->bInfoHeader.biHeight;
-	// set the point at which heightvalues are reduced towards 0 
-	// this eliminates provinces overlapping at the east/west map boundaries
-	uint32_t delimiter = width / Data::getInstance().divideThreshold;
-	for (uint32_t x = 0; x < height; x++)
+	if (++layer < Data::getInstance().layerAmount)
 	{
-		for (uint32_t y = 0; y < width; y++)
-		{
-			float factor = 1;
-			if (y < delimiter) {
-				factor = (float)y / (float)delimiter;
-			}
-			else if (y > width - delimiter)
-			{
-				factor = ((float)width - (float)y) / delimiter;
-			}
-			FN_DECIMAL noiseLevel = 0 + (myNoise.GetNoise(x, y) + 1) * 64 * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
-			uint32_t completeNoise = noiseLevel;
-			completeNoise = noiseLevel;
-			RGBTRIPLE colour{ 1 + completeNoise, 1 + completeNoise, 1 + completeNoise };
-			RGBBMP->setTripleAtXYPosition(colour, x, y);
-		}
-		if (x % Data::getInstance().updateThreshold == 0 && Data::getInstance().opencvVisualisation)
-			Visualizer::displayImage(RGBBMP);
+		heightMap(RGBBMP, seed, layer);
 	}
 	return RGBBMP->getBuffer();
 }

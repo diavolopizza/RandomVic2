@@ -36,10 +36,12 @@ public:
 	uint32_t minProvSize = 0;
 
 	//heightmap
-	float fractalFrequency = 0;
-	uint32_t fractalOctaves = 0;
-	float fractalGain = 0;
-	uint32_t divideThreshold = 0;//TODO
+	uint32_t layerAmount;
+	vector<uint32_t> type;
+	vector<float>fractalFrequency;
+	vector<uint32_t> fractalOctaves;
+	vector<float> fractalGain;
+	vector<uint32_t> divideThreshold;//TODO
 
 	//land mass
 

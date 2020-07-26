@@ -63,11 +63,24 @@ void Data::getConfig(string configPath) {
 	}
 
 	{ //HEIGHTMAP
-		fractalFrequency = root.get<float>("map.heightmap.fractalFrequency");
-		fractalOctaves = root.get<int>("map.heightmap.fractalOctaves");
-		fractalGain = root.get<float>("map.heightmap.fractalGain");
-		divideThreshold = root.get<int>("map.heightmap.divideThreshold");
+		//fractalFrequency = root.get<float>("map.heightmap.fractalFrequency");
+		//fractalOctaves = root.get<int>("map.heightmap.fractalOctaves");
+		//fractalGain = root.get<float>("map.heightmap.fractalGain");
+		//divideThreshold = root.get<int>("map.heightmap.divideThreshold");
 		complexHeight = root.get<bool>("map.heightmap.complexHeight");
+		layerAmount = root.get<int>("map.heightmap.layerAmount");
+		for (uint32_t i = 0; i < layerAmount; i++)
+		{
+			type.push_back( root.get<float>("map.heightmap.layers." + to_string(i) + ".type"));
+			fractalFrequency.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".fractalFrequency"));
+			fractalOctaves.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".fractalOctaves"));
+			fractalGain.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".fractalGain"));
+			divideThreshold.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".divideThreshold"));
+			//fractalOctaves = root.get<int>("map.heightmap.fractalOctaves");
+			//fractalGain = root.get<float>("map.heightmap.fractalGain");
+			//divideThreshold = root.get<int>("map.heightmap.divideThreshold");
+		}
+
 	}
 
 	this->random = new ranlux48();

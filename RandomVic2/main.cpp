@@ -65,7 +65,8 @@ int main() {
 	const char* heightmapsource = heightmapSourceString.c_str();
 	//generate noise map
 	if (Data::getInstance().genHeight) {
-		heightMapBMP->setBuffer(terrainGenerator->heightMap(heightMapBMP, Data::getInstance().seed));
+		uint32_t layer = 0;
+		heightMapBMP->setBuffer(terrainGenerator->heightMap(heightMapBMP, Data::getInstance().seed, layer));
 
 		BMPHandler::getInstance().SaveBMPToFile(heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());
 	}
