@@ -3,7 +3,7 @@
 	{
 		"genHeight" : 1,
 		"genSimpleTerrain" : 1,
-		"genComplexTerrain" : 0,
+		"genComplexTerrain" : 1,
 		"genV2" : 0,
 		"opencvVisualisation" : 0
 	},
@@ -11,8 +11,8 @@
 	"map": 
 	{
 		"seed" : 1,
-        "height" : 1000,
-		"width" : 1000,
+        "height" : 1024,
+		"width" : 1024,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		
@@ -22,11 +22,43 @@
 			"numRivers" : 3
 		},
 		"heightmap" : {
-			"fractalFrequency" : 0.0008,
-			"fractalOctaves" : 11,
-			"fractalGain" : 0.5,
 			"complexHeight" : 1,
-			"divideThreshold" : 10
+			"layerAmount" : 4,
+			"layers" :
+			{
+				"0" :
+				{
+					"type" : 0,
+					"fractalFrequency" : 0.0008,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
+					"divideThreshold" : 10
+				},
+				"1" :
+				{
+					"type" : 2,
+					"fractalFrequency" : 0.0072,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
+					"divideThreshold" : 10
+				},
+				"2" :
+				{
+					"type" : 1,
+					"fractalFrequency" : 0.0072,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
+					"divideThreshold" : 10
+				},
+				"3" :
+				{
+					"type" : 3,
+					"fractalFrequency" : 0.0072,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
+					"divideThreshold" : 10
+				}
+			}
 		},
 		"provinces" : {
 			"landProvinces" : 1000,
