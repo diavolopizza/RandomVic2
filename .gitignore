@@ -9,7 +9,7 @@
 *libtga
 /debugMap/
 *x64
-
+*.tga
 
 
 # Visual Studio 2015 cache directory

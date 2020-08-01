@@ -76,6 +76,7 @@ void Data::getConfig(string configPath) {
 			fractalOctaves.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".fractalOctaves"));
 			fractalGain.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".fractalGain"));
 			divideThreshold.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".divideThreshold"));
+			weight.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".weight"));
 			//fractalOctaves = root.get<int>("map.heightmap.fractalOctaves");
 			//fractalGain = root.get<float>("map.heightmap.fractalGain");
 			//divideThreshold = root.get<int>("map.heightmap.divideThreshold");

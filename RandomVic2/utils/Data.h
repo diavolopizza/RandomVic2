@@ -41,7 +41,8 @@ public:
 	vector<float>fractalFrequency;
 	vector<uint32_t> fractalOctaves;
 	vector<float> fractalGain;
-	vector<uint32_t> divideThreshold;//TODO
+	vector<uint32_t> divideThreshold;
+	vector<float> weight;
 
 	//land mass
 

@@ -25,6 +25,7 @@ class Terrain
 	ranlux48* random;
 	hash <int> prov_hash;
 	MultiArray provinceMap;
+	vector<BYTE*> heightmapLayers;
 	//boost::multi_array<Prov*, 3> provhashes();//reads definitions.csv and calculates the hashes of the rgb values, creates province with provnr,r,g,b,saves it in hashmap
 
 public:
@@ -43,6 +44,7 @@ public:
 	void evaluateCoasts(Bitmap * provinceBMP);
 	void evaluateNeighbours(Bitmap * provinceBMP);
 	void provPixels(Bitmap * provinceBMP);
+	BYTE* normalizeHeightMap(Bitmap * heightMap);
 	BYTE* heightMap(Bitmap * terrainBMP, uint32_t seed, uint32_t &layer);
 	void createTerrain(Bitmap * terrainBMP, Bitmap * heightMapBmp);
 	BYTE* landProvinces(uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);

@@ -10,9 +10,9 @@
 
 	"map": 
 	{
-		"seed" : 1,
+		"seed" : 0,
         "height" : 1024,
-		"width" : 1024,
+		"width" : 2600,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		
@@ -23,47 +23,78 @@
 		},
 		"heightmap" : {
 			"complexHeight" : 1,
-			"layerAmount" : 4,
+			"layerAmount" : 3,
 			"layers" :
 			{
 				"0" :
+				{
+					"type" : 4,
+					"fractalFrequency" : 0.004,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
+					"divideThreshold" : 10,
+					"weight" : 1
+				},
+				"1" :
+				{
+					"type" : 7,
+					"fractalFrequency" : 0.006,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
+					"divideThreshold" : 10,
+					"weight" : 0.5
+				},
+				"2" :
+				{
+					"type" : 6,
+					"fractalFrequency" : 0.04,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
+					"divideThreshold" : 10,
+					"weight" : 0.3
+				},
+				"3" :
+				{
+					"type" : 0,
+					"fractalFrequency" : 0.01,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
+					"divideThreshold" : 10,
+					"weight" : 1
+				},
+				"4" :
 				{
 					"type" : 0,
 					"fractalFrequency" : 0.0008,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
-					"divideThreshold" : 10
+					"divideThreshold" : 10,
+					"weight" : 1
 				},
-				"1" :
+				"5" :
 				{
-					"type" : 2,
-					"fractalFrequency" : 0.0072,
+					"type" : 0,
+					"fractalFrequency" : 0.0008,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
-					"divideThreshold" : 10
+					"divideThreshold" : 10,
+					"weight" : 1
 				},
-				"2" :
-				{
-					"type" : 1,
-					"fractalFrequency" : 0.0072,
-					"fractalOctaves" : 11,
-					"fractalGain" : 0.5,
-					"divideThreshold" : 10
-				},
-				"3" :
+				"6" :
 				{
 					"type" : 3,
-					"fractalFrequency" : 0.0072,
+					"fractalFrequency" : 0.008,
 					"fractalOctaves" : 11,
-					"fractalGain" : 0.5,
-					"divideThreshold" : 10
+					"fractalGain" : 0.6,
+					"divideThreshold" : 10,
+					"weight" : 1
 				}
 			}
 		},
 		"provinces" : {
 			"landProvinces" : 1000,
-			"minProvPerContinent" : 100,
-			"minProvPerRegion" : 5,
+			"minProvPerContinent" : 1,
+			"minProvPerRegion" : 1,
 			"seaProvinces" : 1000,
 			"minProvSize" : 10
 		},
