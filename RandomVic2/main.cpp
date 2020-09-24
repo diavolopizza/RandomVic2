@@ -56,27 +56,38 @@ Step 4.1: Output scenario info
 int main() {
 	//Generation objects
 	//Data data =
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	Data::getInstance();// new Data();
 	Data::getInstance().getConfig("C:/Users/Paul/Documents/Visual Studio 2017/Projects/RandomVic2/config.json");
 	Parser genericParser;
-	Terrain *terrainGenerator = new Terrain(Data::getInstance().random);
-	Bitmap *heightMapBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
-	string heightmapSourceString = Data::getInstance().debugMapsPath + ("heightmap.bmp");
+	Terrain terrainGenerator(Data::getInstance().random);
+	//const Bitmap heightMapBMP;
+	const string heightmapSourceString = Data::getInstance().debugMapsPath + ("heightmap.bmp");
 	const char* heightmapsource = heightmapSourceString.c_str();
 	//generate noise map
-	if (Data::getInstance().genHeight) {
-		uint32_t layer = 0;
-		heightMapBMP->setBuffer(terrainGenerator->heightMap(heightMapBMP, Data::getInstance().seed, layer));
 
-		BMPHandler::getInstance().SaveBMPToFile(heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());
-	}
-	else {
-		heightMapBMP = BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap");
-		Data::getInstance().height = heightMapBMP->bInfoHeader.biHeight;
-		Data::getInstance().width = heightMapBMP->bInfoHeader.biWidth;
-	}
+	//if (Data::getInstance().genHeight) {
+	//	heightMapBMP(Data::getInstance().width, Data::getInstance().height, 24);
+	//	//heightMapBMP.setBuffer(terrainGenerator.heightMap(&heightMapBMP, Data::getInstance().seed, layer));
+
+	//	BMPHandler::getInstance().SaveBMPToFile(&heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());
+	//}
+	//else {
+	//	heightMapBMP = BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap");
+	//	Data::getInstance().height = heightMapBMP.bInfoHeader.biHeight;
+	//	Data::getInstance().width = heightMapBMP.bInfoHeader.biWidth;
+	//}
 	//create new bmps{
+	uint32_t layer = 0;
 	Bitmap provincesBMP(Data::getInstance().width, Data::getInstance().height, 24);
+
+	const Bitmap heightMapBMP(Data::getInstance().width, 		Data::getInstance().height,	24, 
+		Data::getInstance().genHeight? 
+		terrainGenerator.heightMap(&provincesBMP, Data::getInstance().seed, layer):
+		terrainGenerator.heightMap(&provincesBMP, Data::getInstance().seed, layer), nullptr
+	
+	
+	);
 	Bitmap humidityBMP(Data::getInstance().width, Data::getInstance().height, 24);
 	Bitmap continents(Data::getInstance().width, Data::getInstance().height, 24);
 	Bitmap regionBMP(Data::getInstance().width, Data::getInstance().height, 24);
@@ -96,11 +107,11 @@ int main() {
 
 	if (Data::getInstance().genSimpleTerrain) {
 		//create simplistic terrain shape from noise map
-		terrainGenerator->createTerrain(terrainBMP, heightMapBMP);
+		terrainGenerator.createTerrain(terrainBMP, &heightMapBMP);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("simpleterrain.bmp")).c_str());
 		//generate rivers according to terrain and climate
-		terrainGenerator->generateRivers(riverBMP, heightMapBMP);
-		terrainGenerator->prettyRivers(riverBMP, heightMapBMP);
+		terrainGenerator.generateRivers(riverBMP, &heightMapBMP);
+		terrainGenerator.prettyRivers(riverBMP, &heightMapBMP);
 	}
 	else {
 		terrainBMP = BMPHandler::getInstance().Load8bitBMP(simpleTerrainsource, "simpleterrain");
@@ -108,38 +119,38 @@ int main() {
 	//return 0;
 	//create provinces
 	{
-		provincesBMP.setBuffer(terrainGenerator->landProvinces(Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
+		provincesBMP.setBuffer(terrainGenerator.landProvinces(Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
 		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
-		provincesBMP.setBuffer(terrainGenerator->seaProvinces(Data::getInstance().seaProv, Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
-		terrainGenerator->createProvinceMap();
-		terrainGenerator->provPixels(&provincesBMP);
-		terrainGenerator->prettyProvinces(&provincesBMP, riverBMP, Data::getInstance().minProvSize);
-		terrainGenerator->evaluateCoasts(&provincesBMP);
+		provincesBMP.setBuffer(terrainGenerator.seaProvinces(Data::getInstance().seaProv, Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
+		terrainGenerator.createProvinceMap();
+		terrainGenerator.provPixels(&provincesBMP);
+		terrainGenerator.prettyProvinces(&provincesBMP, riverBMP, Data::getInstance().minProvSize);
+		terrainGenerator.evaluateCoasts(&provincesBMP);
 		//dump to file
-		genericParser.writeDefinition((Data::getInstance().debugMapsPath + ("definition.csv")).c_str(), terrainGenerator->provinces);
+		genericParser.writeDefinition((Data::getInstance().debugMapsPath + ("definition.csv")).c_str(), terrainGenerator.provinces);
 	}
 	//calculate neighbours and dump them
 	{
-		terrainGenerator->evaluateNeighbours(&provincesBMP);
-		genericParser.writeAdjacency((Data::getInstance().debugMapsPath + ("adjacency.csv")).c_str(), terrainGenerator->provinces);
+		terrainGenerator.evaluateNeighbours(&provincesBMP);
+		genericParser.writeAdjacency((Data::getInstance().debugMapsPath + ("adjacency.csv")).c_str(), terrainGenerator.provinces);
 	}
 	//assign provinces to regions and dump them
 	{
-		terrainGenerator->evaluateRegions(Data::getInstance().minProvPerRegion, Data::getInstance().width, Data::getInstance().height);
-		terrainGenerator->prettyRegions(&regionBMP);
-		genericParser.writeRegions((Data::getInstance().debugMapsPath + ("region.txt")).c_str(), terrainGenerator->regions);
+		terrainGenerator.evaluateRegions(Data::getInstance().minProvPerRegion, Data::getInstance().width, Data::getInstance().height);
+		terrainGenerator.prettyRegions(&regionBMP);
+		genericParser.writeRegions((Data::getInstance().debugMapsPath + ("region.txt")).c_str(), terrainGenerator.regions);
 	}
 	//assign provinces to continents and dump them
 	{
-		terrainGenerator->evaluateContinents(Data::getInstance().minProvPerContinent, Data::getInstance().width, Data::getInstance().height);
-		terrainGenerator->prettyContinents(&continents);
-		genericParser.writeContinents((Data::getInstance().debugMapsPath + ("continent.txt")).c_str(), terrainGenerator->continents);
+		terrainGenerator.evaluateContinents(Data::getInstance().minProvPerContinent, Data::getInstance().width, Data::getInstance().height);
+		terrainGenerator.prettyContinents(&continents);
+		genericParser.writeContinents((Data::getInstance().debugMapsPath + ("continent.txt")).c_str(), terrainGenerator.continents);
 	}
 	if (Data::getInstance().genComplexTerrain) {
 		//terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		//BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (Data::getInstance().debugMapsPath + ("humidity.bmp")).c_str());
 		//generate terrain and rivers according to simplistic climate model
-		terrainGenerator->prettyTerrain(terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
+		terrainGenerator.prettyTerrain(terrainBMP, &heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("terrain.bmp")).c_str());
 	}
 	else {
@@ -147,12 +158,12 @@ int main() {
 	}
 	//Dump all info into map folder
 	{
-		genericParser.writeClimate((Data::getInstance().debugMapsPath + ("climate.txt")).c_str(), terrainGenerator->provinces);//general
-		genericParser.writeDefaultMapHeader((Data::getInstance().debugMapsPath + ("default.map")).c_str(), terrainGenerator->provinces);//general
+		genericParser.writeClimate((Data::getInstance().debugMapsPath + ("climate.txt")).c_str(), terrainGenerator.provinces);//general
+		genericParser.writeDefaultMapHeader((Data::getInstance().debugMapsPath + ("default.map")).c_str(), terrainGenerator.provinces);//general
 
 		printf("Writing Bitmaps to %s folder\n", Data::getInstance().debugMapsPath.c_str());
 		//save all the bmps
-		BMPHandler::getInstance().SaveBMPToFile(heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());
+		BMPHandler::getInstance().SaveBMPToFile(&heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("terrain.bmp")).c_str());
 		BMPHandler::getInstance().SaveBMPToFile(riverBMP, (Data::getInstance().debugMapsPath + ("rivers.bmp")).c_str());
 		BMPHandler::getInstance().SaveBMPToFile(&continents, (Data::getInstance().debugMapsPath + ("continents.bmp")).c_str());
@@ -160,29 +171,30 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
 	}
 
-	CountryGenerator cG(terrainGenerator, Data::getInstance().random);
-	cG.distributeCountries(100, 0, terrainGenerator->regions);
-	cG.determineDimensions();
-	cG.sanityChecks();
-	Bitmap * countryBMP = cG.countryBMP();
-	BMPHandler::getInstance().SaveBMPToFile(countryBMP, (Data::getInstance().debugMapsPath + ("countries.bmp")).c_str());
+	CountryGenerator cG(&terrainGenerator, Data::getInstance().random);
+	//cG.distributeCountries(100, 0, terrainGenerator->regions);
+	//cG.determineDimensions();
+	//cG.sanityChecks();
+	//Bitmap * countryBMP = cG.countryBMP();
+	//BMPHandler::getInstance().SaveBMPToFile(countryBMP, (Data::getInstance().debugMapsPath + ("countries.bmp")).c_str());
 	Bitmap * developmentBMP = cG.civilizationBMP();
 	BMPHandler::getInstance().SaveBMPToFile(developmentBMP, (Data::getInstance().debugMapsPath + ("development.bmp")).c_str());
 
 
 	if (Data::getInstance().genV2)
 	{
-		VictoriaModule vMod(&Data::getInstance(), terrainGenerator);
-		vMod.dumpMapFiles(&Data::getInstance(), terrainBMP, riverBMP, &continents, &regionBMP, heightMapBMP, &provincesBMP);
+		//	VictoriaModule vMod(&Data::getInstance(), terrainGenerator);
+		//	vMod.dumpMapFiles(&Data::getInstance(), terrainBMP, riverBMP, &continents, &regionBMP, heightMapBMP, &provincesBMP);
 	}
-	terrainGenerator->sanityChecks(&provincesBMP);
+	terrainGenerator.sanityChecks(&provincesBMP);
 	MapMerger merger;
-	Bitmap * heightRiver = merger.mergeHeightRiver(heightMapBMP, riverBMP);
+	Bitmap * heightRiver = merger.mergeHeightRiver(&heightMapBMP, riverBMP);
 	BMPHandler::getInstance().SaveBMPToFile(heightRiver, (Data::getInstance().debugMapsPath + ("heightRiver.bmp")).c_str());
-	Bitmap * countryRiver = merger.mergeCountryRiverProvince(countryBMP, riverBMP, &provincesBMP);
-	BMPHandler::getInstance().SaveBMPToFile(countryRiver, (Data::getInstance().debugMapsPath + ("countryRiver.bmp")).c_str());
+	//Bitmap * countryRiver = merger.mergeCountryRiverProvince(countryBMP, riverBMP, &provincesBMP);
+	//BMPHandler::getInstance().SaveBMPToFile(countryRiver, (Data::getInstance().debugMapsPath + ("countryRiver.bmp")).c_str());
 
-
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() << "[s]" << std::endl;
 	system("pause");
 	return 0;
 	//errors:

@@ -6,7 +6,7 @@ Bitmap::Bitmap()
 {
 }
 
-Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable)
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 {
 	//create bitmap file header
 	((unsigned char *)&bFileHeader.bfType)[0] = 'B';
@@ -47,9 +47,18 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char
 		{
 			Buffer[i] = 0;
 		}
-		this->colourtable = colourtable;
 		bInfo.bmiHeader = bInfoHeader;
 	}
+}
+
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable) : Bitmap(width, height, bitCount)
+{
+	this->colourtable = colourtable;
+}
+
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE * buffer, unsigned char * colourtable) : Bitmap( width,  height,  bitCount, colourtable = nullptr)
+{
+	this->Buffer = buffer;
 }
 
 
@@ -57,13 +66,13 @@ Bitmap::~Bitmap()
 {
 }
 
-RGBTRIPLE Bitmap::getColourTableEntry(uint32_t index)
+RGBTRIPLE Bitmap::getColourTableEntry(uint32_t index) const
 {
 	RGBTRIPLE colour{ colourtable[index * 4], colourtable[index * 4 + 1], colourtable[index * 4 + 2] };
 	return colour;
 }
 
-RGBTRIPLE Bitmap::getTripleAtIndex(uint32_t bufferIndex)
+RGBTRIPLE Bitmap::getTripleAtIndex(uint32_t bufferIndex) const
 {
 	if (bInfoHeader.biBitCount == 24)
 	{
@@ -98,7 +107,7 @@ void Bitmap::setBitmapSize(uint32_t width, uint32_t height)
 	}
 }
 
-uint32_t Bitmap::getValueAtIndex(int32_t index, uint32_t mode)
+uint32_t Bitmap::getValueAtIndex(int32_t index, uint32_t mode) const
 {
 	if (bInfoHeader.biBitCount == 24)
 	{
@@ -109,7 +118,7 @@ uint32_t Bitmap::getValueAtIndex(int32_t index, uint32_t mode)
 	return Buffer[index + mode];
 }
 
-int Bitmap::getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos)
+int Bitmap::getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos) const
 {
 	int position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
 	if (position < 0 || position > bInfoHeader.biSizeImage)
@@ -176,7 +185,7 @@ void Bitmap::setBuffer(unsigned char * Buffer)
 	this->Buffer = Buffer;
 }
 
-unsigned char * Bitmap::getBuffer()
+unsigned char * Bitmap::getBuffer() const
 {
 	return this->Buffer;
 }

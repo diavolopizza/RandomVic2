@@ -11,7 +11,7 @@ using namespace std;
 class CountryGenerator
 {
 	ranlux48* random;
-	Terrain * terrain;
+	Terrain *terrain;
 public:
 	CountryGenerator(Terrain *terrain, ranlux48* random);
 	~CountryGenerator();

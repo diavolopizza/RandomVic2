@@ -10,7 +10,7 @@ public:
 	~MapMerger();
 
 
-	Bitmap * mergeHeightRiver(Bitmap* heightmapBMP, Bitmap* riverBMP);
-	Bitmap * mergeCountryRiverProvince(Bitmap* countryBMP, Bitmap* riverBMP, Bitmap * provinceBMP);
+	Bitmap * mergeHeightRiver(const Bitmap* heightmapBMP, const Bitmap* riverBMP);
+	Bitmap * mergeCountryRiverProvince(const Bitmap* countryBMP, const Bitmap* riverBMP, const Bitmap * provinceBMP);
 };
 

@@ -12,7 +12,9 @@ private:
 
 public:
 	Bitmap();
-	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable = nullptr);
+	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount);
+	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable);
+	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE * buffer, unsigned char* colourtable);
 	~Bitmap();
 
 	BITMAPINFO bInfo;
@@ -21,21 +23,21 @@ public:
 	Bitmap * get24BitRepresentation();
 
 	unsigned char* colourtable;
-	RGBTRIPLE getColourTableEntry(uint32_t index);
+	RGBTRIPLE getColourTableEntry(uint32_t index) const;
 	void setBitmapSize(uint32_t width, uint32_t height);
 
-	uint32_t getValueAtIndex(int32_t index, uint32_t mode = 0);
+	uint32_t getValueAtIndex(int32_t index, uint32_t mode = 0) const;
 	void setValueAtIndex(uint32_t bufferIndex, uint32_t value);
 
-	RGBTRIPLE getTripleAtIndex(uint32_t bufferIndex);
+	RGBTRIPLE getTripleAtIndex(uint32_t bufferIndex) const;
 	void setTripleAtIndex(RGBTRIPLE colour, uint32_t bufferIndex);
 	void copyTripleToIndex(uint32_t bufferIndex, uint32_t bufferIndexNew);
 
-	int getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos);
+	int getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos) const;
 	void setValueAtXYPosition(uint32_t value, uint32_t heightPos, uint32_t widthPos);
 	void setTripleAtXYPosition(RGBTRIPLE colour, uint32_t heightPos, uint32_t widthPos);
 
-	BYTE* getBuffer();
+	BYTE* getBuffer() const;
 	void setBuffer(unsigned char* Buffer);
 };
 

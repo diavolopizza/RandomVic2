@@ -11,7 +11,7 @@ MapMerger::~MapMerger()
 {
 }
 
-Bitmap * MapMerger::mergeHeightRiver(Bitmap * heightmapBMP, Bitmap * riverBMP)
+Bitmap * MapMerger::mergeHeightRiver(const Bitmap * heightmapBMP, const Bitmap * riverBMP)
 {
 	Bitmap * returnedBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
 	for (uint32_t i = 0; i < Data::getInstance().width* Data::getInstance().height; i++)
@@ -34,7 +34,7 @@ Bitmap * MapMerger::mergeHeightRiver(Bitmap * heightmapBMP, Bitmap * riverBMP)
 	return returnedBMP;
 }
 
-Bitmap * MapMerger::mergeCountryRiverProvince(Bitmap * countryBMP, Bitmap * riverBMP, Bitmap * provinceBMP)
+Bitmap * MapMerger::mergeCountryRiverProvince(const Bitmap * countryBMP, const Bitmap * riverBMP, const Bitmap * provinceBMP)
 {
 	Bitmap * returnedBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
 	for (uint32_t i = 0; i < Data::getInstance().width* Data::getInstance().height; i++)

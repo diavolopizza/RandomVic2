@@ -2,7 +2,7 @@
 
 
 
-CountryGenerator::CountryGenerator(Terrain * terrain, ranlux48* random)
+CountryGenerator::CountryGenerator(Terrain *terrain, ranlux48* random)
 {
 	this->terrain = terrain;
 	this->random = random;
@@ -45,12 +45,12 @@ void CountryGenerator::generateCountries(uint32_t amount)
 
 		Country * C = new Country(tag, i, colour, random);
 		countriesV.push_back(C);
-		C->flag = createFlag();
-		string path = "C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\" + tag + ".tga";
-		if (!tga_write_raw(path.c_str(), C->flag->width, C->flag->height, C->flag->getFlag(), TGA_TRUECOLOR_32)) {
-			printf("Failed to write image!\n");
-			printf(tga_error_string(tga_get_last_error()));
-		}
+		//C->flag = createFlag();
+		//string path = "C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\" + tag + ".tga";
+		//if (!tga_write_raw(path.c_str(), C->flag->width, C->flag->height, C->flag->getFlag(), TGA_TRUECOLOR_32)) {
+		//	printf("Failed to write image!\n");
+		//	printf(tga_error_string(tga_get_last_error()));
+		//}
 	}
 
 }

@@ -19,7 +19,7 @@ Bitmap* BMPHandler::findBitmapByKey(string key) {
 
 
 //BASIC BITMAP OPERATIONS START
-bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
+bool BMPHandler::SaveBMPToFile(const Bitmap*B, LPCTSTR outputFile)
 {
 	long paddedsize;
 	HANDLE file = CreateFile(outputFile, GENERIC_WRITE, FILE_SHARE_READ,
@@ -66,9 +66,9 @@ bool BMPHandler::SaveBMPToFile(Bitmap*B, LPCTSTR outputFile)
 	return true;
 }
 
-Bitmap* BMPHandler::Load24bitBMP(LPCTSTR input, string key)
+Bitmap BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 {
-	Bitmap* B = new Bitmap();
+	Bitmap B;
 	long* size = new long(0);
 	long paddedsize;
 	DWORD bytesread;	// value to be used in ReadFile funcs
@@ -76,47 +76,47 @@ Bitmap* BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 	HANDLE file = CreateFile(input, GENERIC_READ, FILE_SHARE_READ,
 		NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);	// open file to read from
 	if (NULL == file)
-		return NULL; // coudn't open file
+		return B; // coudn't open file
 	// read file header
-	if (ReadFile(file, &B->bFileHeader, sizeof(BITMAPFILEHEADER), &bytesread, NULL) == false)
+	if (ReadFile(file, &B.bFileHeader, sizeof(BITMAPFILEHEADER), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
-		return NULL;
+		//return NULL;
 	}
 	//read bitmap info
-	if (ReadFile(file, &B->bInfoHeader, sizeof(BITMAPINFOHEADER), &bytesread, NULL) == false)
+	if (ReadFile(file, &B.bInfoHeader, sizeof(BITMAPINFOHEADER), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
-		return NULL;
+		//return NULL;
 	}
-	if (ReadFile(file, &B->bInfo, sizeof(BITMAPINFO), &bytesread, NULL) == false)
+	if (ReadFile(file, &B.bInfo, sizeof(BITMAPINFO), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
-		return NULL;
+		//return NULL;
 	}
 
 	// check if bmp is uncompressed
-	if (B->bInfoHeader.biCompression != BI_RGB)
+	if (B.bInfoHeader.biCompression != BI_RGB)
 	{
 		CloseHandle(file);
-		return NULL;
+		//return NULL;
 	}
 	int offset = 54;
-	*size = B->bInfoHeader.biSizeImage;	// create buffer to hold the data,-Offsetbits
+	*size = B.bInfoHeader.biSizeImage;	// create buffer to hold the data,-Offsetbits
 
-	B->setBuffer(new BYTE[*size]);
+	B.setBuffer(new BYTE[*size]);
 	paddedsize = *size;
 
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //needs to be 58 for copying, but why?
-	if (ReadFile(file, B->getBuffer(), *size, &bytesread, NULL) == false)
+	if (ReadFile(file, B.getBuffer(), *size, &bytesread, NULL) == false)
 	{
-		delete[] B->getBuffer();
+		delete[] B.getBuffer();
 		CloseHandle(file);
-		return NULL;
+		//return NULL;
 	}
 
 	CloseHandle(file);// everything successful here: close file and return buffer
-	bitmaps.insert(pair<string, Bitmap*>(key, B));
+	bitmaps.insert(pair<string, Bitmap*>(key, &B));
 	return B;
 }
 
