@@ -27,6 +27,11 @@ Terrain::~Terrain()
 
 }
 
+
+bool inRange(int offset, int high, int x)
+{
+	return ((x - (high- offset))*(x - offset) <= 0);
+}
 //creates the province map for fast access of provinces when only
 //rgb values are available, removes need to search this province
 MultiArray Terrain::createProvinceMap()
@@ -38,16 +43,16 @@ MultiArray Terrain::createProvinceMap()
 	return provinceMap;
 }
 //
-uint32_t Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height) {
+int Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height) {
 	uint32_t distance = MAXUINT32;
 	for (Prov* P : provinces)
 	{
-		uint32_t x1 = P->center % width;
-		uint32_t x2 = position % width;
-		uint32_t y1 = P->center / height;
-		uint32_t y2 = position / height;
+		const uint32_t x1 = P->center % width;
+		const uint32_t x2 = position % width;
+		const uint32_t y1 = P->center / height;
+		const uint32_t y2 = position / height;
 		if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-			distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
+			distance = sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
 		}
 	}
 	return distance;
@@ -101,11 +106,13 @@ void Terrain::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provinceP
 	const uint32_t bmpWidth = bitmap->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = bitmap->bInfoHeader.biHeight;
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
+	int minDistance = (bmpSize / provinceSize) / 40;
 	uint32_t startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
-	while (!(startingPixel >= bmpWidth && startingPixel <= bmpSize - bmpWidth && bitmap->getValueAtIndex(startingPixel) == provinceColour.rgbtBlue - 1)
-		&& !GetMinDistanceToProvince(startingPixel, bmpWidth, bmpHeight) < 3 * sqrt(provinceSize / (std::atan(1) * 4)))
+	while (!inRange(bmpWidth, bmpSize, startingPixel) || bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1 
+		|| (GetMinDistanceToProvince(startingPixel, bmpWidth, bmpHeight) < minDistance))
 	{
 		startingPixel = (*random)() % bmpSize; //startingpixel is anywhere in the file
+		minDistance -= 5;
 	}
 	bitmap->setTripleAtIndex(provinceColour, startingPixel);
 	provincePixels.push_back(startingPixel);
@@ -374,18 +381,12 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	const RGBTRIPLE rgbLow{ 0, 0, 0 };
 	//initialize buffer
 	for (uint32_t i = 0; i < bmpSize; i++) {
-		if (terrainBMP->getValueAtIndex(i) == 254) {
-			//sea
-			provinceBMP->setTripleAtIndex(rgbHigh, i);
-		}
-		else {
-			//land
-			provinceBMP->setTripleAtIndex(rgbLow, i);
-		}
+		provinceBMP->setTripleAtIndex(terrainBMP->getValueAtIndex(i) == 254 ? rgbHigh:rgbLow, i);
 	}
 	//assign province size
 	uint32_t provincesize = (int)((float)bmpSize * 0.6f / (float)numoflandprov);//better calculation?
 	//assign pixels to this new province
+	cout << provincesize << endl;
 	provinceCreation(provinceBMP, provincesize, numoflandprov, 0, 0);
 	//For multithreading: create vector of random values. Used for performance improvements, as ranlux48 is using locks, and new instances would remove determination.
 	vector<uint32_t> randomValuesCached;
@@ -463,13 +464,14 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 		red++;
 		if (red > 254) //if end of colourrange(255) is reached
 		{
-			green++; //increment second(g) value
+			green++; //increment green value
 			red = 1; //reset red
 		}
-		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255, this->random); //create new landprovince
+		//create new landprovince
+		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255, this->random); 
 
 		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
-		for (uint32_t x = 0; x < 5000 - 1; x++)
+		for (uint32_t x = 0; x < provinceSize - 1; x++)
 		{
 			uint32_t currentPixel = P->pixels[(*random)() % P->pixels.size()];
 			vector<int> newPixels;
@@ -494,11 +496,6 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 	}
 }
 
-bool checkBoundaries(int pixel, int bmpSize, int offset)
-{
-	//return ((pixel - low) <= (high - low));
-	return true;
-}
 
 //fills unassigned pixels in iterations, so provinces grow
 void Terrain::fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const uint32_t greyVal, const uint32_t fillVal, const uint32_t from, const uint32_t to, const vector<uint32_t> &randomValuesCached, uint32_t updateThreshold)
@@ -1572,5 +1569,5 @@ void Terrain::sanityChecks(Bitmap * provinceBMP)
 	if (provinces.back()->provID > provinces.size())
 		cout << "ERROR: Higher province IDs than the total amount of provinces. Check deletion of small provinces" << endl;
 	if (provinces.size() != Data::getInstance().landProv + Data::getInstance().seaProv)
-		cout << "INFO: Amount of provinces diverges from requested amount of provinces by " << (provinces.size() - Data::getInstance().landProv - Data::getInstance().seaProv) << endl;
+		cout << "INFO: Amount of provinces diverges from requested amount of provinces by " << (int)((int)provinces.size() - (int)Data::getInstance().landProv - (int)Data::getInstance().seaProv) << endl;
 }

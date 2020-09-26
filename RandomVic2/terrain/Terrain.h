@@ -38,7 +38,7 @@ public:
 
 	//Utilities
 	MultiArray createProvinceMap();
-	uint32_t Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height);
+	int Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height);
 	void determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize);
 	void assignRemainingPixels(Bitmap * provinceBMP, bool sea);
 	void evaluateCoasts(Bitmap * provinceBMP);

@@ -96,7 +96,7 @@
 			"minProvPerContinent" : 1,
 			"minProvPerRegion" : 1,
 			"seaProvinces" : 2000,
-			"minProvSize" : 100
+			"minProvSize" : 50
 		},
 		"humidity" : {
 			"coastalEffectRange" : -1,

@@ -173,7 +173,7 @@ int main() {
 		//	VictoriaModule vMod(&Data::getInstance(), terrainGenerator);
 		//	vMod.dumpMapFiles(&Data::getInstance(), terrainBMP, riverBMP, &continents, &regionBMP, heightMapBMP, &provincesBMP);
 	}
-	//terrainGenerator.sanityChecks(&provincesBMP);
+	terrainGenerator.sanityChecks(&provincesBMP);
 	MapMerger merger;
 	Bitmap * heightRiver = merger.mergeHeightRiver(&heightMapBMP, riverBMP);
 	BMPHandler::getInstance().SaveBMPToFile(heightRiver, (Data::getInstance().debugMapsPath + ("heightRiver.bmp")).c_str());

@@ -26,6 +26,7 @@ public:
 	//Map params
 	uint32_t width = 0;
 	uint32_t height = 0;
+	uint32_t bitmapSize;
 	uint32_t seed = 0;
 	uint32_t seaLevel = 0;
 	uint32_t landMassPercentage = 0;
@@ -48,8 +49,6 @@ public:
 
 
 	//humidity
-
-
 
 	//rivers
 	uint32_t elevationTolerance = 0;
