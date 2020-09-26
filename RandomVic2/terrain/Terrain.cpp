@@ -203,7 +203,7 @@ BYTE * Terrain::normalizeHeightMap(Bitmap * heightMap)
 }
 
 //creates the heightmap with a given seed
-BYTE* Terrain::heightMap(Bitmap * a, uint32_t seed, uint32_t &layer)
+BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer)
 {
 	Bitmap RGBBMP(Data::getInstance().width, Data::getInstance().height, 24);
 	const uint32_t width = RGBBMP.bInfoHeader.biWidth;
@@ -324,7 +324,7 @@ BYTE* Terrain::heightMap(Bitmap * a, uint32_t seed, uint32_t &layer)
 	heightmapLayers.push_back(layerValues);
 	if (++layer < Data::getInstance().layerAmount)
 	{
-		heightMap(&RGBBMP, seed, layer);
+		heightMap(seed, layer);
 	}
 	else {
 		RGBBMP.setBuffer(normalizeHeightMap(&RGBBMP));
@@ -396,7 +396,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	for (uint32_t i = 0; i < bmpSize / 16; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
-	uint32_t threadCount = 1;
+	uint32_t threadCount = 8;
 	//decrement number of threads, until biSizeImage can be divided by threadCount without any rest
 	while (bmpSize % threadCount != 0)
 	{
@@ -426,7 +426,7 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	uint32_t provincesize = bmpSize / numOfSeaProv;//better calculation?
 	provinceCreation(provinceBMP, provincesize, numOfSeaProv, numoflandprov, 254);
 	//multithreading
-	uint32_t threadCount = 1;
+	uint32_t threadCount = 8;
 	vector<uint32_t> randomValuesCached;
 	for (uint32_t i = 0; i < provinceBMP->bInfoHeader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
@@ -513,6 +513,12 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 		provinces.push_back(P);
 	}
 }
+
+bool checkBoundaries(int pixel, int bmpSize, int offset)
+{
+	return ((pixel - low) <= (high - low));
+}
+
 //fills unassigned pixels in iterations, so provinces grow
 void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached, uint32_t updateThreshold)
 {
@@ -523,11 +529,8 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 	uint32_t unassignedPixels = bmpSize;
 	uint32_t previousUnassignedPixels = unassignedPixels + 1;
 	uint32_t randomValueIndex = 0;
-	uint32_t imageDrawn = 0;
 	while (unassignedPixels > 0 && unassignedPixels < previousUnassignedPixels)
 	{
-		if (unassignedPixels == 0)
-			break;
 		cout << "Pixels still unassigned: " << unassignedPixels << endl;
 		previousUnassignedPixels = unassignedPixels;
 		unassignedPixels = 0;
@@ -536,9 +539,7 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 			if (provinceBMP->getValueAtIndex(unassignedPixel) == fillVal)
 			{
 				unassignedPixels++;
-				const uint32_t direction = randomValuesCached[randomValueIndex++];
-				if (randomValueIndex >= randomValuesCached.size())
-					randomValueIndex = 0;
+				const uint32_t direction = randomValuesCached[randomValueIndex++%randomValuesCached.size()];
 				switch (direction)
 				{
 					//Constraints when checking neighbours:

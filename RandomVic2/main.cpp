@@ -64,30 +64,17 @@ int main() {
 	//const Bitmap heightMapBMP;
 	const string heightmapSourceString = Data::getInstance().debugMapsPath + ("heightmap.bmp");
 	const char* heightmapsource = heightmapSourceString.c_str();
+	uint32_t layer = 0;
 	//generate noise map
 
-	//if (Data::getInstance().genHeight) {
-	//	heightMapBMP(Data::getInstance().width, Data::getInstance().height, 24);
-	//	//heightMapBMP.setBuffer(terrainGenerator.heightMap(&heightMapBMP, Data::getInstance().seed, layer));
-
-	//	BMPHandler::getInstance().SaveBMPToFile(&heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());
-	//}
-	//else {
-	//	heightMapBMP = BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap");
-	//	Data::getInstance().height = heightMapBMP.bInfoHeader.biHeight;
-	//	Data::getInstance().width = heightMapBMP.bInfoHeader.biWidth;
-	//}
-	//create new bmps{
-	uint32_t layer = 0;
+	//generate noise map
+	const Bitmap heightMapBMP(Data::getInstance().width,Data::getInstance().height,	24, Data::getInstance().genHeight? 
+		terrainGenerator.heightMap(Data::getInstance().seed, layer) : terrainGenerator.heightMap(Data::getInstance().seed, layer));
+	//BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap")
+	Data::getInstance().height = heightMapBMP.bInfoHeader.biHeight;
+	Data::getInstance().width = heightMapBMP.bInfoHeader.biWidth;
+	BMPHandler::getInstance().SaveBMPToFile(&heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());
 	Bitmap provincesBMP(Data::getInstance().width, Data::getInstance().height, 24);
-
-	const Bitmap heightMapBMP(Data::getInstance().width, 		Data::getInstance().height,	24, 
-		Data::getInstance().genHeight? 
-		terrainGenerator.heightMap(&provincesBMP, Data::getInstance().seed, layer):
-		terrainGenerator.heightMap(&provincesBMP, Data::getInstance().seed, layer), nullptr
-	
-	
-	);
 	Bitmap humidityBMP(Data::getInstance().width, Data::getInstance().height, 24);
 	Bitmap continents(Data::getInstance().width, Data::getInstance().height, 24);
 	Bitmap regionBMP(Data::getInstance().width, Data::getInstance().height, 24);
@@ -186,7 +173,7 @@ int main() {
 		//	VictoriaModule vMod(&Data::getInstance(), terrainGenerator);
 		//	vMod.dumpMapFiles(&Data::getInstance(), terrainBMP, riverBMP, &continents, &regionBMP, heightMapBMP, &provincesBMP);
 	}
-	terrainGenerator.sanityChecks(&provincesBMP);
+	//terrainGenerator.sanityChecks(&provincesBMP);
 	MapMerger merger;
 	Bitmap * heightRiver = merger.mergeHeightRiver(&heightMapBMP, riverBMP);
 	BMPHandler::getInstance().SaveBMPToFile(heightRiver, (Data::getInstance().debugMapsPath + ("heightRiver.bmp")).c_str());

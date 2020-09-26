@@ -51,14 +51,14 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 	}
 }
 
-Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable) : Bitmap(width, height, bitCount)
-{
-	this->colourtable = colourtable;
-}
-
-Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE * buffer, unsigned char * colourtable) : Bitmap( width,  height,  bitCount, colourtable = nullptr)
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE * buffer) : Bitmap(width, height, bitCount)
 {
 	this->Buffer = buffer;
+}
+
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, Bitmap bitmap) : Bitmap( width,  height,  bitCount)
+{
+	this->Buffer = bitmap.Buffer;
 }
 
 

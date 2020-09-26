@@ -13,8 +13,8 @@ private:
 public:
 	Bitmap();
 	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount);
-	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, unsigned char* colourtable);
-	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE * buffer, unsigned char* colourtable);
+	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE * buffer);
+	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, Bitmap bitmap);
 	~Bitmap();
 
 	BITMAPINFO bInfo;

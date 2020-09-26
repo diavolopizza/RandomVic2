@@ -1,7 +1,7 @@
 {
 	"module": 
 	{
-		"genHeight" : 1,
+		"genHeight" : 0,
 		"genSimpleTerrain" : 1,
 		"genComplexTerrain" : 1,
 		"genV2" : 0,
@@ -92,11 +92,11 @@
 			}
 		},
 		"provinces" : {
-			"landProvinces" : 1000,
+			"landProvinces" : 2000,
 			"minProvPerContinent" : 1,
 			"minProvPerRegion" : 1,
-			"seaProvinces" : 1000,
-			"minProvSize" : 10
+			"seaProvinces" : 2000,
+			"minProvSize" : 100
 		},
 		"humidity" : {
 			"coastalEffectRange" : -1,
