@@ -107,18 +107,18 @@ void Bitmap::setBitmapSize(uint32_t width, uint32_t height)
 	}
 }
 
-uint32_t Bitmap::getValueAtIndex(int32_t index, uint32_t mode) const
+unsigned char Bitmap::getValueAtIndex(uint32_t index, const uint32_t mode) const
 {
 	if (bInfoHeader.biBitCount == 24)
 	{
 		index *= 3;
 	}
-	if (index < 0 || (uint32_t)index > this->bInfoHeader.biSizeImage)
+	if (index < 0 || index > this->bInfoHeader.biSizeImage)
 		return NULL;
 	return Buffer[index + mode];
 }
 
-int Bitmap::getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos) const
+unsigned char Bitmap::getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos) const
 {
 	int position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
 	if (position < 0 || position > bInfoHeader.biSizeImage)

@@ -84,7 +84,7 @@ void Data::getConfig(string configPath) {
 
 	}
 
-	this->random = new ranlux48();
+	this->random = new ranlux24();
 	if (seed)
 		random->seed(seed);
 	else {

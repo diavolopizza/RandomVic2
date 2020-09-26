@@ -1,6 +1,6 @@
 #include "Flag.h"
 
-Flag::Flag(ranlux48* random)
+Flag::Flag(ranlux24* random)
 {
 	this->random = random;
 

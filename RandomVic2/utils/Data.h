@@ -28,7 +28,7 @@ public:
 	uint32_t height = 0;
 	uint32_t bitmapSize;
 	uint32_t seed = 0;
-	uint32_t seaLevel = 0;
+	unsigned char seaLevel = 0;
 	uint32_t landMassPercentage = 0;
 	uint32_t seaProv = 0;
 	uint32_t landProv = 0;
@@ -57,8 +57,9 @@ public:
 	//visualisation with openCV
 	uint32_t updateThreshold = 0;
 
-	ranlux48* random;
+	ranlux24* random;
 	int maxNumOfCountries = 113;
+	uint32_t threadAmount = 8;
 
 
 	void getConfig(string configPath);

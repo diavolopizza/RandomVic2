@@ -1,7 +1,7 @@
 #include "Country.h"
 
 
-Country::Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux48* random)
+Country::Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux24* random)
 {
 	this->tag = tag;
 	this->ID = ID;

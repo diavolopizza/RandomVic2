@@ -2,7 +2,7 @@
 
 
 
-CountryGenerator::CountryGenerator(Terrain *terrain, ranlux48* random)
+CountryGenerator::CountryGenerator(Terrain *terrain, ranlux24* random)
 {
 	this->terrain = terrain;
 	this->random = random;

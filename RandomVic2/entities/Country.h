@@ -10,7 +10,7 @@ class Prov;
 class Region;
 class Country
 {
-	ranlux48* random;
+	ranlux24* random;
 
 	string tag;
 	uint32_t ID;
@@ -18,7 +18,7 @@ class Country
 	RGBTRIPLE colour;
 
 public:
-	Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux48* random);
+	Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux24* random);
 	~Country();
 
 	vector<Prov*> provinces;

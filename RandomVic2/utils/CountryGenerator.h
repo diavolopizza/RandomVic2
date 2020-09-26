@@ -10,10 +10,10 @@
 using namespace std;
 class CountryGenerator
 {
-	ranlux48* random;
+	ranlux24* random;
 	Terrain *terrain;
 public:
-	CountryGenerator(Terrain *terrain, ranlux48* random);
+	CountryGenerator(Terrain *terrain, ranlux24* random);
 	~CountryGenerator();
 	map<string, Country*> countriesM;
 	vector<Country*> countriesV;

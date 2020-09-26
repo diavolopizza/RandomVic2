@@ -16,7 +16,7 @@
 #define BELOW(val, offset) \
 (val-1*offset)
 
-Terrain::Terrain(ranlux48* random)
+Terrain::Terrain(ranlux24* random)
 {
 	this->random = random;
 	provinceMap.resize(256);
@@ -30,7 +30,7 @@ Terrain::~Terrain()
 
 bool inRange(int offset, int high, int x)
 {
-	return ((x - (high- offset))*(x - offset) <= 0);
+	return ((x - (high - offset))*(x - offset) <= 0);
 }
 //creates the province map for fast access of provinces when only
 //rgb values are available, removes need to search this province
@@ -52,7 +52,7 @@ int Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_
 		const uint32_t y1 = P->center / height;
 		const uint32_t y2 = position / height;
 		if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-			distance = sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
+			distance = (double)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
 		}
 	}
 	return distance;
@@ -108,7 +108,7 @@ void Terrain::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provinceP
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
 	int minDistance = (bmpSize / provinceSize) / 40;
 	uint32_t startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
-	while (!inRange(bmpWidth, bmpSize, startingPixel) || bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1 
+	while (!inRange(bmpWidth, bmpSize, startingPixel) || bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1
 		|| (GetMinDistanceToProvince(startingPixel, bmpWidth, bmpHeight) < minDistance))
 	{
 		startingPixel = (*random)() % bmpSize; //startingpixel is anywhere in the file
@@ -183,24 +183,24 @@ void Terrain::provPixels(Bitmap * provinceBMP)
 }
 BYTE * Terrain::normalizeHeightMap(Bitmap * heightMap)
 {
-	short highestValue = 0;
-	WORD* combinedValues = new unsigned short[heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3];
+	double highestValue = 0.0;
+	double* combinedValues = new double[heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3];
 	BYTE* normalisedValues = new unsigned char[heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3];
 	uint32_t index = 0;
 	for (auto buffer : this->heightmapLayers)
 	{
 		for (int i = 0; i < heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3; i++)
 		{
-			combinedValues[i] += buffer[i] * Data::getInstance().weight[index];
+			combinedValues[i] += (double)buffer[i] * Data::getInstance().weight[index];
 			if (combinedValues[i] > highestValue)
 				highestValue = combinedValues[i];
 		}
 		index++;
 	}
-	const float factor = 250.0f / (float)highestValue;
+	const double factor = 250.0f / (double)highestValue;
 	for (int i = 0; i < heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3; i++)
 	{
-		normalisedValues[i] = (char)((float)combinedValues[i] * factor);
+		normalisedValues[i] = (unsigned char)((double)combinedValues[i] * factor);
 	}
 	return normalisedValues;
 }
@@ -209,16 +209,16 @@ BYTE * Terrain::normalizeHeightMap(Bitmap * heightMap)
 BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer)
 {
 	Bitmap RGBBMP(Data::getInstance().width, Data::getInstance().height, 24);
-	const uint32_t width = RGBBMP.bInfoHeader.biWidth;
-	const uint32_t height = RGBBMP.bInfoHeader.biHeight;
+	const float width = (float)RGBBMP.bInfoHeader.biWidth;
+	const float height = (float)RGBBMP.bInfoHeader.biHeight;
 	cout << "Creating Heightmap" << endl;
 	FastNoise myNoise; // Create a FastNoise object
 	// adjusting frequency is necessary when map size increases, 
 	// as the heightmap will be noisier the larger the map
-	const float sizeNoiseFactor = (float)(1024 * 1024) / (float)(width * height);
+	const float sizeNoiseFactor = (float)(1024.0f * 1024.0f) / (float)(width * height);
 	//float sizeNoiseFactor = 1.0f / log2f((float)(width * height)) * 20.0f;
 	myNoise.SetSeed(seed + layer);
-	uint32_t type = Data::getInstance().type[layer];
+	const uint32_t type = Data::getInstance().type[layer];
 	cout << sizeNoiseFactor << endl;
 	myNoise.SetFrequency((float)Data::getInstance().fractalFrequency[layer] * sizeNoiseFactor);
 	myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves[layer]);
@@ -300,21 +300,23 @@ BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer)
 
 	// set the point at which heightvalues are reduced towards 0 
 	// this eliminates provinces overlapping at the east/west map boundaries
-	const uint32_t delimiter = width / Data::getInstance().divideThreshold[layer];
+	const float delimiter = width / Data::getInstance().divideThreshold[layer];
 	for (uint32_t x = 0; x < height; x++)
 	{
 		for (uint32_t y = 0; y < width; y++)
 		{
+			float xf = (float)x;
+			float yf = (float)y;
 			float factor = 1;
-			if (y < delimiter) {
+			if (yf < delimiter) {
 				factor = (float)y / (float)delimiter;
 			}
-			else if (y > width - delimiter)
+			else if (yf > width - delimiter)
 			{
-				factor = ((float)width - (float)y) / delimiter;
+				factor = ((float)width - (float)yf) / (float)delimiter;
 			}
-			FN_DECIMAL noiseLevel = /*RGBBMP->getValueAtXYPosition(x, y) +*/ (myNoise.GetNoise(x, y) + 1) * 64 * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
-			uint32_t completeNoise = noiseLevel;
+			FN_DECIMAL noiseLevel = /*RGBBMP->getValueAtXYPosition(x, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0f) * 64.0f * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
+			uint32_t completeNoise = (uint32_t)noiseLevel;
 			RGBTRIPLE colour{ 1 + completeNoise, 1 + completeNoise, 1 + completeNoise };
 			RGBBMP.setTripleAtXYPosition(colour, x, y);
 		}
@@ -381,35 +383,35 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	const RGBTRIPLE rgbLow{ 0, 0, 0 };
 	//initialize buffer
 	for (uint32_t i = 0; i < bmpSize; i++) {
-		provinceBMP->setTripleAtIndex(terrainBMP->getValueAtIndex(i) == 254 ? rgbHigh:rgbLow, i);
+		provinceBMP->setTripleAtIndex(terrainBMP->getValueAtIndex(i) == 254 ? rgbHigh : rgbLow, i);
 	}
 	//assign province size
 	uint32_t provincesize = (int)((float)bmpSize * 0.6f / (float)numoflandprov);//better calculation?
 	//assign pixels to this new province
 	cout << provincesize << endl;
 	provinceCreation(provinceBMP, provincesize, numoflandprov, 0, 0);
-	//For multithreading: create vector of random values. Used for performance improvements, as ranlux48 is using locks, and new instances would remove determination.
+	//For multithreading: create vector of random values. Used for performance improvements, as ranlux24 is using locks, and new instances would remove determination.
 	vector<uint32_t> randomValuesCached;
 	for (uint32_t i = 0; i < bmpSize / 16; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
-	uint32_t threadCount = 1;
+	uint32_t threadAmount = Data::getInstance().threadAmount;
 	//decrement number of threads, until biSizeImage can be divided by threadCount without any rest
-	while (bmpSize % threadCount != 0)
+	while (bmpSize % threadAmount != 0)
 	{
-		threadCount--;
+		threadAmount--;
 	}
-	const uint32_t numThreads = threadCount;
 	std::vector<std::thread> threads;
-	for (uint32_t i = 0; i < numThreads; ++i) {
-		uint32_t from = i * (bmpSize / numThreads);
-		uint32_t to = (i + 1) * (bmpSize / numThreads);
+	for (uint32_t i = 0; i < threadAmount; ++i) {
+		uint32_t from = i * (bmpSize / threadAmount);
+		uint32_t to = (i + 1) * (bmpSize / threadAmount);
 		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)1, (uint32_t)0, from, to, std::ref(randomValuesCached), updateThreshold));
 	}
 	//wait for threads to finish
 	for (auto& t : threads) {
 		t.join();
 	}
+	//fill(std::ref(provinceBMP), std::ref(riverBMP), (unsigned char)1, (unsigned char)0, from, to, std::ref(randomValuesCached), updateThreshold);
 	assignRemainingPixels(provinceBMP, false);
 	return provinceBMP->getBuffer();
 }
@@ -423,20 +425,19 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	uint32_t provincesize = bmpSize / numOfSeaProv;//better calculation?
 	provinceCreation(provinceBMP, provincesize, numOfSeaProv, numoflandprov, 254);
 	//multithreading
-	uint32_t threadCount = 1;
+	uint32_t threadAmount = Data::getInstance().threadAmount;
 	vector<uint32_t> randomValuesCached;
 	for (uint32_t i = 0; i < provinceBMP->bInfoHeader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
-	while (provinceBMP->bInfoHeader.biSizeImage % threadCount != 0)
+	while (provinceBMP->bInfoHeader.biSizeImage % threadAmount != 0)
 	{
-		threadCount--;
+		threadAmount--;
 	}
-	const uint32_t numThreads = threadCount;
 	std::vector<std::thread> threads;
-	for (uint32_t i = 0; i < numThreads; ++i) {
-		const uint32_t from = i * (bmpSize / numThreads);
-		const uint32_t to = (i + 1) * (bmpSize / numThreads);
+	for (uint32_t i = 0; i < threadAmount; ++i) {
+		const uint32_t from = i * (bmpSize / threadAmount);
+		const uint32_t to = (i + 1) * (bmpSize / threadAmount);
 		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)255, (uint32_t)254, from, to, std::ref(randomValuesCached), updateThreshold));
 	}
 	//wait for threads to finish
@@ -468,17 +469,18 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 			red = 1; //reset red
 		}
 		//create new landprovince
-		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255, this->random); 
+		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255, this->random);
 
 		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
 		for (uint32_t x = 0; x < provinceSize - 1; x++)
 		{
 			uint32_t currentPixel = P->pixels[(*random)() % P->pixels.size()];
-			vector<int> newPixels;
-			newPixels.push_back(RIGHT(currentPixel));
-			newPixels.push_back(LEFT(currentPixel));
-			newPixels.push_back(ABOVE(currentPixel, bmpWidth));
-			newPixels.push_back(BELOW(currentPixel, bmpWidth));
+			const vector<unsigned int> newPixels = { RIGHT(currentPixel), LEFT(currentPixel), ABOVE(currentPixel, bmpWidth), BELOW(currentPixel, bmpWidth) };
+			//vector<int> newPixels;
+			//newPixels.push_back(RIGHT(currentPixel));
+			//newPixels.push_back(LEFT(currentPixel));
+			//newPixels.push_back(ABOVE(currentPixel, bmpWidth));
+			//newPixels.push_back(BELOW(currentPixel, bmpWidth));
 			for (auto newPixel : newPixels) {
 				if (newPixel < bmpSize && newPixel > 3)
 					if (provinceBMP->getValueAtIndex(newPixel) == greyval)
@@ -498,7 +500,7 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 
 
 //fills unassigned pixels in iterations, so provinces grow
-void Terrain::fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const uint32_t greyVal, const uint32_t fillVal, const uint32_t from, const uint32_t to, const vector<uint32_t> &randomValuesCached, uint32_t updateThreshold)
+void Terrain::fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const unsigned char greyVal, const unsigned char fillVal, const uint32_t from, const uint32_t to, const vector<uint32_t> &randomValuesCached, uint32_t updateThreshold)
 {
 	cout << "Starting filling of unassigned pixels from pixel " << from << " to pixel " << to << endl;
 	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;

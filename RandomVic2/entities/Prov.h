@@ -12,11 +12,11 @@ using namespace std;
 class Prov
 {
 	string path;
-	ranlux48* random;
+	ranlux24* random;
 public:
 	Prov();
 	Prov(int, RGBTRIPLE);
-	Prov(int, RGBTRIPLE, bool, ranlux48* random);
+	Prov(int, RGBTRIPLE, bool, ranlux24* random);
 	~Prov();
 	RGBTRIPLE colour;
 

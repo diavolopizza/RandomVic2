@@ -12,7 +12,7 @@ Prov::Prov(int provID, RGBTRIPLE colour)
 	this->owner = "DUM";
 }
 
-Prov::Prov(int provID, RGBTRIPLE colour, bool sea, ranlux48* random)
+Prov::Prov(int provID, RGBTRIPLE colour, bool sea, ranlux24* random)
 {
 	this->colour = colour;
 	this->provID = provID;
