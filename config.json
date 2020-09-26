@@ -10,7 +10,7 @@
 
 	"map": 
 	{
-		"seed" : 1596549667,
+		"seed" : 0,
         "height" : 2160,
 		"width" : 5616,
 		"seaLevel" : 128,
@@ -19,7 +19,7 @@
 		"rivers" : 
 		{
 			"elevationTolerance" : 4,
-			"numRivers" : 3
+			"numRivers" : 100
 		},
 		"heightmap" : {
 			"complexHeight" : 1,
@@ -92,9 +92,9 @@
 			}
 		},
 		"provinces" : {
-			"landProvinces" : 1000,
+			"landProvinces" : 2000,
 			"minProvPerContinent" : 1,
-			"minProvPerRegion" : 1,
+			"minProvPerRegion" : 5,
 			"seaProvinces" : 2000,
 			"minProvSize" : 50
 		},

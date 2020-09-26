@@ -35,6 +35,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		}
 		this->bInfoHeader.biBitCount = 24;
 		bInfo.bmiHeader = bInfoHeader;
+		indexFactor = 3;
 	}
 	else {
 		bFileHeader.bfOffBits = 54 + 256 * 4;
@@ -48,6 +49,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 			Buffer[i] = 0;
 		}
 		bInfo.bmiHeader = bInfoHeader;
+		indexFactor = 1;
 	}
 }
 
@@ -56,7 +58,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE * buffer
 	this->Buffer = buffer;
 }
 
-Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, Bitmap bitmap) : Bitmap( width,  height,  bitCount)
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, Bitmap bitmap) : Bitmap(width, height, bitCount)
 {
 	this->Buffer = bitmap.Buffer;
 }
@@ -109,19 +111,15 @@ void Bitmap::setBitmapSize(uint32_t width, uint32_t height)
 
 unsigned char Bitmap::getValueAtIndex(uint32_t index, const uint32_t mode) const
 {
-	if (bInfoHeader.biBitCount == 24)
-	{
-		index *= 3;
-	}
-	if (index < 0 || index > this->bInfoHeader.biSizeImage)
+	if (index * indexFactor > this->bInfoHeader.biSizeImage)
 		return NULL;
-	return Buffer[index + mode];
+	return Buffer[index * indexFactor + mode];
 }
 
 unsigned char Bitmap::getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos) const
 {
-	int position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
-	if (position < 0 || position > bInfoHeader.biSizeImage)
+	uint32_t position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
+	if (position > bInfoHeader.biSizeImage)
 		return -1;
 	return Buffer[position];
 }
@@ -183,6 +181,11 @@ void Bitmap::setTripleAtXYPosition(RGBTRIPLE colour, uint32_t heightPos, uint32_
 void Bitmap::setBuffer(unsigned char * Buffer)
 {
 	this->Buffer = Buffer;
+}
+
+void Bitmap::setIndexFactor(uint32_t indexFactor)
+{
+	this->indexFactor = indexFactor;
 }
 
 unsigned char * Bitmap::getBuffer() const

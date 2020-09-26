@@ -8,7 +8,7 @@ class Bitmap
 private:
 	BYTE * Buffer;
 	Bitmap * bit24Representation = nullptr;
-
+	uint32_t indexFactor;
 
 public:
 	Bitmap();
@@ -39,5 +39,7 @@ public:
 
 	BYTE* getBuffer() const;
 	void setBuffer(unsigned char* Buffer);
+
+	void setIndexFactor(uint32_t indexFactor);
 };
 

@@ -159,11 +159,11 @@ int main() {
 	}
 
 	CountryGenerator cG(&terrainGenerator, Data::getInstance().random);
-	//cG.distributeCountries(100, 0, terrainGenerator->regions);
-	//cG.determineDimensions();
-	//cG.sanityChecks();
-	//Bitmap * countryBMP = cG.countryBMP();
-	//BMPHandler::getInstance().SaveBMPToFile(countryBMP, (Data::getInstance().debugMapsPath + ("countries.bmp")).c_str());
+	cG.distributeCountries(Data::getInstance().maxNumOfCountries, 0, terrainGenerator.regions);
+	cG.determineDimensions();
+	cG.sanityChecks();
+	Bitmap * countryBMP = cG.countryBMP();
+	BMPHandler::getInstance().SaveBMPToFile(countryBMP, (Data::getInstance().debugMapsPath + ("countries.bmp")).c_str());
 	Bitmap * developmentBMP = cG.civilizationBMP();
 	BMPHandler::getInstance().SaveBMPToFile(developmentBMP, (Data::getInstance().debugMapsPath + ("development.bmp")).c_str());
 
@@ -177,8 +177,8 @@ int main() {
 	MapMerger merger;
 	Bitmap * heightRiver = merger.mergeHeightRiver(&heightMapBMP, riverBMP);
 	BMPHandler::getInstance().SaveBMPToFile(heightRiver, (Data::getInstance().debugMapsPath + ("heightRiver.bmp")).c_str());
-	//Bitmap * countryRiver = merger.mergeCountryRiverProvince(countryBMP, riverBMP, &provincesBMP);
-	//BMPHandler::getInstance().SaveBMPToFile(countryRiver, (Data::getInstance().debugMapsPath + ("countryRiver.bmp")).c_str());
+	Bitmap * countryRiver = merger.mergeCountryRiverProvince(countryBMP, riverBMP, &provincesBMP);
+	BMPHandler::getInstance().SaveBMPToFile(countryRiver, (Data::getInstance().debugMapsPath + ("countryRiver.bmp")).c_str());
 
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 	std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() << "[s]" << std::endl;

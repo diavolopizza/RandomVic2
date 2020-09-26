@@ -116,6 +116,7 @@ Bitmap BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 	}
 
 	CloseHandle(file);// everything successful here: close file and return buffer
+	B.setIndexFactor(3u);
 	bitmaps.insert(pair<string, Bitmap*>(key, &B));
 	return B;
 }
@@ -179,6 +180,7 @@ Bitmap* BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 	}
 	CloseHandle(file);// everything successful here: close file and return buffer
 
+	B->setIndexFactor(1u);
 	bitmaps.insert(pair<string, Bitmap*>(key, B));
 	return B;
 }

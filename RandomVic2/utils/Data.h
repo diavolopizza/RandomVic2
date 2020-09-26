@@ -58,7 +58,7 @@ public:
 	uint32_t updateThreshold = 0;
 
 	ranlux24* random;
-	int maxNumOfCountries = 113;
+	int maxNumOfCountries = 20;
 	uint32_t threadAmount = 8;
 
 

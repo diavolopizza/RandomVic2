@@ -86,6 +86,7 @@ void Prov::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)
 {
 	this->region = R;
 	R->provinces.push_back(this);
+
 	if (recursive && R->provinces.size() < minProvPerRegion) {
 
 		//for (auto neighbour : this->neighbourProvinces)
