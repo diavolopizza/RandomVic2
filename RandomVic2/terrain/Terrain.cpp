@@ -8,17 +8,13 @@
 
 //MACROS
 #define LEFT(val) \
-(val-1)
+(val-1*1)
 #define RIGHT(val) \
-(val+1)
+(val+1*1)
 #define ABOVE(val, offset) \
-(val+offset)
+(val+1*offset)
 #define BELOW(val, offset) \
-(val-offset)
-#define ABOVE(val, offset) \
-(val+offset)
-#define BELOW(val, offset) \
-(val-offset)
+(val-1*offset)
 
 Terrain::Terrain(ranlux48* random)
 {
@@ -188,7 +184,7 @@ BYTE * Terrain::normalizeHeightMap(Bitmap * heightMap)
 	{
 		for (int i = 0; i < heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3; i++)
 		{
-			combinedValues[i] += buffer[i]* Data::getInstance().weight[index];
+			combinedValues[i] += buffer[i] * Data::getInstance().weight[index];
 			if (combinedValues[i] > highestValue)
 				highestValue = combinedValues[i];
 		}
@@ -222,7 +218,7 @@ BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer)
 	myNoise.SetFractalGain(Data::getInstance().fractalGain[layer]);
 	switch (type)
 	{
-	// regular noisy, frequency around 0.0120 for continent sized shapes
+		// regular noisy, frequency around 0.0120 for continent sized shapes
 	case 1:
 	{
 		myNoise.SetNoiseType(FastNoise::NoiseType::ValueFractal); // Set the desired noise type
@@ -396,7 +392,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	for (uint32_t i = 0; i < bmpSize / 16; i++) {
 		randomValuesCached.push_back((*random)() % 4);
 	}
-	uint32_t threadCount = 8;
+	uint32_t threadCount = 1;
 	//decrement number of threads, until biSizeImage can be divided by threadCount without any rest
 	while (bmpSize % threadCount != 0)
 	{
@@ -426,7 +422,7 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	uint32_t provincesize = bmpSize / numOfSeaProv;//better calculation?
 	provinceCreation(provinceBMP, provincesize, numOfSeaProv, numoflandprov, 254);
 	//multithreading
-	uint32_t threadCount = 8;
+	uint32_t threadCount = 1;
 	vector<uint32_t> randomValuesCached;
 	for (uint32_t i = 0; i < provinceBMP->bInfoHeader.biSizeImage / 64; i++) {
 		randomValuesCached.push_back((*random)() % 4);
@@ -463,9 +459,9 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 	{
 		provinceColour.rgbtRed = 1 + red;
 		provinceColour.rgbtGreen = 1 + green;
-		provinceColour.rgbtBlue = greyval + 1;//land gets low blue value
+		provinceColour.rgbtBlue = greyval + 1; //land gets low blue value
 		red++;
-		if (red > 254)//if end of colourrange(255) is reached
+		if (red > 254) //if end of colourrange(255) is reached
 		{
 			green++; //increment second(g) value
 			red = 1; //reset red
@@ -473,40 +469,24 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255, this->random); //create new landprovince
 
 		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
-		for (uint32_t x = 0; x < 2 - 1; x++)
+		for (uint32_t x = 0; x < 5000 - 1; x++)
 		{
-			uint32_t currentPixel = 0;
-			while (currentPixel <= bmpWidth || currentPixel >= bmpSize - bmpWidth)
-			{
-				currentPixel = P->pixels[(*random)() % P->pixels.size()];
-			}
-			if (provinceBMP->getValueAtIndex(RIGHT(currentPixel)) == greyval)
-			{
-				if ((currentPixel + 1) % (bmpWidth / 2) != 0) {
-					provinceBMP->setTripleAtIndex(provinceColour, RIGHT(currentPixel));
-					P->pixels.push_back(RIGHT(currentPixel));
-					x++;
-				}
-			}
-			if (provinceBMP->getValueAtIndex(LEFT(currentPixel)) == greyval)
-			{
-				if ((currentPixel) % (bmpWidth / 2) != 0) {
-					provinceBMP->setTripleAtIndex(provinceColour, LEFT(currentPixel));
-					P->pixels.push_back(LEFT(currentPixel));
-					x++;
-				}
-			}
-			if (provinceBMP->getValueAtIndex(ABOVE(currentPixel, bmpWidth)) == greyval)
-			{
-				provinceBMP->setTripleAtIndex(provinceColour, ABOVE(currentPixel, bmpWidth));
-				P->pixels.push_back(ABOVE(currentPixel, bmpWidth));
-				x++;
-			}
-			if (provinceBMP->getValueAtIndex(BELOW(currentPixel, bmpWidth)) == greyval)
-			{
-				provinceBMP->setTripleAtIndex(provinceColour, BELOW(currentPixel, bmpWidth));
-				P->pixels.push_back(BELOW(currentPixel, bmpWidth));
-				x++;
+			uint32_t currentPixel = P->pixels[(*random)() % P->pixels.size()];
+			vector<int> newPixels;
+			newPixels.push_back(RIGHT(currentPixel));
+			newPixels.push_back(LEFT(currentPixel));
+			newPixels.push_back(ABOVE(currentPixel, bmpWidth));
+			newPixels.push_back(BELOW(currentPixel, bmpWidth));
+			for (auto newPixel : newPixels) {
+				if (newPixel < bmpSize && newPixel > 3)
+					if (provinceBMP->getValueAtIndex(newPixel) == greyval)
+					{
+						//if ((newpixel) % (bmpWidth / 2) != 0) {
+						provinceBMP->setTripleAtIndex(provinceColour, newPixel);
+						P->pixels.push_back(newPixel);
+						x++;
+						//}
+					}
 			}
 		}
 		P->center = P->pixels[0];
@@ -516,11 +496,12 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 
 bool checkBoundaries(int pixel, int bmpSize, int offset)
 {
-	return ((pixel - low) <= (high - low));
+	//return ((pixel - low) <= (high - low));
+	return true;
 }
 
 //fills unassigned pixels in iterations, so provinces grow
-void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached, uint32_t updateThreshold)
+void Terrain::fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const uint32_t greyVal, const uint32_t fillVal, const uint32_t from, const uint32_t to, const vector<uint32_t> &randomValuesCached, uint32_t updateThreshold)
 {
 	cout << "Starting filling of unassigned pixels from pixel " << from << " to pixel " << to << endl;
 	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;
@@ -529,61 +510,27 @@ void Terrain::fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint
 	uint32_t unassignedPixels = bmpSize;
 	uint32_t previousUnassignedPixels = unassignedPixels + 1;
 	uint32_t randomValueIndex = 0;
+
+	const vector<int> offsets = { 1,-1, (int)bmpWidth, -(int)(bmpWidth) };
 	while (unassignedPixels > 0 && unassignedPixels < previousUnassignedPixels)
 	{
 		cout << "Pixels still unassigned: " << unassignedPixels << endl;
 		previousUnassignedPixels = unassignedPixels;
 		unassignedPixels = 0;
-		for (uint32_t unassignedPixel = from; unassignedPixel < to; unassignedPixel++)
+		for (int unassignedPixel = from; unassignedPixel < to; unassignedPixel++)
 		{
 			if (provinceBMP->getValueAtIndex(unassignedPixel) == fillVal)
 			{
 				unassignedPixels++;
 				const uint32_t direction = randomValuesCached[randomValueIndex++%randomValuesCached.size()];
-				switch (direction)
-				{
-					//Constraints when checking neighbours:
-						//not going out of buffer bounds
-						//only assign if neighbouring pixel is assigned and of same type
-						//not crossing the wrapping line in east/west direction
-				case 0:
-				{ //EAST
-					if (unassignedPixel < bmpSize - 1 && provinceBMP->getValueAtIndex(RIGHT(unassignedPixel)) != 0 && provinceBMP->getValueAtIndex(RIGHT(unassignedPixel)) == greyVal)
+				const int newPixel = unassignedPixel + offsets[direction];
+				if (newPixel < bmpSize && newPixel > 3)
+					if (provinceBMP->getValueAtIndex(newPixel) == greyVal)
 					{
 						//TODO: add river crossings to each province
-						if ((unassignedPixel + 1) % (bmpWidth) != 0 && !(riverBMP->getValueAtIndex(RIGHT(unassignedPixel)) <= 10))
-							provinceBMP->copyTripleToIndex(unassignedPixel, RIGHT(unassignedPixel));
+						if ((newPixel) % (bmpWidth) != 0 && !(riverBMP->getValueAtIndex(newPixel) <= 10))
+							provinceBMP->copyTripleToIndex(unassignedPixel, newPixel);
 					}
-					break;
-				}
-				case 1:
-				{ //WEST
-					if (unassignedPixel > 1 && provinceBMP->getValueAtIndex(LEFT(unassignedPixel)) != 0 && provinceBMP->getValueAtIndex(LEFT(unassignedPixel)) == greyVal)
-					{
-						if (unassignedPixel % (bmpWidth) != 0 && !(riverBMP->getValueAtIndex(LEFT(unassignedPixel)) <= 10))
-							provinceBMP->copyTripleToIndex(unassignedPixel, LEFT(unassignedPixel));
-					}
-					break;
-				}
-				case 2:
-				{
-					if (unassignedPixel < bmpSize - bmpWidth && provinceBMP->getValueAtIndex(ABOVE(unassignedPixel, bmpWidth)) != 0 && provinceBMP->getValueAtIndex(ABOVE(unassignedPixel, bmpWidth)) == greyVal)
-					{
-						if (!(riverBMP->getValueAtIndex(ABOVE(unassignedPixel, bmpWidth)) <= 10))
-							provinceBMP->copyTripleToIndex(unassignedPixel, ABOVE(unassignedPixel, bmpWidth));
-					}
-					break;
-				}
-				case 3:
-				{
-					if (unassignedPixel > bmpWidth && provinceBMP->getValueAtIndex(BELOW(unassignedPixel, bmpWidth)) != 0 && provinceBMP->getValueAtIndex(BELOW(unassignedPixel, bmpWidth)) == greyVal)
-					{
-						if (!(riverBMP->getValueAtIndex(BELOW(unassignedPixel, bmpWidth)) <= 10))
-							provinceBMP->copyTripleToIndex(unassignedPixel, BELOW(unassignedPixel, bmpWidth));
-					}
-					break;
-				}
-				}
 			}
 		}
 	}

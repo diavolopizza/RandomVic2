@@ -92,7 +92,7 @@
 			}
 		},
 		"provinces" : {
-			"landProvinces" : 2000,
+			"landProvinces" : 1000,
 			"minProvPerContinent" : 1,
 			"minProvPerRegion" : 1,
 			"seaProvinces" : 2000,

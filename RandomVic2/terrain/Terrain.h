@@ -50,7 +50,7 @@ public:
 	BYTE* landProvinces(uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);
 	BYTE* seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap * terrain, Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t updateThreshold);
 	void provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint32_t numOfLandProv, uint32_t offset, uint32_t greyval);
-	void fill(Bitmap* provinceBMP, Bitmap* riverBMP, uint32_t greyVal, uint32_t fillVal, uint32_t from, uint32_t to, vector<uint32_t> &randomValuesCached, uint32_t updateThreshold);
+	void fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const uint32_t greyVal, const uint32_t fillVal, const uint32_t from, const uint32_t to, const vector<uint32_t> &randomValuesCached, uint32_t updateThreshold);
 	void evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_t height);
 	void prettyRegions(Bitmap * regions);
 	void evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height);
