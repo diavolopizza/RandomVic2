@@ -45,9 +45,9 @@ Bitmap * MapMerger::mergeCountryRiverProvince(const Bitmap * countryBMP, const B
 		else {
 			RGBTRIPLE colour = countryBMP->getTripleAtIndex(i);
 			RGBTRIPLE colour2 = provinceBMP->getTripleAtIndex(i);
-			colour.rgbtRed = colour.rgbtRed *0.8 + colour2.rgbtRed * 0.2;
-			colour.rgbtGreen = colour.rgbtGreen *0.8 + colour2.rgbtGreen * 0.2;
-			colour.rgbtBlue = colour.rgbtBlue *0.8 + colour2.rgbtBlue * 0.2;
+			colour.rgbtRed = BYTE(colour.rgbtRed *0.8 + colour2.rgbtRed * 0.2);
+			colour.rgbtGreen = BYTE(colour.rgbtGreen *0.8 + colour2.rgbtGreen * 0.2);
+			colour.rgbtBlue = BYTE(colour.rgbtBlue *0.8 + colour2.rgbtBlue * 0.2);
 			returnedBMP->setTripleAtIndex(colour, i);
 		}
 

@@ -27,14 +27,14 @@ public:
 	void setBitmapSize(uint32_t width, uint32_t height);
 
 	unsigned char getValueAtIndex(uint32_t index, const uint32_t mode = 0) const;
-	void setValueAtIndex(uint32_t bufferIndex, uint32_t value);
+	void setValueAtIndex(uint32_t bufferIndex, unsigned char value);
 
 	RGBTRIPLE getTripleAtIndex(uint32_t bufferIndex) const;
 	void setTripleAtIndex(RGBTRIPLE colour, uint32_t bufferIndex);
 	void copyTripleToIndex(uint32_t bufferIndex, uint32_t bufferIndexNew);
 
 	unsigned char getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos) const;
-	void setValueAtXYPosition(uint32_t value, uint32_t heightPos, uint32_t widthPos);
+	void setValueAtXYPosition(unsigned char value, uint32_t heightPos, uint32_t widthPos);
 	void setTripleAtXYPosition(RGBTRIPLE colour, uint32_t heightPos, uint32_t widthPos);
 
 	BYTE* getBuffer() const;

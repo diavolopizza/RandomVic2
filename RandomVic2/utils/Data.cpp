@@ -37,25 +37,25 @@ void Data::getConfig(string configPath) {
 	mapDest = modPath + "map\\";
 
 	//MAP PARAMS
-	width = root.get<int>("map.width");
-	height = root.get<int>("map.height");
-	seed = root.get<int>("map.seed");
-	seaLevel = root.get<int>("map.seaLevel");
-	landMassPercentage = root.get<int>("map.landMassPercentage");
+	width = root.get<uint32_t>("map.width");
+	height = root.get<uint32_t>("map.height");
+	seed = root.get<uint32_t>("map.seed");
+	seaLevel = root.get<unsigned char>("map.seaLevel");
+	landMassPercentage = root.get<uint32_t>("map.landMassPercentage");
 	{ //PROVINCE PARAMS
-		landProv = root.get<int>("map.provinces.landProvinces");
-		seaProv = root.get<int>("map.provinces.seaProvinces");
-		minProvPerContinent = root.get<int>("map.provinces.minProvPerContinent");
-		minProvPerRegion = root.get<int>("map.provinces.minProvPerRegion");
-		minProvSize = root.get<int>("map.provinces.minProvSize");
+		landProv = root.get<uint32_t>("map.provinces.landProvinces");
+		seaProv = root.get<uint32_t>("map.provinces.seaProvinces");
+		minProvPerContinent = root.get<uint32_t>("map.provinces.minProvPerContinent");
+		minProvPerRegion = root.get<uint32_t>("map.provinces.minProvPerRegion");
+		minProvSize = root.get<uint32_t>("map.provinces.minProvSize");
 	}
 
 	{ //RIVERS
-		numRivers = root.get<int>("map.rivers.numRivers");
-		elevationTolerance = root.get<int>("map.rivers.elevationTolerance");
+		numRivers = root.get<uint32_t>("map.rivers.numRivers");
+		elevationTolerance = root.get<uint32_t>("map.rivers.elevationTolerance");
 	}
 	{ //Visualisation
-		updateThreshold = root.get<int>("visualisation.updateThreshold");
+		updateThreshold = root.get<uint32_t>("visualisation.updateThreshold");
 	}
 
 	{ //Debug
@@ -68,15 +68,15 @@ void Data::getConfig(string configPath) {
 		//fractalGain = root.get<float>("map.heightmap.fractalGain");
 		//divideThreshold = root.get<int>("map.heightmap.divideThreshold");
 		complexHeight = root.get<bool>("map.heightmap.complexHeight");
-		layerAmount = root.get<int>("map.heightmap.layerAmount");
+		layerAmount = root.get<uint32_t>("map.heightmap.layerAmount");
 		for (uint32_t i = 0; i < layerAmount; i++)
 		{
-			type.push_back( root.get<float>("map.heightmap.layers." + to_string(i) + ".type"));
-			fractalFrequency.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".fractalFrequency"));
-			fractalOctaves.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".fractalOctaves"));
-			fractalGain.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".fractalGain"));
-			divideThreshold.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".divideThreshold"));
-			weight.push_back(root.get<float>("map.heightmap.layers." + to_string(i) + ".weight"));
+			type.push_back( root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".type"));
+			fractalFrequency.push_back(root.get<double>("map.heightmap.layers." + to_string(i) + ".fractalFrequency"));
+			fractalOctaves.push_back(root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".fractalOctaves"));
+			fractalGain.push_back(root.get<double>("map.heightmap.layers." + to_string(i) + ".fractalGain"));
+			divideThreshold.push_back(root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".divideThreshold"));
+			weight.push_back(root.get<double>("map.heightmap.layers." + to_string(i) + ".weight"));
 			//fractalOctaves = root.get<int>("map.heightmap.fractalOctaves");
 			//fractalGain = root.get<float>("map.heightmap.fractalGain");
 			//divideThreshold = root.get<int>("map.heightmap.divideThreshold");
@@ -88,7 +88,7 @@ void Data::getConfig(string configPath) {
 	if (seed)
 		random->seed(seed);
 	else {
-		seed = time(NULL);
+		seed = (uint32_t)time(NULL);
 	}
 	random->seed(seed);
 	cout << "Seeding with " << seed << endl;

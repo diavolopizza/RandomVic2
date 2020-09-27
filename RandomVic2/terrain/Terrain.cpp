@@ -199,7 +199,7 @@ BYTE * Terrain::normalizeHeightMap(Bitmap * heightMap)
 		index++;
 		delete buffer;
 	}
-	const double factor = 250.0f / (double)highestValue;
+	const double factor = 250.0 / (double)highestValue;
 	for (int i = 0; i < heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3; i++)
 	{
 		normalisedValues[i] = (unsigned char)((double)combinedValues[i] * factor);
@@ -211,18 +211,18 @@ BYTE * Terrain::normalizeHeightMap(Bitmap * heightMap)
 BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer)
 {
 	Bitmap RGBBMP(Data::getInstance().width, Data::getInstance().height, 24);
-	const float width = (float)RGBBMP.bInfoHeader.biWidth;
-	const float height = (float)RGBBMP.bInfoHeader.biHeight;
+	const auto width = (double)RGBBMP.bInfoHeader.biWidth;
+	const auto height = (double)RGBBMP.bInfoHeader.biHeight;
 	cout << "Creating Heightmap" << endl;
 	FastNoise myNoise; // Create a FastNoise object
 	// adjusting frequency is necessary when map size increases, 
 	// as the heightmap will be noisier the larger the map
-	const float sizeNoiseFactor = (float)(1024.0f * 1024.0f) / (float)(width * height);
-	//float sizeNoiseFactor = 1.0f / log2f((float)(width * height)) * 20.0f;
+	const double sizeNoiseFactor = (double)(1024.0 * 1024.0) / (double)(width * height);
+	//double sizeNoiseFactor = 1.0 / log2f((double)(width * height)) * 20.0;
 	myNoise.SetSeed(seed + layer);
 	const uint32_t type = Data::getInstance().type[layer];
 	cout << sizeNoiseFactor << endl;
-	myNoise.SetFrequency((float)Data::getInstance().fractalFrequency[layer] * sizeNoiseFactor);
+	myNoise.SetFrequency((double)Data::getInstance().fractalFrequency[layer] * sizeNoiseFactor);
 	myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves[layer]);
 	myNoise.SetFractalGain(Data::getInstance().fractalGain[layer]);
 	switch (type)
@@ -302,22 +302,22 @@ BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer)
 
 	// set the point at which heightvalues are reduced towards 0 
 	// this eliminates provinces overlapping at the east/west map boundaries
-	const float delimiter = width / Data::getInstance().divideThreshold[layer];
+	const double delimiter = width / Data::getInstance().divideThreshold[layer];
 	for (uint32_t x = 0; x < height; x++)
 	{
 		for (uint32_t y = 0; y < width; y++)
 		{
-			float xf = (float)x;
-			float yf = (float)y;
-			float factor = 1;
+			double xf = (double)x;
+			double yf = (double)y;
+			double factor = 1;
 			if (yf < delimiter) {
-				factor = (float)y / (float)delimiter;
+				factor = (double)y / (double)delimiter;
 			}
 			else if (yf > width - delimiter)
 			{
-				factor = ((float)width - (float)yf) / (float)delimiter;
+				factor = ((double)width - (double)yf) / (double)delimiter;
 			}
-			FN_DECIMAL noiseLevel = /*RGBBMP->getValueAtXYPosition(x, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0f) * 64.0f * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
+			FN_DECIMAL noiseLevel = /*RGBBMP->getValueAtXYPosition(x, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0) * 64.0 * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
 			BYTE completeNoise = (BYTE)noiseLevel + static_cast<BYTE>(1u);
 
 			RGBTRIPLE colour{ completeNoise, completeNoise, completeNoise };
@@ -388,7 +388,7 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 		provinceBMP->setTripleAtIndex(terrainBMP->getValueAtIndex(i) == 254 ? rgbHigh : rgbLow, i);
 	}
 	//assign province size
-	uint32_t provincesize = (int)((float)bmpSize * 0.6f / (float)numoflandprov);//better calculation?
+	uint32_t provincesize = (int)((double)bmpSize * 0.6f / (double)numoflandprov);//better calculation?
 	//assign pixels to this new province
 	cout << provincesize << endl;
 	provinceCreation(provinceBMP, provincesize, numoflandprov, 0, 0);
@@ -761,7 +761,7 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 	const uint32_t maxEffectDistance = width / 200;
 	//in the opposite direction of the major global winds, the distance to look at is much larger
 	const auto windFactor = 20.0 * windIntensity;
-	uint32_t coastDistance = maxEffectDistance * windFactor;
+	uint32_t coastDistance = (uint32_t)((double)maxEffectDistance * windFactor);
 	double windDistance = maxEffectDistance * windFactor;
 
 	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
@@ -775,7 +775,7 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 		}
 	}
 	for (uint32_t x = 0; x < maxEffectDistance * windFactor; x++) {
-		unsigned char value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + ((windDistance + x) * windDirection));
+		unsigned char value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (uint32_t)((windDistance + (double)x) * (double)windDirection));
 		if (value != -1 && value > seaLevel) {
 			continentality++;
 		}
@@ -985,7 +985,7 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, bool sea) {
 						unique = true;
 					}
 				}
-				Prov * lake = new Prov(provinces.size() + 1, lakeColour, true, this->random);
+				Prov * lake = new Prov((int)provinces.size() + 1, lakeColour, true, this->random);
 				provinceMap.setValue(lakeColour, lake);
 				provinces.push_back(lake);
 				lake->pixels.push_back(unassignedPixel);
@@ -1029,7 +1029,7 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, bool sea) {
 		else {
 			if (provinceBMP->getValueAtIndex(unassignedPixel) == 0)
 			{
-				auto distance = UINT32_MAX;
+				auto distance = numeric_limits<uint32_t>().max();
 				Prov* nextOwner = nullptr;
 				for (Prov* P : provinces)
 				{
@@ -1040,7 +1040,7 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, bool sea) {
 						bool detailed = false;
 						if (detailed) {
 							auto nearestPixelOfThatProvince = 0u;
-							auto pixelDistance = INFINITY;
+							auto pixelDistance = numeric_limits<double>().max();
 							for (int i = 0; i < (P->pixels.size()); i += 30)
 							{
 								if (i < P->pixels.size()) {
@@ -1083,30 +1083,30 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 		Visualizer::initializeWindow();
 	//TODO CONFIG FOR ALL PARAMS
 	const uint32_t coastalDistanceInfluence = 30;
-	const uint32_t mountainStart = seaLevel + (uint32_t)((float)seaLevel * 0.4);
-	const uint32_t hillStart = seaLevel + (uint32_t)((float)seaLevel * 0.2);
+	const unsigned char mountainStart = seaLevel + (uint32_t)((double)seaLevel * 0.4);
+	const unsigned char hillStart = seaLevel + (uint32_t)((double)seaLevel * 0.2);
 
-	constexpr uint32_t arctic = 0;//0-3
-	constexpr uint32_t arcticRange = 4;
-	constexpr uint32_t plains = 5;
-	constexpr uint32_t plainsRange = 4;
-	constexpr uint32_t farmlands = 8;
-	constexpr uint32_t farmlandsRange = 4;
-	constexpr uint32_t forest = 12;
-	constexpr uint32_t forestRange = 4;
-	constexpr uint32_t hills = 16;
-	constexpr uint32_t woods = 20;
-	constexpr uint32_t mountains = 24; //24-31
-	constexpr uint32_t plains2 = 32;
-	constexpr uint32_t steppe = 36;
-	constexpr uint32_t steppeRange = 4;
-	constexpr uint32_t jungle = 40;
-	constexpr uint32_t jungleRange = 4;
-	constexpr uint32_t marsh = 44;
-	constexpr uint32_t marshRange = 4;
-	constexpr uint32_t desert = 48;
-	constexpr uint32_t desertRange = 4;
-	constexpr uint32_t coastal_desert = 52;
+	constexpr unsigned char arctic = 0;//0-3
+	constexpr unsigned char arcticRange = 4;
+	constexpr unsigned char plains = 5;
+	constexpr unsigned char plainsRange = 4;
+	constexpr unsigned char farmlands = 8;
+	constexpr unsigned char farmlandsRange = 4;
+	constexpr unsigned char forest = 12;
+	constexpr unsigned char forestRange = 4;
+	constexpr unsigned char hills = 16;
+	constexpr unsigned char woods = 20;
+	constexpr unsigned char mountains = 24; //24-31
+	constexpr unsigned char plains2 = 32;
+	constexpr unsigned char steppe = 36;
+	constexpr unsigned char steppeRange = 4;
+	constexpr unsigned char jungle = 40;
+	constexpr unsigned char jungleRange = 4;
+	constexpr unsigned char marsh = 44;
+	constexpr unsigned char marshRange = 4;
+	constexpr unsigned char desert = 48;
+	constexpr unsigned char desertRange = 4;
+	constexpr unsigned char coastal_desert = 52;
 	uint32_t displayCounter = 0;
 
 	for (auto prov : provinces)
@@ -1114,24 +1114,24 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 		displayCounter++;
 		if (prov->sea)
 			continue;
-		vector<float> likelyHoods;
-		float arcticLikelyhood = 0;
-		float plainsLikelyhood = 0;
-		float forestLikelyhood = 0;
-		float farmlandsLikelyhood = 0;
-		float steppeLikelyhood = 0;
-		float jungleLikelyhood = 0;
-		float marshLikelyhood = 0;
-		float desertLikelyhood = 0;
+		vector<double> likelyHoods;
+		double arcticLikelyhood = 0;
+		double plainsLikelyhood = 0;
+		double forestLikelyhood = 0;
+		double farmlandsLikelyhood = 0;
+		double steppeLikelyhood = 0;
+		double jungleLikelyhood = 0;
+		double marshLikelyhood = 0;
+		double desertLikelyhood = 0;
 		//determine north south temperature factor
 		const uint32_t equator = heightmap->bInfoHeader.biHeight / 2;
 		const uint32_t pixX = prov->center % (heightmap->bInfoHeader.biWidth);
 		const uint32_t pixY = (prov->center - pixX) / heightmap->bInfoHeader.biWidth;
-		float temperatureFactor = (float)(pixY % equator) / (float)equator;
+		double temperatureFactor = (double)(pixY % equator) / (double)equator;
 
 
 		//DISTANCE TO COAST
-		float humidityFactor = 0;
+		double humidityFactor = 0;
 		uint32_t offset = 0;
 		uint32_t distanceNorth = 0;
 		uint32_t distanceSouth = 0;
@@ -1151,26 +1151,26 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 		offset = bitmapWidth;
 		while (terrainBMP->getValueAtIndex(prov->center + offset) != 254) {
 			offset += bitmapWidth;
-			distanceNorth = (float)offset / (float)bitmapWidth;
+			distanceNorth = (uint32_t)((double)offset / (double)bitmapWidth);
 		}
 		offset = bitmapWidth;
 		while (terrainBMP->getValueAtIndex(prov->center - offset) != 254) {
 			offset += bitmapWidth;
-			distanceSouth = (float)offset / (float)bitmapWidth;
+			distanceSouth = (uint32_t)((double)offset / (double)bitmapWidth);
 		}
 		uint32_t distances[] = { abs(distanceNorth),abs(distanceEast),
 								abs(distanceWest), abs(distanceSouth) };
 
 		if (*std::min_element(distances, distances + 4) < coastalDistanceInfluence) {
-			humidityFactor = (float)(1 - (*std::min_element(distances, distances + 4) / coastalDistanceInfluence));
+			humidityFactor = (double)(1 - (*std::min_element(distances, distances + 4) / coastalDistanceInfluence));
 		}
 		//DISTANCE TO EQUATOR
 		if (pixY >= equator) {
-			temperatureFactor = 1.0f - temperatureFactor;
+			temperatureFactor = 1.0 - temperatureFactor;
 		}
 		if (temperatureFactor < 0.1f && !prov->sea)//mountains
 		{
-			arcticLikelyhood += 1.0f;
+			arcticLikelyhood += 1.0;
 		}
 		else if (temperatureFactor < 0.3f && temperatureFactor >= 0.1f && !prov->sea)
 		{
@@ -1192,12 +1192,12 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 		{
 			steppeLikelyhood += humidityFactor * (temperatureFactor - 0.6);//0.15-0.25
 			farmlandsLikelyhood += 0.5f*humidityFactor;
-			desertLikelyhood += 0.5f*(1.0f - humidityFactor);//
+			desertLikelyhood += 0.5f*(1.0 - humidityFactor);//
 		}
 		else if (temperatureFactor >= 0.85f && !prov->sea)
 		{
-			steppeLikelyhood += 1.0f - temperatureFactor;//0.25-0.1
-			jungleLikelyhood += (temperatureFactor - 0.85f) * 2.0f;//0.0-0.7
+			steppeLikelyhood += 1.0 - temperatureFactor;//0.25-0.1
+			jungleLikelyhood += (temperatureFactor - 0.85f) * 2.0;//0.0-0.7
 		}
 		likelyHoods.push_back(arcticLikelyhood);
 		likelyHoods.push_back(plainsLikelyhood);
@@ -1207,7 +1207,7 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 		likelyHoods.push_back(jungleLikelyhood);
 		likelyHoods.push_back(marshLikelyhood);
 		likelyHoods.push_back(desertLikelyhood);
-		float sumOfAllLikelyhoods = 0;
+		double sumOfAllLikelyhoods = 0;
 		for (auto likelyhood : likelyHoods)
 		{
 			sumOfAllLikelyhoods += likelyhood;
@@ -1224,7 +1224,7 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 		auto foundAtLeastOne = false;
 		while (!foundAtLeastOne) {
 			for (uint32_t i = 0; i < likelyHoods.size(); i++) {
-				if ((*random)() % 100u < (likelyHoods[i] / sumOfAllLikelyhoods) * 100.0f)
+				if ((*random)() % 100u < (likelyHoods[i] / sumOfAllLikelyhoods) * 100.0)
 				{
 					candidates[i] = true;
 					foundAtLeastOne = true;
@@ -1256,7 +1256,7 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 			}
 			case 2:
 			{
-				terrainBMP->setValueAtIndex(pixel, forest + ((float)forestRange)*(1.0f - (temperatureFactor / 0.6f)));
+				terrainBMP->setValueAtIndex(pixel, forest + (unsigned char)((double)forestRange*(1.0 - (temperatureFactor / 0.6))));
 				prov->climate = "temperate_climate";
 				if (temperatureFactor < 0.3f)
 					prov->climate = "harsh_climate";
@@ -1295,12 +1295,12 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 			}
 			if (altitude > hillStart)//mountains
 			{
-				terrainBMP->setValueAtIndex(pixel, (uint32_t)((float)(altitude - hillStart) / (float)(mountainStart - hillStart) * 4.0f + 16.0f));
+				terrainBMP->setValueAtIndex(pixel, (uint32_t)((double)(altitude - hillStart) / (double)(mountainStart - hillStart) * 4.0 + 16.0));
 			}
 			if (altitude > mountainStart)//mountains
 			{
-				if ((uint32_t)((float)(altitude - mountainStart) / (float)(((float)mountainStart * 1.25f) - mountainStart) *(float)7.0f + 24.0f) < 31u) {
-					terrainBMP->setValueAtIndex(pixel, (uint32_t)((float)(altitude - mountainStart) / (float)(210u - mountainStart) *7.0f + 24u));
+				if ((uint32_t)((double)(altitude - mountainStart) / (double)(((double)mountainStart * 1.25f) - mountainStart) *(double)7.0 + 24.0) < 31u) {
+					terrainBMP->setValueAtIndex(pixel, (uint32_t)((double)(altitude - mountainStart) / (double)(210u - mountainStart) *7.0 + 24u));
 				}
 				else { terrainBMP->setValueAtIndex(pixel, 31u); }
 			}
@@ -1461,7 +1461,7 @@ void Terrain::generateRivers(Bitmap * riverBMP, const Bitmap * heightmap)
 void Terrain::prettyRivers(Bitmap * riverBMP, const Bitmap * heightmap)
 {
 	const uint32_t maxRiverColour = 10;
-	for (uint32_t i = 0; i < riverBMP->bInfoHeader.biWidth * riverBMP->bInfoHeader.biHeight; i++)
+	for (uint32_t i = 0; i < (uint32_t)(riverBMP->bInfoHeader.biWidth * riverBMP->bInfoHeader.biHeight); i++)
 	{
 		if (heightmap->getValueAtIndex(i) > Data::getInstance().seaLevel)
 			riverBMP->setValueAtIndex(i, 255);
@@ -1474,7 +1474,7 @@ void Terrain::prettyRivers(Bitmap * riverBMP, const Bitmap * heightmap)
 		uint32_t riverColour = 2;
 		for (uint32_t pix : river->pixels) {
 			if (riverColour < maxRiverColour && river->getIngoingForKey(pix) != nullptr) {
-				riverColour += river->getIngoingForKey(pix)->getIngoing().size() + 1;
+				riverColour += (uint32_t)river->getIngoingForKey(pix)->getIngoing().size() + 1u;
 				if (riverColour > maxRiverColour)
 					riverColour = maxRiverColour;
 			}
@@ -1490,7 +1490,7 @@ void Terrain::sanityChecks(Bitmap * provinceBMP)
 {
 	cout << "Doing terrain sanity checks" << endl;
 
-	for (int i = 0; i < provinceBMP->bInfoHeader.biSizeImage; i++)
+	for (uint32_t i = 0; i < provinceBMP->bInfoHeader.biSizeImage; i++)
 	{
 		if (provinceBMP->getBuffer()[i] == 0)
 			cout << "0 value in provinceBMP " << endl;

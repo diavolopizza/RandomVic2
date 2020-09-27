@@ -35,7 +35,7 @@ public:
 	void squareSquared(int i, int j);
 	void circle(int i, int j);
 	void halfMoon(int i, int j );
-	void star(int i, int j, float xPos, float yPos, float size);
+	void star(int i, int j, double xPos, double yPos, double size);
 	void halfMoonStars(int i, int j);
 	//void triangle(int i, int j, )
 	vector<RGBTRIPLE> generateColours();

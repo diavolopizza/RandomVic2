@@ -18,7 +18,7 @@ CountryGenerator::~CountryGenerator()
 void CountryGenerator::generateCountries(uint32_t amount)
 {
 
-	for (int i = 0; i < amount; i++)
+	for (uint32_t i = 0; i < amount; i++)
 	{
 		RGBTRIPLE colour = { 120 + (*random)() % 120, 120 + (*random)() % 120, 120 + (*random)() % 120 };
 		string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -202,19 +202,9 @@ Bitmap * CountryGenerator::civilizationBMP()
 		}
 		conIndex++;
 
-		//continent->civilized = (bool)(*random)() % 5;
-		if (!continent->civilized)
+		for (Prov* prov : continent->provinces)
 		{
-			for (Prov* prov : continent->provinces)
-			{
-				prov->civilizationLevel = 0.5 + (double)((*random)() % 3) / 10;
-			}
-		}
-		else {
-			for (Prov* prov : continent->provinces)
-			{
-				prov->civilizationLevel = 0.0 + (double)((*random)() % 3) / 10;
-			}
+			prov->civilizationLevel = (continent->civilized ? 0.0 : 0.5) + (double)((*random)() % 3) / 10.0;
 		}
 	}
 	for (int i = 0; i < 3; i++)
@@ -286,7 +276,7 @@ void CountryGenerator::sanityChecks()
 			cout << "ERROR: Country has no provinces" << std::endl;
 		if (country->provinces.size() < 5)
 			cout << "INFO: Tiny country detected" << std::endl;
-		if(country->flag == nullptr)
+		if (country->flag == nullptr)
 			cout << "ERROR: Country without flag" << std::endl;
 
 	}

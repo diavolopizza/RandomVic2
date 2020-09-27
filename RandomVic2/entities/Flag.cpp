@@ -139,17 +139,17 @@ void Flag::halfMoon(int i, int j)
 	Point curPos{ j, i };
 	if (curPos.x < center.x + radius)
 	{
-		float distanceFromLeftMost = fabs(curPos.x - (center.x - radius));
-		float factor = (distanceFromLeftMost / (radius));
+		double distanceFromLeftMost = fabs(curPos.x - (center.x - radius));
+		double factor = (distanceFromLeftMost / (radius));
 		auto distance = std::hypot(center.x - curPos.x, center.y - curPos.y);
 		if (distance < radius && distance > radius*0.5*(factor)) {
 			setPixel(colours[3], i, j);
 		}
 	}
 }
-bg::model::point<double, 2, bg::cs::cartesian> rotate(float angle, bg::model::point<double, 2, bg::cs::cartesian> point, bg::model::point<double, 2, bg::cs::cartesian> pivot)
+bg::model::point<double, 2, bg::cs::cartesian> rotate(double angle, bg::model::point<double, 2, bg::cs::cartesian> point, bg::model::point<double, 2, bg::cs::cartesian> pivot)
 {
-	//float angle = 1.2566370614;
+	//double angle = 1.2566370614;
 	double s = sin(angle); // angle is in radians
 	double c = cos(angle); // angle is in radians
 
@@ -159,7 +159,7 @@ bg::model::point<double, 2, bg::cs::cartesian> rotate(float angle, bg::model::po
 	return point2;
 
 }
-void Flag::star(int i, int j, float xPos, float yPos, float size)
+void Flag::star(int i, int j, double xPos, double yPos, double size)
 {
 	double angle = 72 * 3.14 / 180;
 	typedef boost::geometry::model::d2::point_xy<double> point_type;
@@ -192,7 +192,7 @@ void Flag::star(int i, int j, float xPos, float yPos, float size)
 		double centerDistance = bg::distance(curPos, center);
 		if (yDistance < (size*width)) {
 
-			double factor = yDistance / (size*(float)width);
+			double factor = yDistance / (size*(double)width);
 			if (lineDistance < (width / 4 * size)*factor)
 				setPixel(colours[3], i, j);
 

@@ -29,7 +29,7 @@ public:
 	uint32_t bitmapSize;
 	uint32_t seed = 0;
 	unsigned char seaLevel = 0;
-	uint32_t landMassPercentage = 0;
+	double landMassPercentage = 0;
 	uint32_t seaProv = 0;
 	uint32_t landProv = 0;
 	uint32_t minProvPerContinent = 0;
@@ -39,11 +39,11 @@ public:
 	//heightmap
 	uint32_t layerAmount;
 	vector<uint32_t> type;
-	vector<float>fractalFrequency;
+	vector<double>fractalFrequency;
 	vector<uint32_t> fractalOctaves;
-	vector<float> fractalGain;
+	vector<double> fractalGain;
 	vector<uint32_t> divideThreshold;
-	vector<float> weight;
+	vector<double> weight;
 
 	//land mass
 

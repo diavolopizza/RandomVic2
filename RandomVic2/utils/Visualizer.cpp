@@ -20,7 +20,7 @@ void Visualizer::displayImage(Bitmap * bitmap)
 	}
 	else {
 		image = imread("C:/Users/Paul/Documents/Visual Studio 2017/RandomVic2/debugMap/terrain.bmp");   // Read the file
-		for (int i = 0; i < bitmap->bInfoHeader.biSizeImage; i++)
+		for (uint32_t i = 0; i < bitmap->bInfoHeader.biSizeImage; i++)
 		{
 			image.data[1078 + i] = bitmap->getValueAtIndex(i);
 		}

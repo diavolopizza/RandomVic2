@@ -29,7 +29,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*(bitCount / 8);
 		this->Buffer = new unsigned char[width*height*(bitCount / 8)];
-		for (int i = 0; i < width*height*(bitCount / 8); i++)
+		for (uint32_t i = 0; i < width*height*(bitCount / 8); i++)
 		{
 			Buffer[i] = 0;
 		}
@@ -44,7 +44,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*(bitCount / 8);
 		this->Buffer = new unsigned char[width*height*(bitCount / 8)];
-		for (int i = 0; i < width*height*(bitCount / 8); i++)
+		for (uint32_t i = 0; i < width*height*(bitCount / 8); i++)
 		{
 			Buffer[i] = 0;
 		}
@@ -124,16 +124,16 @@ unsigned char Bitmap::getValueAtXYPosition(uint32_t heightPos, uint32_t widthPos
 	return Buffer[position];
 }
 
-void Bitmap::setValueAtXYPosition(uint32_t value, uint32_t heightPos, uint32_t widthPos)
+void Bitmap::setValueAtXYPosition(unsigned char value, uint32_t heightPos, uint32_t widthPos)
 {
-	int position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
+	auto position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
 	if (position >= 0 || position < bInfoHeader.biSizeImage)
 	{
 		Buffer[position] = value;
 	}
 }
 
-void Bitmap::setValueAtIndex(uint32_t bufferIndex, uint32_t value)
+void Bitmap::setValueAtIndex(uint32_t bufferIndex, unsigned char value)
 {
 	bufferIndex *= bInfoHeader.biBitCount / 8;
 	this->Buffer[bufferIndex] = value;
@@ -165,7 +165,7 @@ void Bitmap::copyTripleToIndex(uint32_t bufferIndexTo, uint32_t bufferIndexFrom)
 
 void Bitmap::setTripleAtXYPosition(RGBTRIPLE colour, uint32_t heightPos, uint32_t widthPos)
 {
-	int position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
+	auto position = (heightPos * bInfoHeader.biWidth + widthPos) * (bInfoHeader.biBitCount / 8);
 	if (position < 0 || position > bInfoHeader.biSizeImage) {
 		cerr << "Invalid position" << endl;
 		return;
