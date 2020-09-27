@@ -111,7 +111,7 @@ string Parser::readClimateHeader(string filePath)
 	std::ifstream climateFile(filePath);
 	std::string content((std::istreambuf_iterator<char>(climateFile)),
 		(std::istreambuf_iterator<char>()));
-	uint32_t pos = content.find("mild_climate", 100);
+	auto pos = content.find("mild_climate", 100);
 	content.erase(pos, string::npos);
 	return content;
 }
@@ -168,7 +168,7 @@ string Parser::readDefaultMapHeader(string filePath)
 	std::ifstream defaultMapFile(filePath);
 	std::string content((std::istreambuf_iterator<char>(defaultMapFile)),
 		(std::istreambuf_iterator<char>()));
-	uint32_t pos = content.find("definitions", 100);
+	auto pos = content.find("definitions", 100);
 	return content.substr(pos, string::npos);
 }
 

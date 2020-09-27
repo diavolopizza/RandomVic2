@@ -13,9 +13,9 @@ Flag::Flag(ranlux24* random)
 
 
 	colours = generateColours();
-	for (unsigned int i = 0; i < height; i++)
+	for (int i = 0; i < height; i++)
 	{
-		for (unsigned int j = 0; j < width; j++)
+		for (int j = 0; j < width; j++)
 		{
 			switch (type)
 			{
@@ -44,9 +44,9 @@ Flag::Flag(ranlux24* random)
 	}
 	type = 2;//;(*random)() % 2;
 	colours = generateColours();
-	for (unsigned int i = 0; i < height; i++)
+	for (int i = 0; i < height; i++)
 	{
-		for (unsigned int j = 0; j < width; j++)
+		for (int j = 0; j < width; j++)
 		{
 			switch (type)
 			{
@@ -125,7 +125,7 @@ void Flag::circle(int i, int j)
 	struct Point { int x; int y; };
 	Point center{ width / 2, height / 2 };
 	Point curPos{ j, i };
-	int distance = abs(std::hypot(center.x - curPos.x, center.y - curPos.y));
+	auto distance = abs(std::hypot(center.x - curPos.x, center.y - curPos.y));
 	if (distance < 15) {
 		setPixel(colours[1], i, j);
 	}
@@ -133,7 +133,7 @@ void Flag::circle(int i, int j)
 
 void Flag::halfMoon(int i, int j)
 {
-	float radius = 15;
+	auto radius = 15.0;
 	struct Point { int x; int y; };
 	Point center{ width / 2, height / 2 };
 	Point curPos{ j, i };
@@ -141,7 +141,7 @@ void Flag::halfMoon(int i, int j)
 	{
 		float distanceFromLeftMost = fabs(curPos.x - (center.x - radius));
 		float factor = (distanceFromLeftMost / (radius));
-		int distance = std::hypot(center.x - curPos.x, center.y - curPos.y);
+		auto distance = std::hypot(center.x - curPos.x, center.y - curPos.y);
 		if (distance < radius && distance > radius*0.5*(factor)) {
 			setPixel(colours[3], i, j);
 		}
@@ -150,18 +150,18 @@ void Flag::halfMoon(int i, int j)
 bg::model::point<double, 2, bg::cs::cartesian> rotate(float angle, bg::model::point<double, 2, bg::cs::cartesian> point, bg::model::point<double, 2, bg::cs::cartesian> pivot)
 {
 	//float angle = 1.2566370614;
-	float s = sin(angle); // angle is in radians
-	float c = cos(angle); // angle is in radians
+	double s = sin(angle); // angle is in radians
+	double c = cos(angle); // angle is in radians
 
-	float xnew = (bg::get<0>(point) - bg::get<0>(pivot)) * c + (bg::get<1>(point) - bg::get<1>(pivot)) * s;
-	float ynew = -(bg::get<0>(point) - bg::get<0>(pivot)) * s + (bg::get<1>(point) - bg::get<1>(pivot)) * c;
+	double xnew = (bg::get<0>(point) - bg::get<0>(pivot)) * c + (bg::get<1>(point) - bg::get<1>(pivot)) * s;
+	double ynew = -(bg::get<0>(point) - bg::get<0>(pivot)) * s + (bg::get<1>(point) - bg::get<1>(pivot)) * c;
 	bg::model::point<double, 2, bg::cs::cartesian> point2(xnew + bg::get<0>(pivot), ynew + bg::get<1>(pivot));
 	return point2;
 
 }
 void Flag::star(int i, int j, float xPos, float yPos, float size)
 {
-	float angle = 72 * 3.14 / 180;
+	double angle = 72 * 3.14 / 180;
 	typedef boost::geometry::model::d2::point_xy<double> point_type;
 	typedef boost::geometry::model::linestring<point_type> linestring_type;
 
@@ -186,13 +186,13 @@ void Flag::star(int i, int j, float xPos, float yPos, float size)
 	}
 	for (int index = 0; index < points.size(); index++)
 	{
-		float lineDistance = fabs(bg::distance(curPos, lines[index]));
-		float yDistance = bg::distance(curPos, points[index]);
+		double lineDistance = fabs(bg::distance(curPos, lines[index]));
+		double yDistance = bg::distance(curPos, points[index]);
 
-		float centerDistance = bg::distance(curPos, center);
+		double centerDistance = bg::distance(curPos, center);
 		if (yDistance < (size*width)) {
 
-			float factor = yDistance / (size*width);
+			double factor = yDistance / (size*(float)width);
 			if (lineDistance < (width / 4 * size)*factor)
 				setPixel(colours[3], i, j);
 

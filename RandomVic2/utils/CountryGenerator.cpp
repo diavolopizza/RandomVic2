@@ -151,8 +151,8 @@ Bitmap * CountryGenerator::countryBMP() {
 					// easy: just determine a  x and y percentage, which can be mapped to the flag
 					float xPercent = (float)(pixelIndex % Data::getInstance().width - country->minX) / (float)countryXspan;
 					float yPercent = (float)(pixelIndex / Data::getInstance().width - country->minY) / (float)countryYspan;
-					int heightpos = country->flag->width * (int)(country->flag->height * yPercent);
-					int location = country->flag->width * xPercent + heightpos;
+					auto heightpos = (float)country->flag->width * (float)country->flag->height * yPercent;
+					auto location = (uint32_t)((float)country->flag->width * xPercent + heightpos);
 					RGBTRIPLE colour = country->flag->getPixel(location);
 					countryBMP->setTripleAtIndex(colour, pixelIndex);
 
@@ -239,7 +239,7 @@ Bitmap * CountryGenerator::civilizationBMP()
 			{
 				for (auto pixelIndex : prov->pixels)
 				{
-					RGBTRIPLE colour = { 255 * prov->civilizationLevel, 255 * prov->civilizationLevel, 0 };
+					RGBTRIPLE colour = { static_cast<BYTE>(255.0f * prov->civilizationLevel), static_cast<BYTE>(255.0f * prov->civilizationLevel), static_cast<BYTE>(0) };
 					civilizationBMP->setTripleAtIndex(colour, pixelIndex);
 				}
 			}

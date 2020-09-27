@@ -52,7 +52,7 @@ int Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_
 		const uint32_t y1 = P->center / height;
 		const uint32_t y2 = position / height;
 		if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-			distance = (double)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
+			distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
 		}
 	}
 	return distance;
@@ -318,8 +318,9 @@ BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer)
 				factor = ((float)width - (float)yf) / (float)delimiter;
 			}
 			FN_DECIMAL noiseLevel = /*RGBBMP->getValueAtXYPosition(x, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0f) * 64.0f * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
-			uint32_t completeNoise = (uint32_t)noiseLevel;
-			RGBTRIPLE colour{ 1 + completeNoise, 1 + completeNoise, 1 + completeNoise };
+			BYTE completeNoise = (BYTE)noiseLevel + static_cast<BYTE>(1u);
+
+			RGBTRIPLE colour{ completeNoise, completeNoise, completeNoise };
 			RGBBMP.setTripleAtXYPosition(colour, x, y);
 		}
 	}
@@ -475,7 +476,7 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
 		for (uint32_t x = 0; x < provinceSize - 1; x++)
 		{
-			uint32_t currentPixel = P->pixels[P->pixels.size() - (*random)() %  ((P->pixels.size() / 4) + 1)];
+			uint32_t currentPixel = P->pixels[P->pixels.size() - (*random)() % ((P->pixels.size() / 4) + 1)];
 			//uint32_t currentPixel = P->pixels[(*random)() % P->pixels.size()];
 			const vector<unsigned int> newPixels = { RIGHT(currentPixel), LEFT(currentPixel), ABOVE(currentPixel, bmpWidth), BELOW(currentPixel, bmpWidth) };
 			//vector<int> newPixels;
@@ -741,9 +742,9 @@ void Terrain::prettyContinents(Bitmap * continentBMP)
 double calcMountainShadowAridity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t widthPos, int currentDirection, uint32_t seaLevel, double windIntensity) {
 	const uint32_t width = heightmapBMP->bInfoHeader.biWidth;
 	//in regions with low windintensity, this effect has a lower range
-	const uint32_t maxEffectDistance = ((double)width / 100.0) * windIntensity;
+	const uint32_t maxEffectDistance = (uint32_t)(((double)width / 100.0) * windIntensity);
 	uint32_t mountainPixelsInRange = 0;
-	for (int i = 0; i < maxEffectDistance; i++)
+	for (uint32_t i = 0; i < maxEffectDistance; i++)
 	{
 		//TODO
 		//if (heightmapBMP->getValueAtIndex((heightPos * width + widthPos + (currentDirection * i)) ) > seaLevel * 1.4)
@@ -759,30 +760,30 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 	//East/west directions are more important that north/south, as important winds travel east/west more often
 	const uint32_t maxEffectDistance = width / 200;
 	//in the opposite direction of the major global winds, the distance to look at is much larger
-	const uint32_t windFactor = 20 * windIntensity;
+	const auto windFactor = 20.0 * windIntensity;
 	uint32_t coastDistance = maxEffectDistance * windFactor;
-	uint32_t windDistance = maxEffectDistance * windFactor;
+	double windDistance = maxEffectDistance * windFactor;
 
 	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
-	for (int i = 0; i < maxEffectDistance * windFactor; i++)
+	for (uint32_t i = 0; i < maxEffectDistance * windFactor; i++)
 	{
-		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
+		unsigned char value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < windDistance)
 				windDistance = i;
 		}
 	}
-	for (int x = 0; x < maxEffectDistance * windFactor; x++) {
-		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + ((windDistance + x) * windDirection));
+	for (uint32_t x = 0; x < maxEffectDistance * windFactor; x++) {
+		unsigned char value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + ((windDistance + x) * windDirection));
 		if (value != -1 && value > seaLevel) {
 			continentality++;
 		}
 	}
 	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
-	for (int i = 0; i < maxEffectDistance; i++)
+	for (uint32_t i = 0; i < maxEffectDistance; i++)
 	{
-		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
+		unsigned char value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < coastDistance)
@@ -791,9 +792,9 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 
 	}
 	//the direction the winds are going(e.g. east in case of west winds)
-	for (int i = 0; i < maxEffectDistance; i++)
+	for (uint32_t i = 0; i < maxEffectDistance; i++)
 	{
-		int value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection * -1));
+		unsigned char value = heightmapBMP->getValueAtXYPosition(heightPos, widthPos + (i * windDirection * -1));
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < coastDistance)
@@ -801,9 +802,9 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 		}
 	}
 	//north
-	for (int i = 0; i < maxEffectDistance; i++)
+	for (uint32_t i = 0; i < maxEffectDistance; i++)
 	{
-		int value = heightmapBMP->getValueAtXYPosition(heightPos + i, widthPos);
+		unsigned char value = heightmapBMP->getValueAtXYPosition(heightPos + i, widthPos);
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < coastDistance)
@@ -811,9 +812,9 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 		}
 	}
 	//south
-	for (int i = 0; i < maxEffectDistance; i++)
+	for (uint32_t i = 0; i < maxEffectDistance; i++)
 	{
-		int value = heightmapBMP->getValueAtXYPosition(heightPos - i, widthPos);
+		unsigned char value = heightmapBMP->getValueAtXYPosition(heightPos - i, widthPos);
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < coastDistance)
@@ -823,9 +824,9 @@ double calcCoastalHumidity(Bitmap * heightmapBMP, uint32_t heightPos, uint32_t w
 	//the more is returned, the more humid the pixel
 	//find the smallest factor:
 		//higher means less humid
-	const double continentalityFactor = 1 * (((double)continentality / ((double)maxEffectDistance* (double)windFactor)));
+	const double continentalityFactor = 1 * (((double)continentality / ((double)maxEffectDistance* windFactor)));
 	//higher means less humid
-	const double windDistanceFactor = (((double)windDistance / ((double)maxEffectDistance * (double)windFactor)));// *windIntensity;
+	const double windDistanceFactor = (((double)windDistance / ((double)maxEffectDistance * windFactor)));// *windIntensity;
 	//higher means less humid
 	const double coastDistanceFactor = (double)coastDistance / (double)maxEffectDistance;
 	if (windDistanceFactor + continentalityFactor > coastDistanceFactor)
@@ -925,12 +926,12 @@ BYTE * Terrain::humidityMap(Bitmap * heightmapBMP, Bitmap* humidityBMP, uint32_t
 				totalAridity += heatAridity;
 				//incorporate the fact that precipitation falls on mountains and is not carried inwards
 				totalAridity += mountainShadowAridity / 2;
-				totalAridity = totalAridity * 0.2 + 0.8 * (totalAridity * (1 - coastalHumidity));
+				totalAridity = totalAridity * 0.2 + 0.8 * (totalAridity * (1.0 - coastalHumidity));
 				//cannot get drier than super dry or less dry than humid
 				totalAridity = boost::algorithm::clamp(totalAridity, 0, 1);
 
 				{
-					RGBTRIPLE colour = { 255.0 * (1.0 - totalAridity),totalAridity * 255,totalAridity * 255 };
+					RGBTRIPLE colour = { static_cast<BYTE>(255.0 * (1.0 - totalAridity)),static_cast<BYTE>(totalAridity * 255.0),static_cast<BYTE>(totalAridity * 255.0) };
 					humidityBMP->setTripleAtIndex(colour, (x * width + y));
 				}
 			}
@@ -1028,41 +1029,41 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, bool sea) {
 		else {
 			if (provinceBMP->getValueAtIndex(unassignedPixel) == 0)
 			{
-				uint32_t distance = UINT32_MAX;
+				auto distance = UINT32_MAX;
 				Prov* nextOwner = nullptr;
 				for (Prov* P : provinces)
 				{
 					if ((P->colour.rgbtBlue == 1) /*|| (provinceBuffer[unassignedPixel] == 254 && P->colour.rgbtBlue == 255)*/) {
 						//length of vector between current pixel and province pixel
-						uint32_t x1 = 0;
-						uint32_t y1 = 0;
+						auto x1 = 0u;
+						auto y1 = 0u;
 						bool detailed = false;
 						if (detailed) {
-							uint32_t nearestPixelOfThatProvince = 0;
-							uint32_t pixelDistance = INFINITY;
+							auto nearestPixelOfThatProvince = 0u;
+							auto pixelDistance = INFINITY;
 							for (int i = 0; i < (P->pixels.size()); i += 30)
 							{
 								if (i < P->pixels.size()) {
-									uint32_t provincePixel = P->pixels[i];
-									uint32_t x1temp = provincePixel % bmpWidth;
-									uint32_t x2temp = unassignedPixel % bmpWidth;
-									uint32_t y1temp = provincePixel / bmpHeight;
-									uint32_t y2temp = unassignedPixel / bmpHeight;
+									const uint32_t provincePixel = P->pixels[i];
+									const uint32_t x1temp = provincePixel % bmpWidth;
+									const uint32_t x2temp = unassignedPixel % bmpWidth;
+									const uint32_t y1temp = provincePixel / bmpHeight;
+									const uint32_t y2temp = unassignedPixel / bmpHeight;
 									if (sqrt(((x1temp - x2temp) *(x1temp - x2temp)) + ((y1temp - y2temp) *(y1temp - y2temp))) < pixelDistance) {
-										pixelDistance = (uint32_t)sqrt(((x1temp - x2temp) *(x1temp - x2temp)) + ((y1temp - y2temp) *(y1temp - y2temp)));
+										pixelDistance = sqrt(((x1temp - x2temp) *(x1temp - x2temp)) + ((y1temp - y2temp) *(y1temp - y2temp)));
 										nearestPixelOfThatProvince = provincePixel;
 									}
 								}
 							}
 							x1 = nearestPixelOfThatProvince % bmpWidth;
-							uint32_t y1 = nearestPixelOfThatProvince / bmpHeight;
+							y1 = nearestPixelOfThatProvince / bmpHeight;
 						}
 						else {
 							x1 = (P->center) % bmpWidth;
 							y1 = (P->center) / bmpHeight;
 						}
-						uint32_t x2 = (unassignedPixel) % bmpWidth;
-						uint32_t y2 = (unassignedPixel) / bmpHeight;
+						auto x2 = (unassignedPixel) % bmpWidth;
+						auto y2 = (unassignedPixel) / bmpHeight;
 						if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
 							distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
 							nextOwner = P;
@@ -1338,7 +1339,7 @@ void Terrain::generateRivers(Bitmap * riverBMP, const Bitmap * heightmap)
 			heightmap->getValueAtIndex(R->getCurrentEnd() + 5) };
 
 		const std::vector<uint32_t>::iterator result = std::min_element(std::begin(altitudes), std::end(altitudes));
-		const uint32_t favDirection = std::distance(std::begin(altitudes), result);
+		const uint32_t favDirection = (uint32_t)std::distance(std::begin(altitudes), result);
 
 		int previous = 0; //this variable is used to avoid rectangles in the river
 		//continue the river until the sealevel is reached, either at a lake or the ocean

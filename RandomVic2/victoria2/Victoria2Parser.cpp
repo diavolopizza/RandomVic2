@@ -96,7 +96,7 @@ string Victoria2Parser::readClimateHeader(string filePath)
 	std::ifstream climate(filePath);
 	std::string content((std::istreambuf_iterator<char>(climate)),
 		(std::istreambuf_iterator<char>()));
-	uint32_t pos = content.find("mild_climate", 100);
+	auto pos = content.find("mild_climate", 100);
 	content.erase(pos, string::npos);
 	return content;
 }
@@ -152,7 +152,7 @@ string Victoria2Parser::readDefaultMapHeader(string filePath)
 	std::ifstream defaultMap(filePath);
 	std::string content((std::istreambuf_iterator<char>(defaultMap)),
 		(std::istreambuf_iterator<char>()));
-	uint32_t pos = content.find("provinces", 100);
+	auto pos = content.find("provinces", 100);
 	return content.substr(pos, string::npos);
 }
 
