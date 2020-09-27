@@ -42,6 +42,7 @@ public:
 
 	vector <Prov*> neighbourProvinces;//contains all the province Ids of the neighbouring provinces
 	vector<uint32_t> pixels;
+	vector<uint32_t> borderPixels;
 	set<uint32_t> positionCandidates;
 	void setNeighbour(Prov*P, bool level);
 	void assignContinent(Continent *C);

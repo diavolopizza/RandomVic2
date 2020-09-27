@@ -108,7 +108,7 @@ void Terrain::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provinceP
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
 	int minDistance = (bmpSize / provinceSize) / 20;
 	uint32_t startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
-	while (!inRange(bmpWidth, bmpSize, startingPixel) || bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1
+	while (/*!inRange(bmpWidth, bmpSize, startingPixel) ||*/ bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1
 		|| (GetMinDistanceToProvince(startingPixel, bmpWidth, bmpHeight) < minDistance))
 	{
 		startingPixel = (*random)() % bmpSize; //startingpixel is anywhere in the file
@@ -166,14 +166,27 @@ void Terrain::evaluateNeighbours(Bitmap * provinceBMP)
 //Reads Pixels from bitmap and assigns them to provinces
 void Terrain::provPixels(Bitmap * provinceBMP)
 {
+	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;
+	const uint32_t bmpHeight = provinceBMP->bInfoHeader.biHeight;
+	const uint32_t bmpSize = bmpWidth * bmpHeight;
 	for (auto prov : provinces)
 	{
 		prov->pixels.clear();
 	}
-	for (uint32_t j = 0; j < provinceBMP->bInfoHeader.biSizeImage / 3 - 1; j++)
+	for (uint32_t j = 0; j < provinceBMP->bInfoHeader.biSizeImage / 3; j++)
 	{
 		try {
+			//if (provinceMap[provinceBMP->getTripleAtIndex(j)] != nullptr)
 			provinceMap[provinceBMP->getTripleAtIndex(j)]->pixels.push_back(j);
+			const vector<unsigned int> newPixels = { RIGHT(j), LEFT(j), ABOVE(j, bmpWidth), BELOW(j, bmpWidth) };
+			for (auto newPixel : newPixels) {
+				if (newPixel < bmpSize)
+					if (provinceBMP->getValueAtIndex(newPixel, 2) != provinceBMP->getValueAtIndex(j, 2))
+					{
+						provinceMap[provinceBMP->getTripleAtIndex(j)]->borderPixels.push_back(j);
+					}
+			}
+
 		}
 		catch (runtime_error e)
 		{
@@ -476,8 +489,8 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
 		for (uint32_t x = 0; x < provinceSize - 1; x++)
 		{
-			uint32_t currentPixel = P->pixels[P->pixels.size() - (*random)() % ((P->pixels.size() / 4) + 1)];
-			//uint32_t currentPixel = P->pixels[(*random)() % P->pixels.size()];
+			//uint32_t currentPixel = P->pixels[P->pixels.size() - (*random)() % ((P->pixels.size() / 4) + 1)];
+			uint32_t currentPixel = P->pixels[(*random)() % P->pixels.size()];
 			const vector<unsigned int> newPixels = { RIGHT(currentPixel), LEFT(currentPixel), ABOVE(currentPixel, bmpWidth), BELOW(currentPixel, bmpWidth) };
 			//vector<int> newPixels;
 			//newPixels.push_back(RIGHT(currentPixel));
@@ -485,7 +498,7 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 			//newPixels.push_back(ABOVE(currentPixel, bmpWidth));
 			//newPixels.push_back(BELOW(currentPixel, bmpWidth));
 			for (auto newPixel : newPixels) {
-				if (newPixel < bmpSize && newPixel > 3)
+				if (newPixel < bmpSize && newPixel > 0)
 					if (provinceBMP->getValueAtIndex(newPixel) == greyval)
 					{
 						//if ((newpixel) % (bmpWidth / 2) != 0) {
@@ -501,7 +514,6 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 	}
 }
 
-
 //fills unassigned pixels in iterations, so provinces grow
 void Terrain::fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const unsigned char greyVal, const unsigned char fillVal, const uint32_t from, const uint32_t to, const vector<uint32_t> &randomValuesCached, uint32_t updateThreshold)
 {
@@ -512,9 +524,9 @@ void Terrain::fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const unsigned c
 	uint32_t unassignedPixels = bmpSize;
 	uint32_t previousUnassignedPixels = unassignedPixels + 1;
 	uint32_t randomValueIndex = 0u;
-
 	const vector<int> offsets = { 1,-1, (int)bmpWidth, -(int)(bmpWidth) };
-	while (unassignedPixels > 0u && unassignedPixels < previousUnassignedPixels)
+	int counter = 0;
+	while (unassignedPixels > 0u)
 	{
 		cout << "Pixels still unassigned: " << unassignedPixels << endl;
 		previousUnassignedPixels = unassignedPixels;
@@ -525,16 +537,22 @@ void Terrain::fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const unsigned c
 			{
 				unassignedPixels++;
 				const uint32_t direction = randomValuesCached[randomValueIndex++%randomValuesCached.size()];
-				const uint32_t newPixel = unassignedPixel + offsets[direction];
-				if (newPixel < bmpSize && newPixel > 3u)
-					if (provinceBMP->getValueAtIndex(newPixel) == greyVal)
+				const int newPixel = (int)unassignedPixel + offsets[direction];
+				if (newPixel < bmpSize && newPixel > 0u)
+				{
+					auto x = provinceBMP->getValueAtIndex(newPixel);
+					if (x == greyVal)
 					{
 						//TODO: add river crossings to each province
 						if ((newPixel) % (bmpWidth) != 0u && !(riverBMP->getValueAtIndex(newPixel) <= 10u))
 							provinceBMP->copyTripleToIndex(unassignedPixel, newPixel);
 					}
+				}
 			}
 		}
+		unassignedPixels == previousUnassignedPixels ? counter++ : counter = 0;
+		if (counter > 3)
+			break;
 	}
 }
 //evaluates province size to define wether it should be deleted in case it is too small
@@ -643,19 +661,27 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_
 //writes the regions to a bitmap, non-unique colours
 void Terrain::prettyRegions(Bitmap * regionBMP)
 {
-	cout << "Creating regions" << endl;
+	std::cout << "Creating regions" << std::endl;
+	delete regionBMP->getBuffer();
 	regionBMP->setBuffer(new BYTE[regionBMP->bInfoHeader.biSizeImage]);
 	for (auto region : regions) {
 		RGBTRIPLE regionColour;
 		regionColour.rgbtBlue = (*random)() % 256;
 		regionColour.rgbtGreen = (*random)() % 256;
 		regionColour.rgbtRed = (*random)() % 256;
+		RGBTRIPLE borderColour = { 255,255,255 };
+
 		for (auto province : region->provinces)
 		{
-			for (int pixel : province->pixels)
+			for (auto pixel : province->pixels)
 			{
 				regionBMP->setTripleAtIndex(regionColour, pixel);
 			}
+			for (auto pixel : province->borderPixels)
+			{
+				regionBMP->setTripleAtIndex(borderColour, pixel);
+			}
+
 		}
 	}
 }
@@ -1566,7 +1592,11 @@ void Terrain::sanityChecks(Bitmap * provinceBMP)
 		{
 			if (prov->country != nullptr)
 				cout << "ERROR: Seaprovince has country assigned" << endl;
-
+		}
+		if (prov->pixels.size() < Data::getInstance().minProvSize)
+		{
+			cout << "Small province remaining, Colour: " << (int)prov->colour.rgbtRed << " " << (int)prov->colour.rgbtGreen << " " << (int)prov->colour.rgbtBlue << endl;
+			cout << "Center at: " << prov->center << " size is: " << prov->pixels.size() << std::endl;
 		}
 	}
 	if (provinces.back()->provID > provinces.size())

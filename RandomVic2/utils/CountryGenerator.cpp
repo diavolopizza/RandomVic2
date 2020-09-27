@@ -149,10 +149,10 @@ Bitmap * CountryGenerator::countryBMP() {
 					countryBMP->setTripleAtIndex(country->getColour(), pixelIndex);
 					// need to map the position relative to the country dimensions to the position on the flag
 					// easy: just determine a  x and y percentage, which can be mapped to the flag
-					float xPercent = (float)(pixelIndex % Data::getInstance().width - country->minX) / (float)countryXspan;
-					float yPercent = (float)(pixelIndex / Data::getInstance().width - country->minY) / (float)countryYspan;
-					auto heightpos = (float)country->flag->width * (float)country->flag->height * yPercent;
-					auto location = (uint32_t)((float)country->flag->width * xPercent + heightpos);
+					double xPercent = (double)(pixelIndex % Data::getInstance().width - country->minX) / (double)countryXspan;
+					double yPercent = (double)(pixelIndex / Data::getInstance().width - country->minY) / (double)countryYspan;
+					auto heightpos = (double)country->flag->width * (double)country->flag->height * yPercent;
+					auto location = (uint32_t)((double)country->flag->width * xPercent + heightpos);
 					RGBTRIPLE colour = country->flag->getPixel(location);
 					countryBMP->setTripleAtIndex(colour, pixelIndex);
 
