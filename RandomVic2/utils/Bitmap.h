@@ -6,8 +6,8 @@ using namespace std;
 class Bitmap
 {
 private:
-	BYTE* Buffer = nullptr;
-	//std::unique_ptr<BYTE> Buffer;
+	//BYTE* Buffer = nullptr;
+	std::shared_ptr<BYTE> Buffer;
 	//Bitmap bit24Representation;
 	uint32_t indexFactor;
 
@@ -39,6 +39,7 @@ public:
 	void setTripleAtXYPosition(const RGBTRIPLE colour, const uint32_t heightPos, const uint32_t widthPos);
 
 	BYTE* getBuffer() const;
+	void setBuffer(std::shared_ptr<BYTE> Buffer);
 	void setBuffer(BYTE* Buffer);
 
 	void setIndexFactor(const uint32_t indexFactor);
