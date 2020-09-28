@@ -15,7 +15,7 @@ Various1::~Various1()
 //{
 //	int r, g, b;
 //
-//	unsigned char* data = new unsigned char[filesize];
+//	BYTE* data = new unsigned char[filesize];
 //
 //	data = BMPHandler::getInstance().findBitmapByKey("provinces")->Buffer;
 //

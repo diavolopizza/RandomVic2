@@ -5,8 +5,8 @@ Flag::Flag(ranlux24 random)
 	this->random = random;
 
 	// load the template
-	unsigned char* targaimage;
-	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
+	BYTE* targaimage;
+	targaimage = (BYTE*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
 	this->flag = targaimage;
 
 	int type = random() % 3;
@@ -283,7 +283,7 @@ RGBTRIPLE Flag::getPixel(uint32_t pos)
 	return colour;
 }
 
-unsigned char * Flag::getFlag()
+BYTE* Flag::getFlag()
 {
 	return flag;;
 }

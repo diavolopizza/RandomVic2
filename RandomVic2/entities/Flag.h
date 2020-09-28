@@ -18,7 +18,7 @@ class Flag
 {
 	ranlux24 random;
 	vector<RGBTRIPLE> colours;
-	unsigned char* flag;
+	BYTE* flag;
 	enum type { TRICOLORE, ROTATEDTRICOLORE, PLAIN, };
 	enum symbolType { CIRCLE, SQUARE, MOON, STAR, MOONSTAR, MULTISTAR };
 	type flagType;
@@ -42,6 +42,6 @@ public:
 	void setPixel(RGBTRIPLE colour, uint32_t x, uint32_t y);
 	RGBTRIPLE getPixel(uint32_t x, uint32_t y);
 	RGBTRIPLE getPixel(uint32_t pos);
-	unsigned char* getFlag();
+	BYTE* getFlag();
 };
 

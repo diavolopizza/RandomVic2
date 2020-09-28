@@ -9,8 +9,8 @@ Bitmap::Bitmap()
 Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 {
 	//create bitmap file header
-	((unsigned char *)&bFileHeader.bfType)[0] = 'B';
-	((unsigned char *)&bFileHeader.bfType)[1] = 'M';
+	((BYTE*)&bFileHeader.bfType)[0] = 'B';
+	((BYTE*)&bFileHeader.bfType)[1] = 'M';
 	bFileHeader.bfReserved1 = 0;
 	bFileHeader.bfReserved2 = 0;
 
@@ -53,7 +53,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 	}
 }
 
-Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE * buffer) : Bitmap(width, height, bitCount)
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE* buffer) : Bitmap(width, height, bitCount)
 {
 	this->Buffer = buffer;
 }
@@ -153,7 +153,7 @@ void Bitmap::setTripleAtXYPosition(const RGBTRIPLE colour, const uint32_t height
 	}
 }
 
-void Bitmap::setBuffer(unsigned char * Buffer)
+void Bitmap::setBuffer(BYTE* Buffer)
 {
 	this->Buffer = Buffer;
 }
@@ -163,7 +163,7 @@ void Bitmap::setIndexFactor(const uint32_t indexFactor)
 	this->indexFactor = indexFactor;
 }
 
-unsigned char * Bitmap::getBuffer() const
+BYTE* Bitmap::getBuffer() const
 {
 	return this->Buffer;
 }

@@ -195,7 +195,7 @@ void Terrain::provPixels(const Bitmap* provinceBMP)
 		}
 	}
 }
-BYTE * Terrain::normalizeHeightMap(Bitmap heightMap)
+BYTE* Terrain::normalizeHeightMap(Bitmap heightMap)
 {
 	double highestValue = 0.0;
 	double* combinedValues = new double[heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3];
@@ -861,7 +861,7 @@ double calcCoastalHumidity(Bitmap heightmapBMP, uint32_t heightPos, uint32_t wid
 	else return 1 - (windDistanceFactor + continentalityFactor);
 
 }
-BYTE * Terrain::humidityMap(Bitmap heightmapBMP, Bitmap humidityBMP, uint32_t seaLevel, uint32_t updateThreshold)
+BYTE* Terrain::humidityMap(Bitmap heightmapBMP, Bitmap humidityBMP, uint32_t seaLevel, uint32_t updateThreshold)
 {
 	if (Data::getInstance().opencvVisualisation)
 		Visualizer::initializeWindow();
