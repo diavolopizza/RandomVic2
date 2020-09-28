@@ -60,7 +60,7 @@ int main() {
 	Data::getInstance();// new Data();
 	Data::getInstance().getConfig("C:/Users/Paul/Documents/Visual Studio 2017/Projects/RandomVic2/config.json");
 	Parser genericParser;
-	Terrain terrainGenerator(Data::getInstance().random);
+	Terrain terrainGenerator;
 	//const Bitmap heightMapBMP;
 	const string heightmapSourceString = Data::getInstance().debugMapsPath + ("heightmap.bmp");
 	const char* heightmapsource = heightmapSourceString.c_str();
@@ -109,6 +109,7 @@ int main() {
 		provincesBMP.setBuffer(terrainGenerator.landProvinces(Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
 		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
 		provincesBMP.setBuffer(terrainGenerator.seaProvinces(Data::getInstance().seaProv, Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
+		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
 		terrainGenerator.createProvinceMap();
 		terrainGenerator.provPixels(&provincesBMP);
 		terrainGenerator.prettyProvinces(&provincesBMP, riverBMP, Data::getInstance().minProvSize);
@@ -158,7 +159,7 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(&provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
 	}
 
-	CountryGenerator cG(&terrainGenerator, Data::getInstance().random);
+	CountryGenerator cG(&terrainGenerator);
 	cG.distributeCountries(Data::getInstance().maxNumOfCountries, 0, terrainGenerator.regions);
 	cG.determineDimensions();
 	cG.sanityChecks();

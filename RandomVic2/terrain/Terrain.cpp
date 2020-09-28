@@ -16,9 +16,9 @@
 #define BELOW(val, offset) \
 (val-1*offset)
 
-Terrain::Terrain(ranlux24* random)
+Terrain::Terrain()
 {
-	this->random = random;
+	this->random = Data::getInstance().random2;
 	provinceMap.resize(256);
 }
 
@@ -107,11 +107,11 @@ void Terrain::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provinceP
 	const uint32_t bmpHeight = bitmap->bInfoHeader.biHeight;
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
 	int minDistance = (bmpSize / provinceSize) / 20;
-	uint32_t startingPixel = (*random)() % bmpSize;//startingpixel is anywhere in the file
+	uint32_t startingPixel = random() % bmpSize;//startingpixel is anywhere in the file
 	while (/*!inRange(bmpWidth, bmpSize, startingPixel) ||*/ bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1
 		|| (GetMinDistanceToProvince(startingPixel, bmpWidth, bmpHeight) < minDistance))
 	{
-		startingPixel = (*random)() % bmpSize; //startingpixel is anywhere in the file
+		startingPixel = random() % bmpSize; //startingpixel is anywhere in the file
 		minDistance -= 5;
 	}
 	bitmap->setTripleAtIndex(provinceColour, startingPixel);
@@ -408,7 +408,8 @@ BYTE* Terrain::landProvinces(uint32_t numoflandprov, Bitmap * terrainBMP, Bitmap
 	//For multithreading: create vector of random values. Used for performance improvements, as ranlux24 is using locks, and new instances would remove determination.
 	vector<uint32_t> randomValuesCached;
 	for (uint32_t i = 0; i < bmpSize / 16; i++) {
-		randomValuesCached.push_back((*random)() % 4);
+		randomValuesCached.push_back(Data::getInstance().random2()%4);
+		//randomValuesCached.push_back(random() % 4);
 	}
 	uint32_t threadAmount = Data::getInstance().threadAmount;
 	//decrement number of threads, until biSizeImage can be divided by threadCount without any rest
@@ -443,7 +444,7 @@ BYTE* Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitma
 	uint32_t threadAmount = Data::getInstance().threadAmount;
 	vector<uint32_t> randomValuesCached;
 	for (uint32_t i = 0; i < provinceBMP->bInfoHeader.biSizeImage / 64; i++) {
-		randomValuesCached.push_back((*random)() % 4);
+		randomValuesCached.push_back(random() % 4);
 	}
 	while (provinceBMP->bInfoHeader.biSizeImage % threadAmount != 0)
 	{
@@ -484,13 +485,13 @@ void Terrain::provinceCreation(Bitmap * provinceBMP, uint32_t provinceSize, uint
 			red = 1; //reset red
 		}
 		//create new landprovince
-		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255, this->random);
+		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255);
 
 		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
 		for (uint32_t x = 0; x < provinceSize - 1; x++)
 		{
-			//uint32_t currentPixel = P->pixels[P->pixels.size() - (*random)() % ((P->pixels.size() / 4) + 1)];
-			uint32_t currentPixel = P->pixels[(*random)() % P->pixels.size()];
+			//uint32_t currentPixel = P->pixels[P->pixels.size() - random() % ((P->pixels.size() / 4) + 1)];
+			uint32_t currentPixel = P->pixels[random() % P->pixels.size()];
 			const vector<unsigned int> newPixels = { RIGHT(currentPixel), LEFT(currentPixel), ABOVE(currentPixel, bmpWidth), BELOW(currentPixel, bmpWidth) };
 			//vector<int> newPixels;
 			//newPixels.push_back(RIGHT(currentPixel));
@@ -537,7 +538,7 @@ void Terrain::fill(Bitmap* provinceBMP, const Bitmap* riverBMP, const unsigned c
 			{
 				unassignedPixels++;
 				const uint32_t direction = randomValuesCached[randomValueIndex++%randomValuesCached.size()];
-				const int newPixel = (int)unassignedPixel + offsets[direction];
+				const uint32_t newPixel = (int)unassignedPixel + offsets[direction];
 				if (newPixel < bmpSize && newPixel > 0u)
 				{
 					auto x = provinceBMP->getValueAtIndex(newPixel);
@@ -592,7 +593,7 @@ void Terrain::prettyProvinces(Bitmap * provinceBMP, Bitmap* riverBMP, uint32_t m
 	// now assign those small province pixels to nearby provinces
 	vector<uint32_t> randomValuesCached;
 	for (uint32_t i = 0; i < provinceBMP->bInfoHeader.biSizeImage / 64; i++) {
-		randomValuesCached.push_back((*random)() % 4);
+		randomValuesCached.push_back(random() % 4);
 	}
 	fill(provinceBMP, std::ref(riverBMP), 1, 0, 0, provinceBMP->bInfoHeader.biSizeImage / 3, std::ref(randomValuesCached), 200);
 	assignRemainingPixels(provinceBMP, false);
@@ -648,7 +649,7 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_
 	{
 		for (auto prov : region->provinces)
 		{
-			for (auto prov2 : prov->neighbourProvinces) {
+			for (auto prov2 : prov->adjProv) {
 				if (!prov2->sea && prov2->region != region)
 				{
 					region->setNeighbour(prov2->region, true);
@@ -666,9 +667,9 @@ void Terrain::prettyRegions(Bitmap * regionBMP)
 	regionBMP->setBuffer(new BYTE[regionBMP->bInfoHeader.biSizeImage]);
 	for (auto region : regions) {
 		RGBTRIPLE regionColour;
-		regionColour.rgbtBlue = (*random)() % 256;
-		regionColour.rgbtGreen = (*random)() % 256;
-		regionColour.rgbtRed = (*random)() % 256;
+		regionColour.rgbtBlue = random() % 256;
+		regionColour.rgbtGreen = random() % 256;
+		regionColour.rgbtRed = random() % 256;
 		RGBTRIPLE borderColour = { 255,255,255 };
 
 		for (auto province : region->provinces)
@@ -751,9 +752,9 @@ void Terrain::prettyContinents(Bitmap * continentBMP)
 	continentBMP->setBuffer(new BYTE[continentBMP->bInfoHeader.biSizeImage]);
 	for (auto continent : continents) {
 		RGBTRIPLE continentColour;
-		continentColour.rgbtBlue = (*random)() % 256;
-		continentColour.rgbtGreen = (*random)() % 256;
-		continentColour.rgbtRed = (*random)() % 256;
+		continentColour.rgbtBlue = random() % 256;
+		continentColour.rgbtGreen = random() % 256;
+		continentColour.rgbtRed = random() % 256;
 
 		for (auto province : continent->provinces)
 		{
@@ -1004,14 +1005,14 @@ void Terrain::assignRemainingPixels(Bitmap * provinceBMP, bool sea) {
 				bool unique = false;
 				while (!unique) {
 					lakeColour.rgbtBlue = 204;
-					lakeColour.rgbtGreen = 1 + (*random)() % 255;
-					lakeColour.rgbtRed = 1 + (*random)() % 255;
+					lakeColour.rgbtGreen = 1 + random() % 255;
+					lakeColour.rgbtRed = 1 + random() % 255;
 					if (provinceMap[lakeColour] == nullptr)
 					{
 						unique = true;
 					}
 				}
-				Prov * lake = new Prov((int)provinces.size() + 1, lakeColour, true, this->random);
+				Prov * lake = new Prov((int)provinces.size() + 1, lakeColour, true);
 				provinceMap.setValue(lakeColour, lake);
 				provinces.push_back(lake);
 				lake->pixels.push_back(unassignedPixel);
@@ -1250,7 +1251,7 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 		auto foundAtLeastOne = false;
 		while (!foundAtLeastOne) {
 			for (uint32_t i = 0; i < likelyHoods.size(); i++) {
-				if ((*random)() % 100u < (likelyHoods[i] / sumOfAllLikelyhoods) * 100.0)
+				if (random() % 100u < (likelyHoods[i] / sumOfAllLikelyhoods) * 100.0)
 				{
 					candidates[i] = true;
 					foundAtLeastOne = true;
@@ -1261,7 +1262,7 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 		auto index = 0u;
 		while (!pick)
 		{
-			index = (*random)() % candidates.size();
+			index = random() % candidates.size();
 			pick = candidates[index];
 		}
 		for (auto pixel : prov->pixels)
@@ -1270,13 +1271,13 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 			switch (index) {
 			case 0:
 			{
-				terrainBMP->setValueAtIndex(pixel, arctic + (*random)() % arcticRange);
+				terrainBMP->setValueAtIndex(pixel, arctic + random() % arcticRange);
 				prov->climate = "inhospitable_climate";
 				break;
 			}
 			case 1:
 			{
-				terrainBMP->setValueAtIndex(pixel, plains + (*random)() % plainsRange);
+				terrainBMP->setValueAtIndex(pixel, plains + random() % plainsRange);
 				prov->climate = "temperate_climate";
 				break;
 			}
@@ -1290,31 +1291,31 @@ void Terrain::prettyTerrain(Bitmap * terrainBMP, const Bitmap * heightmap, uint3
 			}
 			case 3:
 			{
-				terrainBMP->setValueAtIndex(pixel, farmlands + (*random)() % farmlandsRange);
+				terrainBMP->setValueAtIndex(pixel, farmlands + random() % farmlandsRange);
 				prov->climate = "mild_climate";
 				break;
 			}
 			case 4:
 			{
-				terrainBMP->setValueAtIndex(pixel, steppe + (*random)() % steppeRange);
+				terrainBMP->setValueAtIndex(pixel, steppe + random() % steppeRange);
 				prov->climate = "harsh_climate";
 				break;
 			}
 			case 5:
 			{
-				terrainBMP->setValueAtIndex(pixel, jungle + (*random)() % jungleRange);
+				terrainBMP->setValueAtIndex(pixel, jungle + random() % jungleRange);
 				prov->climate = "harsh_climate";
 				break;
 			}
 			case 6:
 			{
-				terrainBMP->setValueAtIndex(pixel, marsh + (*random)() % marshRange);
+				terrainBMP->setValueAtIndex(pixel, marsh + random() % marshRange);
 				prov->climate = "temperate_climate";
 				break;
 			}
 			case 7:
 			{
-				terrainBMP->setValueAtIndex(pixel, desert + (*random)() % desertRange);
+				terrainBMP->setValueAtIndex(pixel, desert + random() % desertRange);
 				prov->climate = "inhospitable_climate";
 				break;
 			}
@@ -1351,7 +1352,7 @@ void Terrain::generateRivers(Bitmap * riverBMP, const Bitmap * heightmap)
 		uint32_t start = 0;
 		while (!(heightmap->getValueAtIndex(start) > Data::getInstance().seaLevel) && riverPixels.find(start) == riverPixels.end())
 		{
-			start = ((*random)() % heightmap->bInfoHeader.biSizeImage);
+			start = (random() % heightmap->bInfoHeader.biSizeImage);
 		}
 		R->setSource(start); //save the source
 		R->setcurrentEnd(start); //assign current End, setting it to the start point
@@ -1401,7 +1402,7 @@ void Terrain::generateRivers(Bitmap * riverBMP, const Bitmap * heightmap)
 			if (candidates.size() == 0) {
 				break;
 			}
-			uint32_t newPixel = candidates[(*random)() % candidates.size()];
+			uint32_t newPixel = candidates[random() % candidates.size()];
 
 
 			vector<uint32_t> directions;

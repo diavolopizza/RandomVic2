@@ -1,7 +1,7 @@
 #include "Country.h"
 
 
-Country::Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux24* random)
+Country::Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux24 random)
 {
 	this->tag = tag;
 	this->ID = ID;
@@ -11,7 +11,7 @@ Country::Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux24* random)
 
 	for (auto pop : partyPopularities)
 	{
-		pop = (*random)() % 25;
+		pop = random() % 25;
 	}
 
 }

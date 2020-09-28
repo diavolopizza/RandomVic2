@@ -83,14 +83,9 @@ void Data::getConfig(string configPath) {
 		}
 
 	}
-
-	this->random = new ranlux24();
-	if (seed)
-		random->seed(seed);
-	else {
+	if (!seed)
 		seed = (uint32_t)time(NULL);
-	}
-	random->seed(seed);
+	random2.seed(seed);
 	cout << "Seeding with " << seed << endl;
 
 }

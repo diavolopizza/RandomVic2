@@ -6,17 +6,18 @@
 #include "Continent.h"
 #include "Region.h"
 #include "Country.h"
+#include "..\utils\Data.h"
 #include <random>
 using namespace std;
 
 class Prov
 {
 	string path;
-	ranlux24* random;
+	ranlux24 random;
 public:
 	Prov();
 	Prov(int, RGBTRIPLE);
-	Prov(int, RGBTRIPLE, bool, ranlux24* random);
+	Prov(int, RGBTRIPLE, bool);
 	~Prov();
 	RGBTRIPLE colour;
 
@@ -31,7 +32,7 @@ public:
 	string climate = "";
 	string owner = "";//tag who owns prov
 	vector<string>cores;
-	double civilizationLevel;
+	double civLevel;
 
 
 	//VIC2
@@ -40,7 +41,7 @@ public:
 	bool developed = false;
 	void checkDeveloped(vector <int> developed_continent);
 
-	vector <Prov*> neighbourProvinces;//contains all the province Ids of the neighbouring provinces
+	vector <Prov*> adjProv;//contains all the province Ids of the neighbouring provinces
 	vector<uint32_t> pixels;
 	vector<uint32_t> borderPixels;
 	set<uint32_t> positionCandidates;

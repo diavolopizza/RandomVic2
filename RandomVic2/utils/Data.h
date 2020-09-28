@@ -57,9 +57,10 @@ public:
 	//visualisation with openCV
 	uint32_t updateThreshold = 0;
 
-	ranlux24* random;
+	//ranlux24* random;
+	ranlux24 random2;
 	int maxNumOfCountries = 20;
-	uint32_t threadAmount = 8;
+	uint32_t threadAmount = 1;
 
 
 	void getConfig(string configPath);

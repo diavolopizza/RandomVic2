@@ -2,10 +2,10 @@
 
 
 
-CountryGenerator::CountryGenerator(Terrain *terrain, ranlux24* random)
+CountryGenerator::CountryGenerator(Terrain *terrain)
 {
 	this->terrain = terrain;
-	this->random = random;
+	this->random = Data::getInstance().random2;
 }
 
 
@@ -20,13 +20,13 @@ void CountryGenerator::generateCountries(uint32_t amount)
 
 	for (uint32_t i = 0; i < amount; i++)
 	{
-		RGBTRIPLE colour = { 120 + (*random)() % 120, 120 + (*random)() % 120, 120 + (*random)() % 120 };
+		RGBTRIPLE colour = { 120 + random() % 120, 120 + random() % 120, 120 + random() % 120 };
 		string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 		string tag = "AAA";
 
 		for (int i = 0; i < tag.size(); i++)
 		{
-			tag[i] = alphabet[(*random)() % 26];
+			tag[i] = alphabet[random() % 26];
 		}
 		for (auto c : countriesV)
 		{
@@ -86,7 +86,7 @@ void CountryGenerator::distributeCountries(uint32_t amount, uint32_t sizeVariati
 	generateCountries(amount);
 	for (auto C : countriesV)
 	{
-		uint32_t regionIndex = (*random)() % regions.size();
+		uint32_t regionIndex = random() % regions.size();
 		if (!regions[regionIndex]->country) {
 			C->addRegion(regions[regionIndex]);
 			regions[regionIndex]->setCountry(C);
@@ -204,7 +204,7 @@ Bitmap * CountryGenerator::civilizationBMP()
 
 		for (Prov* prov : continent->provinces)
 		{
-			prov->civilizationLevel = (continent->civilized ? 0.0 : 0.5) + (double)((*random)() % 3) / 10.0;
+			prov->civLevel = (continent->civilized ? 0.0 : 0.5) + (double)(random() % 3) / 10.0;
 		}
 	}
 	for (int i = 0; i < 3; i++)
@@ -214,9 +214,10 @@ Bitmap * CountryGenerator::civilizationBMP()
 			{
 				for (auto prov : region->provinces)
 				{
-					prov->civilizationLevel *= (1 + (prov->neighbourProvinces[(*random)() % prov->neighbourProvinces.size()]->civilizationLevel) / 10);
-					if (prov->civilizationLevel > 1)
-						prov->civilizationLevel = 1;
+					if (prov->adjProv.size())
+						prov->civLevel *= (1 + (prov->adjProv[random() % prov->adjProv.size()]->civLevel) / 10);
+					if (prov->civLevel > 1)
+						prov->civLevel = 1;
 				}
 			}
 		}
@@ -229,7 +230,7 @@ Bitmap * CountryGenerator::civilizationBMP()
 			{
 				for (auto pixelIndex : prov->pixels)
 				{
-					RGBTRIPLE colour = { static_cast<BYTE>(255.0f * prov->civilizationLevel), static_cast<BYTE>(255.0f * prov->civilizationLevel), static_cast<BYTE>(0) };
+					RGBTRIPLE colour = { static_cast<BYTE>(255.0f * prov->civLevel), static_cast<BYTE>(255.0f * prov->civLevel), static_cast<BYTE>(0) };
 					civilizationBMP->setTripleAtIndex(colour, pixelIndex);
 				}
 			}

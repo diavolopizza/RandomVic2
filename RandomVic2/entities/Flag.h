@@ -16,7 +16,7 @@ namespace bg = boost::geometry;
 using namespace std;
 class Flag
 {
-	ranlux24* random;
+	ranlux24 random;
 	vector<RGBTRIPLE> colours;
 	unsigned char* flag;
 	enum type { TRICOLORE, ROTATEDTRICOLORE, PLAIN, };
@@ -27,7 +27,7 @@ class Flag
 public:
 	int width;
 	int height;
-	Flag(ranlux24*random);
+	Flag(ranlux24 random);
 	~Flag();
 	void tricolore(int i, int j);
 	void rotatedTricolore(int i, int j);

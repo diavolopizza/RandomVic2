@@ -52,7 +52,7 @@ void Parser::writeAdjacency(string filePath, vector<Prov*> provinces)
 		line.append(to_string(provinces[provNr]->colour.rgbtBlue));
 		line.append(";");
 
-		for (auto neighbour : provinces[provNr]->neighbourProvinces)
+		for (auto neighbour : provinces[provNr]->adjProv)
 		{
 			line.append(to_string(neighbour->provID));
 			line.append(";");

@@ -22,7 +22,7 @@ using namespace std;
 //static array_type provinceMap(boost::extents[256][256][256]);
 class Terrain
 {
-	ranlux24* random;
+	ranlux24 random;
 	hash <int> prov_hash;
 	MultiArray provinceMap;
 	vector<BYTE*> heightmapLayers;
@@ -33,7 +33,7 @@ public:
 	vector<Region*> regions;
 	vector<Continent*> continents;
 	vector<River*> rivers;
-	Terrain(ranlux24* random);
+	Terrain();
 	~Terrain();
 
 	//Utilities

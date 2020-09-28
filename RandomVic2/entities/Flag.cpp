@@ -1,6 +1,6 @@
 #include "Flag.h"
 
-Flag::Flag(ranlux24* random)
+Flag::Flag(ranlux24 random)
 {
 	this->random = random;
 
@@ -9,7 +9,7 @@ Flag::Flag(ranlux24* random)
 	targaimage = (unsigned char*)tga_load("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\\RandomVic2\\RandomVic2\\resources\\gfx\\flags\\template.tga", &width, &height, TGA_TRUECOLOR_32);
 	this->flag = targaimage;
 
-	int type = (*random)() % 3;
+	int type = random() % 3;
 
 
 	colours = generateColours();
@@ -42,7 +42,7 @@ Flag::Flag(ranlux24* random)
 			}
 		}
 	}
-	type = 2;//;(*random)() % 2;
+	type = 2;//;random() % 2;
 	colours = generateColours();
 	for (int i = 0; i < height; i++)
 	{
@@ -235,22 +235,22 @@ vector<RGBTRIPLE> Flag::generateColours()
 
 
 	vector<RGBTRIPLE> colours;
-	bool doubleNeutral = (*random)() % 2;
+	bool doubleNeutral = random() % 2;
 	//if (doubleNeutral)
 	//{
-	//	colours.push_back(neutrals[(*random)() % neutrals.size()]);
-	//	vector<RGBTRIPLE> middleColour = nonNeutralTypes[(*random)() % nonNeutralTypes.size()];
-	//	colours.push_back(middleColour[(*random)() % middleColour.size()]);
-	//	colours.push_back(neutrals[(*random)() % neutrals.size()]);
+	//	colours.push_back(neutrals[random() % neutrals.size()]);
+	//	vector<RGBTRIPLE> middleColour = nonNeutralTypes[random() % nonNeutralTypes.size()];
+	//	colours.push_back(middleColour[random() % middleColour.size()]);
+	//	colours.push_back(neutrals[random() % neutrals.size()]);
 	//}
 	{
-		vector<RGBTRIPLE> leftColours = nonNeutralTypes[(*random)() % nonNeutralTypes.size()];
-		colours.push_back(leftColours[(*random)() % leftColours.size()]);
-		colours.push_back(neutrals[(*random)() % neutrals.size()]);
-		vector<RGBTRIPLE> rightColours = nonNeutralTypes[(*random)() % nonNeutralTypes.size()];
-		colours.push_back(rightColours[(*random)() % rightColours.size()]);
+		vector<RGBTRIPLE> leftColours = nonNeutralTypes[random() % nonNeutralTypes.size()];
+		colours.push_back(leftColours[random() % leftColours.size()]);
+		colours.push_back(neutrals[random() % neutrals.size()]);
+		vector<RGBTRIPLE> rightColours = nonNeutralTypes[random() % nonNeutralTypes.size()];
+		colours.push_back(rightColours[random() % rightColours.size()]);
 
-		colours.push_back(brightColours[(*random)() % brightColours.size()]);
+		colours.push_back(brightColours[random() % brightColours.size()]);
 		//while(colours[3] == colours)
 	}
 	return colours;
