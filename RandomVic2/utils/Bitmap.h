@@ -6,8 +6,9 @@ using namespace std;
 class Bitmap
 {
 private:
-	BYTE * Buffer;
-	Bitmap * bit24Representation = nullptr;
+	BYTE * Buffer = nullptr;
+	//std::unique_ptr<BYTE> Buffer;
+	//Bitmap bit24Representation;
 	uint32_t indexFactor;
 
 public:
@@ -20,7 +21,7 @@ public:
 	BITMAPINFO bInfo;
 	BITMAPFILEHEADER bFileHeader;
 	BITMAPINFOHEADER bInfoHeader;
-	Bitmap * get24BitRepresentation();
+	Bitmap get24BitRepresentation();
 
 	unsigned char* colourtable;
 	RGBTRIPLE getColourTableEntry(const uint32_t index) const;

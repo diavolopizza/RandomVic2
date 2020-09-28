@@ -11,7 +11,7 @@ BMPHandler::~BMPHandler()
 }
 
 
-Bitmap* BMPHandler::findBitmapByKey(string key) {
+Bitmap BMPHandler::findBitmapByKey(string key) {
 	return bitmaps.find(key)->second;
 }
 
@@ -19,7 +19,7 @@ Bitmap* BMPHandler::findBitmapByKey(string key) {
 
 
 //BASIC BITMAP OPERATIONS START
-bool BMPHandler::SaveBMPToFile(const Bitmap*B, LPCTSTR outputFile)
+bool BMPHandler::SaveBMPToFile(const Bitmap B, LPCTSTR outputFile)
 {
 	long paddedsize;
 	HANDLE file = CreateFile(outputFile, GENERIC_WRITE, FILE_SHARE_READ,
@@ -30,33 +30,33 @@ bool BMPHandler::SaveBMPToFile(const Bitmap*B, LPCTSTR outputFile)
 		return false;
 	}
 	unsigned long bwritten;
-	if (WriteFile(file, &B->bFileHeader, sizeof(BITMAPFILEHEADER), &bwritten, NULL) == false)
+	if (WriteFile(file, &B.bFileHeader, sizeof(BITMAPFILEHEADER), &bwritten, NULL) == false)
 	{
 		CloseHandle(file);
 		return false;
 	}
-	if (WriteFile(file, &B->bInfoHeader, sizeof(BITMAPINFOHEADER), &bwritten, NULL) == false)
+	if (WriteFile(file, &B.bInfoHeader, sizeof(BITMAPINFOHEADER), &bwritten, NULL) == false)
 	{
 		CloseHandle(file);
 		return false;
 	}
-	if (B->bInfoHeader.biBitCount == 24)
+	if (B.bInfoHeader.biBitCount == 24)
 	{
-		paddedsize = B->bInfoHeader.biSizeImage;
-		if (WriteFile(file, B->getBuffer(), (paddedsize), &bwritten, NULL) == false)
+		paddedsize = B.bInfoHeader.biSizeImage;
+		if (WriteFile(file, B.getBuffer(), (paddedsize), &bwritten, NULL) == false)
 		{
 			CloseHandle(file);
 			return false;
 		}
 	}
 	else {
-		paddedsize = (B->bInfoHeader.biWidth)*(B->bInfoHeader.biHeight);
-		if (WriteFile(file, B->colourtable, 1024, &bwritten, NULL) == false)
+		paddedsize = (B.bInfoHeader.biWidth)*(B.bInfoHeader.biHeight);
+		if (WriteFile(file, B.colourtable, 1024, &bwritten, NULL) == false)
 		{
 			CloseHandle(file);
 			return false;
 		}
-		if (WriteFile(file, B->getBuffer(), (paddedsize), &bwritten, NULL) == false)
+		if (WriteFile(file, B.getBuffer(), (paddedsize), &bwritten, NULL) == false)
 		{
 			CloseHandle(file);
 			return false;
@@ -117,71 +117,71 @@ Bitmap BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 
 	CloseHandle(file);// everything successful here: close file and return buffer
 	B.setIndexFactor(3u);
-	bitmaps.insert(pair<string, Bitmap*>(key, &B));
+	bitmaps.insert(pair<string, Bitmap>(key, B));
 	return B;
 }
 
 
-Bitmap* BMPHandler::Load8bitBMP(LPCTSTR input, string key)
+Bitmap BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 {
-	Bitmap* B = new Bitmap();
+	Bitmap B;
 	long* size = new long(0);
-	B->colourtable = new unsigned char[1024];
+	B.colourtable = new unsigned char[1024];
 	DWORD bytesread;	// value to be used in ReadFile funcs
 	HANDLE file = CreateFile(input, GENERIC_READ, FILE_SHARE_READ,
 		NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);	// open file to read from
 	if (NULL == file)
-		return NULL; // coudn't open file
+		return Bitmap(); // coudn't open file
 					 // read file header
 
-	if (ReadFile(file, &B->bFileHeader, sizeof(BITMAPFILEHEADER), &bytesread, NULL) == false)
+	if (ReadFile(file, &B.bFileHeader, sizeof(BITMAPFILEHEADER), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
-		return NULL;
+		return Bitmap();
 	}
 	//read bitmap info
-	if (ReadFile(file, &B->bInfoHeader, sizeof(BITMAPINFOHEADER), &bytesread, NULL) == false)
+	if (ReadFile(file, &B.bInfoHeader, sizeof(BITMAPINFOHEADER), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
-		return NULL;
+		return Bitmap();
 	}
-	if (ReadFile(file, &B->bInfo, sizeof(BITMAPINFO), &bytesread, NULL) == false)
+	if (ReadFile(file, &B.bInfo, sizeof(BITMAPINFO), &bytesread, NULL) == false)
 	{
 		CloseHandle(file);
-		return NULL;
+		return Bitmap();
 	}
 
 	// check if bmp is uncompressed
-	if (B->bInfoHeader.biCompression != BI_RGB)
+	if (B.bInfoHeader.biCompression != BI_RGB)
 	{
 		CloseHandle(file);
-		return NULL;
+		return Bitmap();
 	}
 	int offset = 54;
-	*size = B->bFileHeader.bfSize - 1078;	// create buffer to hold the data,-headerbyte-colourablebyte
-	B->setBuffer(new BYTE[*size]);
+	*size = B.bFileHeader.bfSize - 1078;	// create buffer to hold the data,-headerbyte-colourablebyte
+	B.setBuffer(new BYTE[*size]);
 
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //start reading at beginning of colourtable
-	if (ReadFile(file, B->colourtable, 1024, &bytesread, NULL) == false)
+	if (ReadFile(file, B.colourtable, 1024, &bytesread, NULL) == false)
 	{
-		delete[] B->colourtable;
+		delete[] B.colourtable;
 		CloseHandle(file);
-		return NULL;
+		return Bitmap();
 	}
 	//for (int i = 0; i < 1024; i+=4)
 	//cout << i/4 << " " << int(B->colourtable[i]) << " " << int(B->colourtable[i+1]) << " " << int(B->colourtable[i+2]) << " " << int(B->colourtable[i + 3]) << endl;
 
 	SetFilePointer(file, 1078, NULL, FILE_BEGIN); //start reading after end of colourtable
-	if (ReadFile(file, B->getBuffer(), *size, &bytesread, NULL) == false)
+	if (ReadFile(file, B.getBuffer(), *size, &bytesread, NULL) == false)
 	{
-		delete[]  B->getBuffer();
+		//delete[]  B.getBuffer();
 		CloseHandle(file);
-		return NULL;
+		return Bitmap();
 	}
 	CloseHandle(file);// everything successful here: close file and return buffer
 
-	B->setIndexFactor(1u);
-	bitmaps.insert(pair<string, Bitmap*>(key, B));
+	B.setIndexFactor(1u);
+	bitmaps.insert(pair<string, Bitmap>(key, B));
 	return B;
 }
 

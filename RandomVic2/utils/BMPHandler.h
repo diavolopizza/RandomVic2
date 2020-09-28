@@ -9,14 +9,14 @@ using namespace std;
 
 class BMPHandler
 {
-	map<string, Bitmap*> bitmaps;
+	map<string, Bitmap> bitmaps;
 public:
 	BMPHandler();
 	~BMPHandler();
-	bool SaveBMPToFile(const Bitmap*, LPCTSTR bmpfile);
+	bool SaveBMPToFile(const Bitmap, LPCTSTR bmpfile);
 	Bitmap Load24bitBMP(LPCTSTR input, string key);
-	Bitmap* Load8bitBMP(LPCTSTR input, string key);
-	Bitmap* findBitmapByKey(string key);
+	Bitmap Load8bitBMP(LPCTSTR input, string key);
+	Bitmap findBitmapByKey(string key);
 
 	BMPHandler(BMPHandler const&) = delete;
 	void operator=(BMPHandler const&) = delete;

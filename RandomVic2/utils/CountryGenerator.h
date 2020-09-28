@@ -22,10 +22,10 @@ public:
 	Flag * createFlag();
 	Country * GetClosestCountry(vector<Prov*> provinces, Prov * seekingProv);
 	void distributeCountries(uint32_t amount, uint32_t sizeVariation, vector<Region*> regions);
-	Bitmap * countryBMP();
-	Bitmap * wealthBMP();
-	Bitmap * resourceBMP();
-	Bitmap * civilizationBMP();
+	Bitmap countryBMP();
+	Bitmap wealthBMP();
+	Bitmap resourceBMP();
+	Bitmap civilizationBMP();
 
 	void determineDimensions();
 	void sanityChecks();

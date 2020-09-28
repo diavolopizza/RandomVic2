@@ -30,7 +30,7 @@ VictoriaModule::~VictoriaModule()
 {
 }
 
-void VictoriaModule::dumpMapFiles(Data* data, Bitmap* terrainBMP, Bitmap* riverBMP, Bitmap* continents, Bitmap* regionBMP, Bitmap* heightMapBMP, Bitmap* provincesBMP)
+void VictoriaModule::dumpMapFiles(Data* data, Bitmap terrainBMP, Bitmap riverBMP, Bitmap continents, Bitmap regionBMP, Bitmap heightMapBMP, Bitmap provincesBMP)
 {
 	printf("Writing Bitmaps to %s folder\n", data->modPath.c_str());
 	//save all the bmps

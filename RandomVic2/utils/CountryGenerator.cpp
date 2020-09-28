@@ -133,9 +133,9 @@ void CountryGenerator::distributeCountries(uint32_t amount, uint32_t sizeVariati
 	}
 }
 
-Bitmap * CountryGenerator::countryBMP() {
+Bitmap CountryGenerator::countryBMP() {
 
-	Bitmap * countryBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
+	Bitmap countryBMP(Data::getInstance().width, Data::getInstance().height, 24);
 	for (auto country : countriesV)
 	{
 		int countryXspan = country->maxX - country->minX;
@@ -146,7 +146,7 @@ Bitmap * CountryGenerator::countryBMP() {
 				for (auto pixelIndex : prov->pixels)
 				{
 					//if(pixelIndex % Data::getInstance().width > )
-					countryBMP->setTripleAtIndex(country->getColour(), pixelIndex);
+					countryBMP.setTripleAtIndex(country->getColour(), pixelIndex);
 					// need to map the position relative to the country dimensions to the position on the flag
 					// easy: just determine a  x and y percentage, which can be mapped to the flag
 					double xPercent = (double)(pixelIndex % Data::getInstance().width - country->minX) / (double)countryXspan;
@@ -154,7 +154,7 @@ Bitmap * CountryGenerator::countryBMP() {
 					auto heightpos = (double)country->flag->width * (double)country->flag->height * yPercent;
 					auto location = (uint32_t)((double)country->flag->width * xPercent + heightpos);
 					RGBTRIPLE colour = country->flag->getPixel(location);
-					countryBMP->setTripleAtIndex(colour, pixelIndex);
+					countryBMP.setTripleAtIndex(colour, pixelIndex);
 
 				}
 			}
@@ -162,7 +162,7 @@ Bitmap * CountryGenerator::countryBMP() {
 	return countryBMP;
 }
 
-Bitmap * CountryGenerator::wealthBMP()
+Bitmap CountryGenerator::wealthBMP()
 {
 	/*need:
 		-rivers
@@ -171,10 +171,10 @@ Bitmap * CountryGenerator::wealthBMP()
 		-resources
 		-industry
 		-*/
-	return nullptr;
+	return Bitmap();
 }
 
-Bitmap * CountryGenerator::resourceBMP()
+Bitmap CountryGenerator::resourceBMP()
 {
 	RGBTRIPLE coal = { 0, 0, 0 };
 	RGBTRIPLE iron = { 128, 128, 128 };
@@ -182,13 +182,13 @@ Bitmap * CountryGenerator::resourceBMP()
 
 	RGBTRIPLE fish = { 200, 20, 20 };
 	RGBTRIPLE grain = { 255, 255, 0 };
-	Bitmap * resourceBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
+	Bitmap resourceBMP(Data::getInstance().width, Data::getInstance().height, 24);
 	return resourceBMP;
 }
 
-Bitmap * CountryGenerator::civilizationBMP()
+Bitmap CountryGenerator::civilizationBMP()
 {
-	Bitmap * civilizationBMP = new Bitmap(Data::getInstance().width, Data::getInstance().height, 24);
+	Bitmap civilizationBMP(Data::getInstance().width, Data::getInstance().height, 24);
 	uint32_t conIndex = 0;
 	for (auto continent : terrain->continents)
 	{
@@ -231,7 +231,7 @@ Bitmap * CountryGenerator::civilizationBMP()
 				for (auto pixelIndex : prov->pixels)
 				{
 					RGBTRIPLE colour = { static_cast<BYTE>(255.0f * prov->civLevel), static_cast<BYTE>(255.0f * prov->civLevel), static_cast<BYTE>(0) };
-					civilizationBMP->setTripleAtIndex(colour, pixelIndex);
+					civilizationBMP.setTripleAtIndex(colour, pixelIndex);
 				}
 			}
 		}

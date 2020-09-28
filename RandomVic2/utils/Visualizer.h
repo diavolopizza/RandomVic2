@@ -10,7 +10,7 @@ class Visualizer
 public:
 	Visualizer();
 	~Visualizer();
-	static void displayImage(Bitmap * bitmap);
+	static void displayImage(Bitmap bitmap);
 	static void Visualizer::initializeWindow();
 
 };

@@ -66,6 +66,8 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, Bitmap bitmap
 
 Bitmap::~Bitmap()
 {
+	//if (this->Buffer != nullptr)
+	//delete Buffer;
 }
 
 RGBTRIPLE Bitmap::getColourTableEntry(uint32_t index) const
@@ -166,18 +168,18 @@ unsigned char * Bitmap::getBuffer() const
 	return this->Buffer;
 }
 
-Bitmap * Bitmap::get24BitRepresentation()
-{
-	if (bit24Representation == nullptr)
-	{
-		bit24Representation = new Bitmap(this->bInfoHeader.biWidth, this->bInfoHeader.biHeight, 24);
-	}
-	for (uint32_t i = 0; i < this->bInfoHeader.biSizeImage - 2000; i++)
-	{
-		bit24Representation->setValueAtIndex(i, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
-		bit24Representation->setValueAtIndex(i + 1, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
-		bit24Representation->setValueAtIndex(i + 2, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
-	}
-	return bit24Representation;
-}
+//Bitmap Bitmap::get24BitRepresentation()
+//{
+//	if (bit24Representation == nullptr)
+//	{
+//		bit24Representation(this->bInfoHeader.biWidth, this->bInfoHeader.biHeight, 24);
+//	}
+//	for (uint32_t i = 0; i < this->bInfoHeader.biSizeImage - 2000; i++)
+//	{
+//		bit24Representation->setValueAtIndex(i, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
+//		bit24Representation->setValueAtIndex(i + 1, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
+//		bit24Representation->setValueAtIndex(i + 2, this->getColourTableEntry(this->getValueAtIndex(i)).rgbtRed);
+//	}
+//	return bit24Representation;
+//}
 
