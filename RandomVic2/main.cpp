@@ -69,7 +69,7 @@ int main() {
 
 	//generate noise map
 	const Bitmap heightMapBMP(Data::getInstance().width,Data::getInstance().height,	24, Data::getInstance().genHeight? 
-		terrainGenerator.heightMap(Data::getInstance().seed, layer) : terrainGenerator.heightMap(Data::getInstance().seed, layer));
+		terrainGenerator.heightMap(Data::getInstance().seed) : terrainGenerator.heightMap(Data::getInstance().seed));
 	//BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap")
 	Data::getInstance().height = heightMapBMP.bInfoHeader.biHeight;
 	Data::getInstance().width = heightMapBMP.bInfoHeader.biWidth;

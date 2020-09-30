@@ -46,7 +46,7 @@ public:
 	void evaluateNeighbours(Bitmap provinceBMP);
 	void provPixels(const Bitmap* provinceBMP);
 	vector<BYTE> normalizeHeightMap(Bitmap heightMap);
-	vector<BYTE> heightMap(uint32_t seed, uint32_t &layer);
+	vector<BYTE> heightMap(uint32_t seed);
 	void createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp);
 	vector<BYTE> landProvinces(uint32_t numoflandprov, Bitmap terrain, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold);
 	vector<BYTE> seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap terrain, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold);
