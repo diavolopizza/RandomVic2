@@ -6,7 +6,8 @@ using namespace std;
 class Bitmap
 {
 private:
-	BYTE* Buffer = nullptr;
+	//BYTE* Buffer = nullptr;
+	vector<BYTE> Buffer;
 	//std::unique_ptr<BYTE> Buffer;
 	//Bitmap bit24Representation;
 	uint32_t indexFactor;
@@ -14,7 +15,7 @@ private:
 public:
 	Bitmap();
 	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount);
-	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE* buffer);
+	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, vector<BYTE> buffer);
 	Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, Bitmap bitmap);
 	~Bitmap();
 
@@ -38,8 +39,8 @@ public:
 	void setValueAtXYPosition(const unsigned char value, const uint32_t heightPos, const  uint32_t widthPos);
 	void setTripleAtXYPosition(const RGBTRIPLE colour, const uint32_t heightPos, const uint32_t widthPos);
 
-	BYTE* getBuffer() const;
-	void setBuffer(BYTE* Buffer);
+	vector<BYTE>& getBuffer();
+	void setBuffer(vector<BYTE> Buffer);
 
 	void setIndexFactor(const uint32_t indexFactor);
 };

@@ -94,11 +94,11 @@ int main() {
 
 	if (Data::getInstance().genSimpleTerrain) {
 		//create simplistic terrain shape from noise map
-		terrainGenerator.createTerrain(terrainBMP, heightMapBMP);
+		terrainGenerator.createTerrain(&terrainBMP, heightMapBMP);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("simpleterrain.bmp")).c_str());
 		//generate rivers according to terrain and climate
-		terrainGenerator.generateRivers(riverBMP, heightMapBMP);
-		terrainGenerator.prettyRivers(riverBMP, heightMapBMP);
+		terrainGenerator.generateRivers(&riverBMP, heightMapBMP);
+		terrainGenerator.prettyRivers(&riverBMP, heightMapBMP);
 	}
 	else {
 		terrainBMP = BMPHandler::getInstance().Load8bitBMP(simpleTerrainsource, "simpleterrain");
@@ -138,7 +138,7 @@ int main() {
 		//terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		//BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (Data::getInstance().debugMapsPath + ("humidity.bmp")).c_str());
 		//generate terrain and rivers according to simplistic climate model
-		terrainGenerator.prettyTerrain(terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
+		terrainGenerator.prettyTerrain(&terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("terrain.bmp")).c_str());
 	}
 	else {

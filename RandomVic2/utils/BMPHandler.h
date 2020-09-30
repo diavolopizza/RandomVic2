@@ -13,7 +13,7 @@ class BMPHandler
 public:
 	BMPHandler();
 	~BMPHandler();
-	bool SaveBMPToFile(const Bitmap, LPCTSTR bmpfile);
+	bool SaveBMPToFile(Bitmap, LPCTSTR bmpfile);
 	Bitmap Load24bitBMP(LPCTSTR input, string key);
 	Bitmap Load8bitBMP(LPCTSTR input, string key);
 	Bitmap findBitmapByKey(string key);

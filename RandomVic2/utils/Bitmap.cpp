@@ -29,7 +29,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*indexFactor;
-		this->Buffer = new unsigned char[width*height*indexFactor];
+		this->Buffer = vector<BYTE>(width*height*indexFactor);
 		for (uint32_t i = 0; i < width*height*indexFactor; i++)
 		{
 			Buffer[i] = 0;
@@ -44,7 +44,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height;
-		this->Buffer = new unsigned char[width*height];
+		this->Buffer = vector<BYTE>(width*height);
 		for (uint32_t i = 0; i < width*height; i++)
 		{
 			Buffer[i] = 0;
@@ -53,7 +53,7 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 	}
 }
 
-Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE* buffer) : Bitmap(width, height, bitCount)
+Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, vector<BYTE> buffer) : Bitmap(width, height, bitCount)
 {
 	this->Buffer = buffer;
 }
@@ -88,14 +88,14 @@ void Bitmap::setBitmapSize(const uint32_t width, const uint32_t height)
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*(bInfoHeader.biBitCount / 8);
-		this->Buffer = new unsigned char[width*height*(bInfoHeader.biBitCount / 8)];
+		this->Buffer = vector<BYTE>(width*height*(bInfoHeader.biBitCount / 8));
 	}
 	else {
 		this->bFileHeader.bfSize = 54 + 256 * 4 + height * width * (bInfoHeader.biBitCount / 8);
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*(bInfoHeader.biBitCount / 8);
-		this->Buffer = new unsigned char[width*height*(bInfoHeader.biBitCount / 8)];
+		this->Buffer = vector<BYTE>(width*height*(bInfoHeader.biBitCount / 8));
 	}
 }
 
@@ -153,7 +153,7 @@ void Bitmap::setTripleAtXYPosition(const RGBTRIPLE colour, const uint32_t height
 	}
 }
 
-void Bitmap::setBuffer(BYTE* Buffer)
+void Bitmap::setBuffer(vector<BYTE> Buffer)
 {
 	this->Buffer = Buffer;
 }
@@ -163,7 +163,7 @@ void Bitmap::setIndexFactor(const uint32_t indexFactor)
 	this->indexFactor = indexFactor;
 }
 
-BYTE* Bitmap::getBuffer() const
+vector<BYTE>& Bitmap::getBuffer()
 {
 	return this->Buffer;
 }
