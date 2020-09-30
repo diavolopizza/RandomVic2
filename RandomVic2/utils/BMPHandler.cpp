@@ -110,7 +110,7 @@ Bitmap BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //needs to be 58 for copying, but why?
 	if (ReadFile(file, B.getBuffer(), *size, &bytesread, NULL) == false)
 	{
-		//delete[] B.getBuffer();
+		delete[] B.getBuffer();
 		CloseHandle(file);
 		//return NULL;
 	}
@@ -164,7 +164,7 @@ Bitmap BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //start reading at beginning of colourtable
 	if (ReadFile(file, B.colourtable, 1024, &bytesread, NULL) == false)
 	{
-		//delete[] B.colourtable;
+		delete[] B.colourtable;
 		CloseHandle(file);
 		return Bitmap();
 	}

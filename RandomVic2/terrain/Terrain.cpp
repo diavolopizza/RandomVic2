@@ -195,35 +195,33 @@ void Terrain::provPixels(const Bitmap* provinceBMP)
 		}
 	}
 }
-BYTE* Terrain::normalizeHeightMap(Bitmap* heightMap)
+BYTE* Terrain::normalizeHeightMap(Bitmap heightMap)
 {
 	double highestValue = 0.0;
-	double* combinedValues = new double[heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3];
-	//BYTE* normalisedValues = new unsigned char[heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3];
-	unique_ptr<BYTE>normalisedValues(new unsigned char[heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3]) ;
+	double* combinedValues = new double[heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3];
+	BYTE* normalisedValues = new unsigned char[heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3];
 	uint32_t index = 0;
 	for (auto buffer : this->heightmapLayers)
 	{
-		for (int i = 0; i < heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3; i++)
+		for (int i = 0; i < heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3; i++)
 		{
-			combinedValues[i] += (double)buffer.get()[i] * Data::getInstance().weight[index];
+			combinedValues[i] += (double)buffer[i] * Data::getInstance().weight[index];
 			if (combinedValues[i] > highestValue)
 				highestValue = combinedValues[i];
 		}
 		index++;
-		//delete buffer;
+		delete buffer;
 	}
-	const double factor = 200.0 / (double)highestValue;
-	for (int i = 0; i < heightMap->bInfoHeader.biWidth*heightMap->bInfoHeader.biHeight * 3; i++)
+	const double factor = 250.0 / (double)highestValue;
+	for (int i = 0; i < heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3; i++)
 	{
-		normalisedValues.get()[i] = (unsigned char)((double)combinedValues[i] * factor);
-		heightMap->getBuffer()[i] = (unsigned char)((double)combinedValues[i] * factor);
+		normalisedValues[i] = (unsigned char)((double)combinedValues[i] * factor);
 	}
-	return normalisedValues.get();
+	return normalisedValues;
 }
 
 //creates the heightmap with a given seed
-BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer, Bitmap* heightmap)
+BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer)
 {
 	Bitmap RGBBMP(Data::getInstance().width, Data::getInstance().height, 24);
 	const auto width = (double)RGBBMP.bInfoHeader.biWidth;
@@ -339,21 +337,20 @@ BYTE* Terrain::heightMap(uint32_t seed, uint32_t &layer, Bitmap* heightmap)
 			RGBBMP.setTripleAtXYPosition(colour, x, y);
 		}
 	}
-	std::shared_ptr<BYTE> layerValues ( new unsigned char[RGBBMP.bInfoHeader.biWidth*RGBBMP.bInfoHeader.biHeight * 3]);
+	BYTE* layerValues = new unsigned char[RGBBMP.bInfoHeader.biWidth*RGBBMP.bInfoHeader.biHeight * 3];
 	for (int i = 0; i < height*width * 3; i++)
 	{
-		layerValues.get()[i] = RGBBMP.getBuffer()[i];
+		layerValues[i] = RGBBMP.getBuffer()[i];
 	}
 	heightmapLayers.push_back(layerValues);
 	if (++layer < Data::getInstance().layerAmount)
 	{
-		heightMap(seed, layer, heightmap);
+		heightMap(seed, layer);
 	}
 	else {
-		normalizeHeightMap(heightmap);
-		heightmapLayers.clear();
+		RGBBMP.setBuffer(normalizeHeightMap(RGBBMP));
 	}
-	return heightmap->getBuffer();
+	return RGBBMP.getBuffer();
 }
 
 //creates the terrain, factoring in heightmap
@@ -667,8 +664,8 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_
 void Terrain::prettyRegions(Bitmap* regionBMP)
 {
 	std::cout << "Creating regions" << std::endl;
-	//delete regionBMP->getBuffer();
-	//regionBMP->setBuffer(new BYTE[regionBMP->bInfoHeader.biSizeImage]);
+	delete regionBMP->getBuffer();
+	regionBMP->setBuffer(new BYTE[regionBMP->bInfoHeader.biSizeImage]);
 	for (auto region : regions) {
 		RGBTRIPLE regionColour;
 		regionColour.rgbtBlue = random() % 256;
@@ -752,8 +749,8 @@ void Terrain::evaluateContinents(uint32_t minProvPerContinent, uint32_t width, u
 void Terrain::prettyContinents(Bitmap* continentBMP)
 {
 	cout << "Creating continent" << endl;
-	//delete continentBMP->getBuffer();
-	//continentBMP->setBuffer(new BYTE[continentBMP->bInfoHeader.biSizeImage]);
+	delete continentBMP->getBuffer();
+	continentBMP->setBuffer(new BYTE[continentBMP->bInfoHeader.biSizeImage]);
 	for (auto continent : continents) {
 		RGBTRIPLE continentColour;
 		continentColour.rgbtBlue = random() % 256;

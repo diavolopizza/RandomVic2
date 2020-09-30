@@ -29,10 +29,10 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*indexFactor;
-		this->Buffer = std::shared_ptr<BYTE>(new unsigned char[width*height*indexFactor]);
+		this->Buffer = new unsigned char[width*height*indexFactor];
 		for (uint32_t i = 0; i < width*height*indexFactor; i++)
 		{
-			Buffer.get()[i] = 0;
+			Buffer[i] = 0;
 		}
 		this->bInfoHeader.biBitCount = 24;
 		bInfo.bmiHeader = bInfoHeader;
@@ -44,10 +44,10 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height;
-		this->Buffer = std::shared_ptr<BYTE>(new unsigned char[width*height]);
+		this->Buffer = new unsigned char[width*height];
 		for (uint32_t i = 0; i < width*height; i++)
 		{
-			Buffer.get()[i] = 0;
+			Buffer[i] = 0;
 		}
 		bInfo.bmiHeader = bInfoHeader;
 	}
@@ -55,14 +55,12 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 
 Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, BYTE* buffer) : Bitmap(width, height, bitCount)
 {
-	this->Buffer = std::shared_ptr<BYTE>(buffer);
+	this->Buffer = buffer;
 }
 
 Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, Bitmap bitmap) : Bitmap(width, height, bitCount)
 {
-	//this->Buffer = std::shared_ptr<BYTE>(bitmap.Buffer);
 	this->Buffer = bitmap.Buffer;
-	
 }
 
 
@@ -80,7 +78,7 @@ RGBTRIPLE Bitmap::getColourTableEntry(uint32_t index) const
 
 RGBTRIPLE Bitmap::getTripleAtIndex(const uint32_t bufIndex) const
 {
-	return RGBTRIPLE{ Buffer.get()[bufIndex*indexFactor],Buffer.get()[bufIndex*indexFactor + 1], Buffer.get()[bufIndex*indexFactor + 2] };
+	return RGBTRIPLE{ Buffer[bufIndex*indexFactor],Buffer[bufIndex*indexFactor + 1], Buffer[bufIndex*indexFactor + 2] };
 }
 
 void Bitmap::setBitmapSize(const uint32_t width, const uint32_t height)
@@ -90,21 +88,21 @@ void Bitmap::setBitmapSize(const uint32_t width, const uint32_t height)
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*(bInfoHeader.biBitCount / 8);
-		this->Buffer = std::shared_ptr<BYTE>(new unsigned char[width*height*(bInfoHeader.biBitCount / 8)]);
+		this->Buffer = new unsigned char[width*height*(bInfoHeader.biBitCount / 8)];
 	}
 	else {
 		this->bFileHeader.bfSize = 54 + 256 * 4 + height * width * (bInfoHeader.biBitCount / 8);
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*(bInfoHeader.biBitCount / 8);
-		this->Buffer = std::shared_ptr<BYTE>(new unsigned char[width*height*(bInfoHeader.biBitCount / 8)]);
+		this->Buffer = new unsigned char[width*height*(bInfoHeader.biBitCount / 8)];
 	}
 }
 
 unsigned char Bitmap::getValueAtIndex(const uint32_t index, const uint32_t mode) const
 {
 	if (index * indexFactor < this->bInfoHeader.biSizeImage)
-		return Buffer.get()[index * indexFactor + mode];
+		return Buffer[index * indexFactor + mode];
 	return 0;
 }
 
@@ -112,7 +110,7 @@ unsigned char Bitmap::getValueAtXYPosition(const uint32_t heightPos, const uint3
 {
 	auto position = (heightPos * bInfoHeader.biWidth + widthPos) * indexFactor;
 	if (position < bInfoHeader.biSizeImage)
-		return Buffer.get()[position];
+		return Buffer[position];
 	return 0;
 }
 
@@ -120,50 +118,44 @@ void Bitmap::setValueAtXYPosition(const unsigned char value, const uint32_t heig
 {
 	auto position = (heightPos * bInfoHeader.biWidth + widthPos) * indexFactor;
 	if (position < bInfoHeader.biSizeImage)
-		Buffer.get()[position] = value;
+		Buffer[position] = value;
 }
 
 void Bitmap::setValueAtIndex(const uint32_t bufIndex, const unsigned char value)
 {
-	this->Buffer.get()[bufIndex*indexFactor] = value;
+	this->Buffer[bufIndex*indexFactor] = value;
 }
 
 void Bitmap::setTripleAtIndex(const RGBTRIPLE colour, uint32_t bufIndex)
 {
 	bufIndex *= indexFactor;
-	Buffer.get()[bufIndex] = colour.rgbtBlue;
-	Buffer.get()[bufIndex + 1] = colour.rgbtGreen;
-	Buffer.get()[bufIndex + 2] = colour.rgbtRed;
+	Buffer[bufIndex] = colour.rgbtBlue;
+	Buffer[bufIndex + 1] = colour.rgbtGreen;
+	Buffer[bufIndex + 2] = colour.rgbtRed;
 }
 
 void Bitmap::copyTripleToIndex(uint32_t bufIndexTo, uint32_t bufIndexFrom)
 {
 	bufIndexTo *= indexFactor;
 	bufIndexFrom *= indexFactor;
-	Buffer.get()[bufIndexTo] = Buffer.get()[bufIndexFrom];
-	Buffer.get()[bufIndexTo + 1] = Buffer.get()[bufIndexFrom + 1];
-	Buffer.get()[bufIndexTo + 2] = Buffer.get()[bufIndexFrom + 2];
+	Buffer[bufIndexTo] = Buffer[bufIndexFrom];
+	Buffer[bufIndexTo + 1] = Buffer[bufIndexFrom + 1];
+	Buffer[bufIndexTo + 2] = Buffer[bufIndexFrom + 2];
 }
 
 void Bitmap::setTripleAtXYPosition(const RGBTRIPLE colour, const uint32_t heightPos, const uint32_t widthPos)
 {
 	auto position = (heightPos * bInfoHeader.biWidth + widthPos) * indexFactor;
 	if (position < bInfoHeader.biSizeImage) {
-		Buffer.get()[position] = colour.rgbtBlue;
-		Buffer.get()[position + 1] = colour.rgbtGreen;
-		Buffer.get()[position + 2] = colour.rgbtRed;
+		Buffer[position] = colour.rgbtBlue;
+		Buffer[position + 1] = colour.rgbtGreen;
+		Buffer[position + 2] = colour.rgbtRed;
 	}
-}
-
-void Bitmap::setBuffer(std::shared_ptr<BYTE> Buffer)
-{
-	//std::shared_ptr<BYTE> up1(Buffer);
-	this->Buffer = Buffer;
 }
 
 void Bitmap::setBuffer(BYTE* Buffer)
 {
-	this->Buffer = std::shared_ptr<BYTE>(Buffer);
+	this->Buffer = Buffer;
 }
 
 void Bitmap::setIndexFactor(const uint32_t indexFactor)
@@ -173,7 +165,7 @@ void Bitmap::setIndexFactor(const uint32_t indexFactor)
 
 BYTE* Bitmap::getBuffer() const
 {
-	return this->Buffer.get();
+	return this->Buffer;
 }
 
 //Bitmap Bitmap::get24BitRepresentation()
