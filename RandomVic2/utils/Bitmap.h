@@ -39,7 +39,7 @@ public:
 	void setValueAtXYPosition(const unsigned char value, const uint32_t heightPos, const  uint32_t widthPos);
 	void setTripleAtXYPosition(const RGBTRIPLE colour, const uint32_t heightPos, const uint32_t widthPos);
 
-	vector<BYTE>& getBuffer();
+	const vector<BYTE>& getBuffer() const;
 	void setBuffer(vector<BYTE> Buffer);
 
 	void setIndexFactor(const uint32_t indexFactor);

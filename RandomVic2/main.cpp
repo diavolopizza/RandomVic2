@@ -57,7 +57,7 @@ int main() {
 	//Generation objects
 	//Data data =
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-	Data::getInstance();// new Data();
+	Data::getInstance();
 	Data::getInstance().getConfig("C:/Users/Paul/Documents/Visual Studio 2017/Projects/RandomVic2/config.json");
 	Parser genericParser;
 	Terrain terrainGenerator;
@@ -66,11 +66,16 @@ int main() {
 	const char* heightmapsource = heightmapSourceString.c_str();
 	uint32_t layer = 0;
 	//generate noise map
-
-	//generate noise map
-	const Bitmap heightMapBMP(Data::getInstance().width,Data::getInstance().height,	24, Data::getInstance().genHeight? 
-		terrainGenerator.heightMap(Data::getInstance().seed) : terrainGenerator.heightMap(Data::getInstance().seed));
-	//BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap")
+	Bitmap heightMapBMP;
+	if (Data::getInstance().genHeight)
+	{
+		heightMapBMP = Bitmap(Data::getInstance().width, Data::getInstance().height, 24, terrainGenerator.heightMap(Data::getInstance().seed));
+	}
+	else {
+		heightMapBMP = Bitmap(Data::getInstance().width, Data::getInstance().height, 24, BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap"));
+	}
+	//(Data::getInstance().width, Data::getInstance().height, 24, Data::getInstance().genHeight ?
+	//	terrainGenerator.heightMap(Data::getInstance().seed) : loadedHeightMap.getBuffer());
 	Data::getInstance().height = heightMapBMP.bInfoHeader.biHeight;
 	Data::getInstance().width = heightMapBMP.bInfoHeader.biWidth;
 	BMPHandler::getInstance().SaveBMPToFile(heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());

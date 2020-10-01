@@ -39,6 +39,7 @@ void Data::getConfig(string configPath) {
 	//MAP PARAMS
 	width = root.get<uint32_t>("map.width");
 	height = root.get<uint32_t>("map.height");
+	bitmapSize = width * height;
 	seed = root.get<uint32_t>("map.seed");
 	seaLevel = root.get<unsigned char>("map.seaLevel");
 	landMassPercentage = root.get<uint32_t>("map.landMassPercentage");

@@ -104,17 +104,19 @@ Bitmap BMPHandler::Load24bitBMP(LPCTSTR input, string key)
 	int offset = 54;
 	*size = B.bInfoHeader.biSizeImage;	// create buffer to hold the data,-Offsetbits
 
-	B.setBuffer(vector<BYTE>(*size));
+	//B.setBuffer(vector<BYTE>(*size));
 	paddedsize = *size;
 
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //needs to be 58 for copying, but why?
-	if (ReadFile(file, B.getBuffer().data(), *size, &bytesread, NULL) == false)
+	//auto buffer = new vector<unsigned char>( *size);
+	vector<unsigned char> buffer(*size);
+	if (ReadFile(file, buffer.data(), *size, &bytesread, NULL) == false)
 	{
 		//delete[] B.getBuffer();
 		CloseHandle(file);
 		//return NULL;
 	}
-
+	B.setBuffer(buffer);
 	CloseHandle(file);// everything successful here: close file and return buffer
 	B.setIndexFactor(3u);
 	bitmaps.insert(pair<string, Bitmap>(key, B));
@@ -171,8 +173,10 @@ Bitmap BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 	//for (int i = 0; i < 1024; i+=4)
 	//cout << i/4 << " " << int(B->colourtable[i]) << " " << int(B->colourtable[i+1]) << " " << int(B->colourtable[i+2]) << " " << int(B->colourtable[i + 3]) << endl;
 
+	// necessary due to const
+	auto buffer = B.getBuffer();
 	SetFilePointer(file, 1078, NULL, FILE_BEGIN); //start reading after end of colourtable
-	if (ReadFile(file, B.getBuffer().data(), *size, &bytesread, NULL) == false)
+	if (ReadFile(file, buffer.data(), *size, &bytesread, NULL) == false)
 	{
 		//delete[]  B.getBuffer();
 		CloseHandle(file);

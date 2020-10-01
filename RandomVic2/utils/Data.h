@@ -28,7 +28,7 @@ public:
 	uint32_t height = 0;
 	uint32_t bitmapSize;
 	uint32_t seed = 0;
-	unsigned char seaLevel = 0;
+	int seaLevel = 0;
 	double landMassPercentage = 0;
 	uint32_t seaProv = 0;
 	uint32_t landProv = 0;

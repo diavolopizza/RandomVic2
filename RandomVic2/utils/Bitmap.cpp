@@ -30,10 +30,10 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height*indexFactor;
 		this->Buffer = vector<BYTE>(width*height*indexFactor);
-		for (uint32_t i = 0; i < width*height*indexFactor; i++)
-		{
-			Buffer[i] = 0;
-		}
+		//for (uint32_t i = 0; i < width*height*indexFactor; i++)
+		//{
+		//	Buffer[i] = 0;
+		//}
 		this->bInfoHeader.biBitCount = 24;
 		bInfo.bmiHeader = bInfoHeader;
 	}
@@ -66,8 +66,6 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount, Bitmap bitmap
 
 Bitmap::~Bitmap()
 {
-	//if (this->Buffer != nullptr)
-	//delete Buffer;
 }
 
 RGBTRIPLE Bitmap::getColourTableEntry(uint32_t index) const
@@ -163,7 +161,7 @@ void Bitmap::setIndexFactor(const uint32_t indexFactor)
 	this->indexFactor = indexFactor;
 }
 
-vector<BYTE>& Bitmap::getBuffer()
+const vector<BYTE>& Bitmap::getBuffer() const
 {
 	return this->Buffer;
 }
