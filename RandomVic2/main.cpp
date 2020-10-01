@@ -118,15 +118,16 @@ int main() {
 		terrainGenerator.createProvinceMap();
 		terrainGenerator.provPixels(&provincesBMP);
 		terrainGenerator.prettyProvinces(&provincesBMP, riverBMP, Data::getInstance().minProvSize);
+		{
+			terrainGenerator.evaluateNeighbours(provincesBMP);
+			genericParser.writeAdjacency((Data::getInstance().debugMapsPath + ("adjacency.csv")).c_str(), terrainGenerator.provinces);
+		}
 		terrainGenerator.evaluateCoasts(provincesBMP);
 		//dump to file
 		genericParser.writeDefinition((Data::getInstance().debugMapsPath + ("definition.csv")).c_str(), terrainGenerator.provinces);
 	}
 	//calculate neighbours and dump them
-	{
-		terrainGenerator.evaluateNeighbours(provincesBMP);
-		genericParser.writeAdjacency((Data::getInstance().debugMapsPath + ("adjacency.csv")).c_str(), terrainGenerator.provinces);
-	}
+
 	//assign provinces to regions and dump them
 	{
 		terrainGenerator.evaluateRegions(Data::getInstance().minProvPerRegion, Data::getInstance().width, Data::getInstance().height);

@@ -49,5 +49,6 @@ public:
 	void assignContinent(Continent *C);
 	void assignRegion(Region *R, bool recursive, uint32_t minProvPerRegion);
 	void computeCandidates();
+	bool hasAdjacent(Prov*P);
 };
 

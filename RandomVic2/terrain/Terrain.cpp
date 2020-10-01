@@ -51,10 +51,10 @@ int Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_
 	uint32_t distance = MAXUINT32;
 	for (Prov* P : provinces)
 	{
-		const uint32_t x1 = P->center % width;
-		const uint32_t x2 = position % width;
-		const uint32_t y1 = P->center / height;
-		const uint32_t y2 = position / height;
+		const int x1 = P->center % width;
+		const int x2 = position % width;
+		const int y1 = P->center / height;
+		const int y2 = position / height;
 		if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
 			distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
 		}
@@ -112,7 +112,7 @@ void Terrain::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provinceP
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
 	int minDistance = (bmpSize / provinceSize) / 20;
 	uint32_t startingPixel = random() % bmpSize;//startingpixel is anywhere in the file
-	while (/*!inRange(bmpWidth, bmpSize, startingPixel) ||*/ bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1
+	while (bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1
 		|| (GetMinDistanceToProvince(startingPixel, bmpWidth, bmpHeight) < minDistance))
 	{
 		startingPixel = random() % bmpSize; //startingpixel is anywhere in the file
@@ -126,21 +126,12 @@ void Terrain::evaluateCoasts(Bitmap provinceBMP)
 {
 	for (auto prov : provinces) {
 		if (!prov->sea) {
-			for (auto pixel : prov->pixels) {
-				if (provinceBMP.getValueAtIndex(LEFT(pixel) == 254)) {
+			for (auto neighbour : prov->adjProv)
+			{
+				if (neighbour->sea)
+				{
 					prov->coastal = true;
 					continue;
-				}
-				else if (provinceBMP.getValueAtIndex(RIGHT(pixel) == 254)) {
-					prov->coastal = true;
-					continue;
-				}
-				else if (provinceBMP.getValueAtIndex(BELOW(pixel, provinceBMP.bInfoHeader.biWidth) == 254)) {
-					prov->coastal = true;
-					continue;
-				}
-				else if (provinceBMP.getValueAtIndex(ABOVE(pixel, provinceBMP.bInfoHeader.biWidth) == 254)) {
-					prov->coastal = true;
 				}
 			}
 		}
@@ -157,8 +148,7 @@ void Terrain::evaluateNeighbours(Bitmap provinceBMP)
 		Prov* left = provinceMap[provinceBMP.getTripleAtIndex(i)];
 		Prov* right = provinceMap[provinceBMP.getTripleAtIndex(i + 1u)];
 		Prov* below = provinceMap[provinceBMP.getTripleAtIndex(i + width)];
-		if (left == nullptr || right == nullptr)
-			return;
+
 		if (!(left == right)) {
 			left->setNeighbour(right, true);
 		}
@@ -369,7 +359,7 @@ void Terrain::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp)
 				terrainBMP->setValueAtIndex(i, 254);
 			}
 		}
-		
+
 		tempLandPercentage = (double)landPixels / (double)terrainBMP->bInfoHeader.biSizeImage;
 		cout << "Landpercentage: " << tempLandPercentage << endl;
 	}
@@ -601,28 +591,36 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_
 			i--;
 		}
 	}
-	for (auto prov : provinces)
+	for (int i = 0; i < 5; i++)
 	{
-		if (prov->region == nullptr && !prov->sea) {
-			uint32_t distance = MAXUINT32;
-			Region* nextOwner = nullptr;
-			for (Prov* P : provinces)
-			{
-				if (P->region != nullptr) {
-					uint32_t x1 = P->center  % width;
-					uint32_t x2 = prov->center  % width;
-					uint32_t y1 = P->center / height;
-					uint32_t y2 = prov->center / height;
-					if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-						distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
-						nextOwner = P->region;
+		for (auto prov : provinces)
+		{
+			if (prov->region == nullptr && !prov->sea) {
+				uint32_t distance = MAXUINT32;
+				Region* nextOwner = nullptr;
+				for (Prov* P : provinces)
+				{
+
+					if (P->region != nullptr) {
+						const int x1 = P->center  % width;
+						const int x2 = prov->center  % width;
+						const int y1 = P->center / height;
+						const int y2 = prov->center / height;
+						if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
+							if (prov->hasAdjacent(P) || i==5)
+							{
+								distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
+								nextOwner = P->region;
+							}
+						}
 					}
 				}
+				if (nextOwner != nullptr)
+					prov->assignRegion(nextOwner, false, minProvPerRegion);
 			}
-			//if (nextOwner != nullptr)
-			prov->assignRegion(nextOwner, false, minProvPerRegion);
 		}
 	}
+
 	for (auto region : regions)
 	{
 		for (auto prov : region->provinces)
@@ -635,7 +633,6 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_
 			}
 		}
 	}
-
 }
 //writes the regions to a bitmap, non-unique colours
 void Terrain::prettyRegions(Bitmap* regionBMP)
@@ -649,6 +646,7 @@ void Terrain::prettyRegions(Bitmap* regionBMP)
 		regionColour.rgbtGreen = random() % 256;
 		regionColour.rgbtRed = random() % 256;
 		RGBTRIPLE borderColour = { 255,255,255 };
+		RGBTRIPLE centerColour = { 0,0,0 };
 
 		for (auto province : region->provinces)
 		{
@@ -660,6 +658,7 @@ void Terrain::prettyRegions(Bitmap* regionBMP)
 			{
 				regionBMP->setTripleAtIndex(borderColour, pixel);
 			}
+			regionBMP->setTripleAtIndex(centerColour, province->center);
 
 		}
 	}
@@ -707,10 +706,10 @@ void Terrain::evaluateContinents(uint32_t minProvPerContinent, uint32_t width, u
 			for (Prov* P : provinces)
 			{
 				if (P->continent != nullptr) {
-					const uint32_t x1 = P->center  % width;
-					const uint32_t x2 = prov->center  % width;
-					const uint32_t y1 = P->center / height;
-					const uint32_t y2 = prov->center / height;
+					const int x1 = P->center  % width;
+					const int x2 = prov->center  % width;
+					const int y1 = P->center / height;
+					const int y2 = prov->center / height;
 					if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
 						distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
 						nextOwner = P->continent;
@@ -1045,11 +1044,11 @@ void Terrain::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 							for (int i = 0; i < (P->pixels.size()); i += 30)
 							{
 								if (i < P->pixels.size()) {
-									const uint32_t provincePixel = P->pixels[i];
-									const uint32_t x1temp = provincePixel % bmpWidth;
-									const uint32_t x2temp = unassignedPixel % bmpWidth;
-									const uint32_t y1temp = provincePixel / bmpHeight;
-									const uint32_t y2temp = unassignedPixel / bmpHeight;
+									const int provincePixel = P->pixels[i];
+									const int x1temp = provincePixel % bmpWidth;
+									const int x2temp = unassignedPixel % bmpWidth;
+									const int y1temp = provincePixel / bmpHeight;
+									const int y2temp = unassignedPixel / bmpHeight;
 									if (sqrt(((x1temp - x2temp) *(x1temp - x2temp)) + ((y1temp - y2temp) *(y1temp - y2temp))) < pixelDistance) {
 										pixelDistance = sqrt(((x1temp - x2temp) *(x1temp - x2temp)) + ((y1temp - y2temp) *(y1temp - y2temp)));
 										nearestPixelOfThatProvince = provincePixel;
@@ -1541,10 +1540,12 @@ void Terrain::sanityChecks(Bitmap provinceBMP)
 		}
 
 	}
+	unsigned int coastals(0);
 	for (auto prov : provinces)
 	{
 		if (prov == nullptr) {
 			cout << "ERROR: Province list contains nullptr" << endl;
+			continue;
 		}
 
 		if (provinceMap[prov->colour] == nullptr)
@@ -1570,12 +1571,19 @@ void Terrain::sanityChecks(Bitmap provinceBMP)
 		}
 		if (prov->pixels.size() < Data::getInstance().minProvSize)
 		{
-			cout << "Small province remaining, Colour: " << (int)prov->colour.rgbtRed << " " << (int)prov->colour.rgbtGreen << " " << (int)prov->colour.rgbtBlue << endl;
-			cout << "Center at: " << prov->center << " size is: " << prov->pixels.size() << std::endl;
+
+			cout << (prov->sea ? "WARNING: " : "ERROR: ") << "Small province remaining, Colour: " << (int)prov->colour.rgbtRed << " " << (int)prov->colour.rgbtGreen << " " << (int)prov->colour.rgbtBlue << endl;
+			cout << "\tCenter at: " << prov->center << " size is: " << prov->pixels.size() << std::endl;
 		}
+		if (!prov->adjProv.size())
+			cout << "Province with ID: " << prov->provID << " has 0 adjacent provinces" << endl;
+		if (prov->coastal)
+			coastals++;
 	}
 	if (provinces.back()->provID > provinces.size())
 		cout << "ERROR: Higher province IDs than the total amount of provinces. Check deletion of small provinces" << endl;
 	if (provinces.size() != Data::getInstance().landProv + Data::getInstance().seaProv)
 		cout << "INFO: Amount of provinces diverges from requested amount of provinces by " << (int)((int)provinces.size() - (int)Data::getInstance().landProv - (int)Data::getInstance().seaProv) << endl;
+
+	cout << "INFO: There are a total of " << coastals << " coastal provinces" << endl;
 }

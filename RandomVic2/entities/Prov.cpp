@@ -124,3 +124,13 @@ void Prov::computeCandidates()
 		positionCandidates.insert(pixels[random() % pixels.size()]);
 	}
 }
+
+bool Prov::hasAdjacent(Prov * P)
+{
+	for (auto adjProvince : adjProv)
+	{
+		if (adjProvince->provID == P->provID)
+			return true;
+	}
+	return false;
+}
