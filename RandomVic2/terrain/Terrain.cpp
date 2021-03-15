@@ -1,6 +1,6 @@
 #include "Terrain.h"
 #include "../utils/BMPHandler.h"
-#include "../FastNoise/FastNoise.h"
+#include "../FastNoise/Cpp/FastNoiseLite.h"
 #include "boost/algorithm/clamp.hpp"
 #include <windows.h>
 #include <thread>
@@ -365,7 +365,7 @@ vector<BYTE> Terrain::heightMap(uint32_t seed)
 	for (auto layer = 0; layer < Data::getInstance().layerAmount; layer++)
 	{
 		vector<BYTE> layerValues = vector<BYTE>(width*height * 3 * sizeFactor);
-		FastNoise myNoise; // Create a FastNoise object
+		FastNoiseLite myNoise; // Create a FastNoise object
 		// adjusting frequency is necessary when map size increases, 
 		// as the heightmap will be noisier the larger the map
 		const double sizeNoiseFactor = (double)(1024.0 * 1024.0) / (double)(width * height);
@@ -381,71 +381,29 @@ vector<BYTE> Terrain::heightMap(uint32_t seed)
 			// regular noisy, frequency around 0.0120 for continent sized shapes
 		case 1:
 		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::ValueFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::FBM);
+			myNoise.SetNoiseType(FastNoiseLite::NoiseType_Value); // Set the desired noise type
+			myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
 			break;
 		}
 		// regular noisy
 		case 2:
 		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::CubicFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::FBM);
+			myNoise.SetNoiseType(FastNoiseLite::NoiseType_ValueCubic); // Set the desired noise type
+			myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
 			break;
 		}
 		// typical billow, reduce fractal frequency by roughly 85%
 		case 3:
 		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::Billow);
+			myNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2); // Set the desired noise type
+			myNoise.SetFractalType(FastNoiseLite::FractalType_Ridged);
 			break;
 		}
 		// typical billow, reduce fractal frequency by roughly 85%
 		case 4:
 		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::FBM);
-			break;
-		}
-		// typical billow, reduce fractal frequency by roughly 66%
-		case 6:
-		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::PerlinFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::Billow);
-			break;
-		}
-		// long snake like, reduce fractal frequency by roughly 66%
-		case 7:
-		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::RigidMulti);
-			break;
-		}
-		// cubic ish, fractal frequency back to 0.012
-		case 8:
-		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::ValueFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::Billow);
-			break;
-		}
-		// grid lines + a bit of noise
-		// reduce fractal frequency by about 50 %
-		case 9:
-		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::ValueFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::RigidMulti);
-			break;
-		}
-		// grid lines + more noise
-		case 10:
-		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::CubicFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::RigidMulti);
-			break;
-		}
-		default:
-		{
-			myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
-			myNoise.SetFractalType(FastNoise::FractalType::FBM);
+			myNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2); // Set the desired noise type
+			myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
 			break;
 		}
 		}
@@ -470,7 +428,7 @@ vector<BYTE> Terrain::heightMap(uint32_t seed)
 				//{
 				//	factor = ((double)width - (double)yf) / (double)delimiter;
 				//}
-				FN_DECIMAL noiseLevel = (double)minHeight + /*largeHeightmap.getValueAtXYPosition(lowerSegment, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0) * (double)maxHeight * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
+				double noiseLevel = (double)minHeight + /*largeHeightmap.getValueAtXYPosition(lowerSegment, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0) * (double)maxHeight * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
 				BYTE completeNoise = (BYTE)noiseLevel + static_cast<BYTE>(1u);
 
 				RGBTRIPLE colour{ completeNoise, completeNoise, completeNoise };
