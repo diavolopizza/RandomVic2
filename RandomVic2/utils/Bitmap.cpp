@@ -97,11 +97,10 @@ void Bitmap::setBitmapSize(const uint32_t width, const uint32_t height)
 	}
 }
 
-unsigned char Bitmap::getValueAtIndex(const uint32_t index, const uint32_t mode) const
+unsigned char Bitmap::getValueAtIndex(const uint32_t index, const uint32_t mode) const noexcept
 {
-	if (index * indexFactor < this->bInfoHeader.biSizeImage)
-		return Buffer[index * indexFactor + mode];
-	return 0;
+	if (index < bInfoHeader.biSizeImage)
+		return index * indexFactor < this->bInfoHeader.biSizeImage ? Buffer[index * indexFactor + mode] : 0;
 }
 
 unsigned char Bitmap::getValueAtXYPosition(const uint32_t heightPos, const uint32_t widthPos) const
@@ -121,7 +120,8 @@ void Bitmap::setValueAtXYPosition(const unsigned char value, const uint32_t heig
 
 void Bitmap::setValueAtIndex(const uint32_t bufIndex, const unsigned char value)
 {
-	this->Buffer[bufIndex*indexFactor] = value;
+	if (bufIndex < bInfoHeader.biSizeImage)
+		this->Buffer[bufIndex*indexFactor] = value;
 }
 
 void Bitmap::setTripleAtIndex(const RGBTRIPLE colour, uint32_t bufIndex)
@@ -164,6 +164,22 @@ void Bitmap::setIndexFactor(const uint32_t indexFactor)
 const vector<BYTE>& Bitmap::getBuffer() const
 {
 	return this->Buffer;
+}
+
+const vector<BYTE>& Bitmap::getArea(uint32_t center, uint32_t width, uint32_t height, vector<BYTE> &buff) const
+{
+	int offset = center / 3 + (width / 2) - (height / 2) * this->bInfoHeader.biWidth;// center - (width / 2) - (width * (height / 2));
+	for (int h = 0; h < height; h++)
+	{
+		for (int w = 0; w < width; w++)
+		{
+			//cout << (offset + (h*this->bInfoHeader.biWidth + w)) * indexFactor << endl;
+			buff[(h*width + w) * indexFactor] = this->Buffer[(offset + (h*this->bInfoHeader.biWidth + w)) * indexFactor];
+			buff[(h*width + w) * indexFactor + 1] = this->Buffer[((offset + (h*this->bInfoHeader.biWidth + w)) * indexFactor) + 1];
+			buff[(h*width + w) * indexFactor + 2] = this->Buffer[((offset + (h*this->bInfoHeader.biWidth + w)) * indexFactor) + 2];
+		}
+	}
+	return buff;
 }
 
 //Bitmap Bitmap::get24BitRepresentation()

@@ -44,6 +44,7 @@ public:
 	vector<double> fractalGain;
 	vector<uint32_t> divideThreshold;
 	vector<double> weight;
+	vector<std::tuple<unsigned char, unsigned char>> heightRange;
 
 	//land mass
 
@@ -60,7 +61,7 @@ public:
 	//ranlux24* random;
 	ranlux24 random2;
 	int maxNumOfCountries = 20;
-	uint32_t threadAmount = 8;
+	uint32_t threadAmount = 4;
 
 
 	void getConfig(string configPath);

@@ -1,7 +1,7 @@
 {
 	"module": 
 	{
-		"genHeight" : 0,
+		"genHeight" : 1,
 		"genSimpleTerrain" : 1,
 		"genComplexTerrain" : 1,
 		"genV2" : 0,
@@ -10,9 +10,9 @@
 
 	"map": 
 	{
-		"seed" : 0,
-        "height" : 2160,
-		"width" : 5616,
+		"seed" : 2,
+        "height" : 1000,
+		"width" : 1000,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		
@@ -28,30 +28,36 @@
 			{
 				"0" :
 				{
-					"type" : 4,
-					"fractalFrequency" : 0.006,
-					"fractalOctaves" : 5,
-					"fractalGain" : 0.4,
+					"type" : 2,
+					"fractalFrequency" : 0.008,
+					"fractalOctaves" : 9,
+					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
-					"weight" : 0.75
+					"weight" : 0.5,
+					"maxHeight" : 150,
+					"minHeight" : 50
 				},
 				"1" :
 				{
 					"type" : 4,
-					"fractalFrequency" : 0.0006,
-					"fractalOctaves" : 5,
-					"fractalGain" : 0.4,
+					"fractalFrequency" : 0.012,
+					"fractalOctaves" : 11,
+					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
-					"weight" : 1
+					"weight" : 0.15,
+					"maxHeight" : 150,
+					"minHeight" : 100
 				},
 				"2" :
 				{
 					"type" : 6,
-					"fractalFrequency" : 0.04,
+					"fractalFrequency" : 0.004,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
-					"weight" : 0.3
+					"weight" : 0.5,
+					"maxHeight" : 200,
+					"minHeight" : 0
 				},
 				"3" :
 				{
@@ -60,7 +66,9 @@
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
-					"weight" : 1
+					"weight" : 0.02,
+					"maxHeight" : 200,
+					"minHeight" : 150
 				},
 				"4" :
 				{
@@ -69,7 +77,9 @@
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
-					"weight" : 1
+					"weight" : 0.15,
+					"maxHeight" : 200,
+					"minHeight" : 100
 				},
 				"5" :
 				{
@@ -78,7 +88,9 @@
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
-					"weight" : 1
+					"weight" : 0.15,
+					"maxHeight" : 200,
+					"minHeight" : 100
 				},
 				"6" :
 				{
@@ -87,15 +99,17 @@
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.6,
 					"divideThreshold" : 10,
-					"weight" : 1
+					"weight" : 0.15,
+					"maxHeight" : 200,
+					"minHeight" : 100
 				}
 			}
 		},
 		"provinces" : {
-			"landProvinces" : 2000,
-			"minProvPerContinent" : 1,
-			"minProvPerRegion" : 5,
-			"seaProvinces" : 2000,
+			"landProvinces" : 5000,
+			"minProvPerContinent" : 100,
+			"minProvPerRegion" : 7,
+			"seaProvinces" : 5000,
 			"minProvSize" : 50
 		},
 		"humidity" : {
@@ -118,6 +132,6 @@
 	},
 	"debug":
 	{
-		"debugMapsPath": "C:\\SteamLibrary\\steamapps\\common\\Victoria 2\\mod\\myMod\\DebugMap\\"
+		"debugMapsPath": "debugMaps//"
 	}
 }

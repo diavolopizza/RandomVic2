@@ -78,6 +78,8 @@ void Data::getConfig(string configPath) {
 			fractalGain.push_back(root.get<double>("map.heightmap.layers." + to_string(i) + ".fractalGain"));
 			divideThreshold.push_back(root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".divideThreshold"));
 			weight.push_back(root.get<double>("map.heightmap.layers." + to_string(i) + ".weight"));
+			std::tuple<unsigned char, unsigned char> range(root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".minHeight"), root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".maxHeight"));
+			heightRange.push_back(range);
 			//fractalOctaves = root.get<int>("map.heightmap.fractalOctaves");
 			//fractalGain = root.get<float>("map.heightmap.fractalGain");
 			//divideThreshold = root.get<int>("map.heightmap.divideThreshold");

@@ -42,7 +42,7 @@ Flag::Flag(ranlux24 random)
 			}
 		}
 	}
-	type = 2;//;random() % 2;
+	type = random() % 5;
 	colours = generateColours();
 	for (int i = 0; i < height; i++)
 	{

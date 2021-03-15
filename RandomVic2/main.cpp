@@ -66,16 +66,18 @@ int main() {
 	const char* heightmapsource = heightmapSourceString.c_str();
 	uint32_t layer = 0;
 	//generate noise map
-	Bitmap heightMapBMP;
-	if (Data::getInstance().genHeight)
-	{
-		heightMapBMP = Bitmap(Data::getInstance().width, Data::getInstance().height, 24, terrainGenerator.heightMap(Data::getInstance().seed));
-	}
-	else {
-		heightMapBMP = Bitmap(Data::getInstance().width, Data::getInstance().height, 24, BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap"));
-	}
+//	Bitmap heightMapBMP;
+	//if (Data::getInstance().genHeight)
+	//{
+	//	heightMapBMP = Bitmap(Data::getInstance().width, Data::getInstance().height, 24, terrainGenerator.heightMap(Data::getInstance().seed));
+	//}
+	//else {
+	//	heightMapBMP = Bitmap(Data::getInstance().width, Data::getInstance().height, 24, BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap"));
+	//}
 	//(Data::getInstance().width, Data::getInstance().height, 24, Data::getInstance().genHeight ?
 	//	terrainGenerator.heightMap(Data::getInstance().seed) : loadedHeightMap.getBuffer());
+
+	const Bitmap heightMapBMP = Data::getInstance().genHeight? Bitmap(Data::getInstance().width, Data::getInstance().height, 24, terrainGenerator.heightMap(Data::getInstance().seed)) : Bitmap(Data::getInstance().width, Data::getInstance().height, 24, BMPHandler::getInstance().Load24bitBMP(heightmapsource, "heightmap"));
 	Data::getInstance().height = heightMapBMP.bInfoHeader.biHeight;
 	Data::getInstance().width = heightMapBMP.bInfoHeader.biWidth;
 	BMPHandler::getInstance().SaveBMPToFile(heightMapBMP, (Data::getInstance().debugMapsPath + ("heightmap.bmp")).c_str());
@@ -108,13 +110,11 @@ int main() {
 	else {
 		terrainBMP = BMPHandler::getInstance().Load8bitBMP(simpleTerrainsource, "simpleterrain");
 	}
-	//return 0;
 	//create provinces
 	{
-		provincesBMP.setBuffer(terrainGenerator.landProvinces(Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
+		provincesBMP.setBuffer(terrainGenerator.landProvinces(terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
 		BMPHandler::getInstance().SaveBMPToFile(provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
-		provincesBMP.setBuffer(terrainGenerator.seaProvinces(Data::getInstance().seaProv, Data::getInstance().landProv, terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
-		BMPHandler::getInstance().SaveBMPToFile(provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
+		//BMPHandler::getInstance().SaveBMPToFile(provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
 		terrainGenerator.createProvinceMap();
 		terrainGenerator.provPixels(&provincesBMP);
 		terrainGenerator.prettyProvinces(&provincesBMP, riverBMP, Data::getInstance().minProvSize);

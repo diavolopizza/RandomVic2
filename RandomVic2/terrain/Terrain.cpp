@@ -48,7 +48,7 @@ MultiArray Terrain::createProvinceMap()
 }
 //
 int Terrain::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height) {
-	uint32_t distance = MAXUINT32;
+	int distance = MAXINT32;
 	for (Prov* P : provinces)
 	{
 		const int x1 = P->center % width;
@@ -91,15 +91,15 @@ uint32_t checkRange(uint32_t radius, uint32_t heightPos, uint32_t widthPos, Bitm
 		}
 	}
 
-	//for (int i = start; i < end; i += 3)
+	//for (int upperSegment = start; upperSegment < end; upperSegment += 3)
 	//{
-	//	uint32_t x1 = i  % width;
+	//	uint32_t x1 = upperSegment  % width;
 	//	uint32_t x2 = position  % width;
-	//	uint32_t y1 = i  / height;
+	//	uint32_t y1 = upperSegment  / height;
 	//	uint32_t y2 = position  / height;
 	//	distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
-	//	if (distance < radius && RGBBMP.getValueAt(i) < 90) {
-	//		inRangePixels[index] = i;
+	//	if (distance < radius && largeHeightmap.getValueAt(upperSegment) < 90) {
+	//		inRangePixels[index] = upperSegment;
 	//		index++;
 	//	}
 	//}
@@ -110,16 +110,58 @@ void Terrain::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provinceP
 	const uint32_t bmpWidth = bitmap->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = bitmap->bInfoHeader.biHeight;
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
-	int minDistance = (bmpSize / provinceSize) / 20;
+	int minDistance = ((double)provinceSize / (double)bmpSize * 500000.0);
 	uint32_t startingPixel = random() % bmpSize;//startingpixel is anywhere in the file
 	while (bitmap->getValueAtIndex(startingPixel) != provinceColour.rgbtBlue - 1
 		|| (GetMinDistanceToProvince(startingPixel, bmpWidth, bmpHeight) < minDistance))
 	{
 		startingPixel = random() % bmpSize; //startingpixel is anywhere in the file
-		minDistance -= 5;
+		minDistance *= 0.7;
 	}
 	bitmap->setTripleAtIndex(provinceColour, startingPixel);
 	provincePixels.push_back(startingPixel);
+}
+
+double getDistance(int p1, int p2, int width, int height)
+{
+	const int x1 = p1 % width;
+	const int x2 = p2 % width;
+	const int y1 = p1 / height;
+	const int y2 = p2 / height;
+	return sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
+}
+
+
+void Terrain::worleyNoise(vector<BYTE>& layerValues, uint32_t width, uint32_t height)
+{
+	vector<uint32_t> points;
+	for (int i = 0; i < width * height / 10000; i++)
+	{
+		points.push_back(random() % (width *height));
+	}
+	int index = 0;
+	for (uint32_t x = 0; x < height; x++)
+	{
+		for (uint32_t y = 0; y < width; y++)
+		{
+			vector<int> distances = vector<int>(points.size());
+
+			for (int i = 0; i < points.size(); i++)
+			{
+				distances[i] = getDistance(x*width + y, points[i], width, height);
+			}
+			sort(distances.begin(), distances.end());
+
+			int scaledDistance = (double)distances[0] / ((double)width * (double)height / 1000000.0);
+			scaledDistance = scaledDistance % 255;
+
+			BYTE completeNoise = scaledDistance > 0 ? scaledDistance : 0;
+			RGBTRIPLE colour{ completeNoise, completeNoise, completeNoise };
+			layerValues[(x*width + y) * 3] = colour.rgbtBlue;
+			layerValues[(x*width + y) * 3 + 1] = colour.rgbtGreen;
+			layerValues[(x*width + y) * 3 + 2] = colour.rgbtRed;
+		}
+	}
 }
 //evaluate if province is coastal
 void Terrain::evaluateCoasts(Bitmap provinceBMP)
@@ -188,7 +230,7 @@ void Terrain::provPixels(const Bitmap* provinceBMP)
 		}
 	}
 }
-vector<BYTE> Terrain::normalizeHeightMap(Bitmap heightMap)
+vector<BYTE> Terrain::normalizeHeightMap(Bitmap heightMap, vector<BYTE> worleyNoise)
 {
 	double highestValue = 0.0;
 	vector<double> combinedValues = vector<double>(heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3);
@@ -204,31 +246,131 @@ vector<BYTE> Terrain::normalizeHeightMap(Bitmap heightMap)
 		}
 		index++;
 	}
-	const double factor = 200.0 / (double)highestValue;
+	const double factor = 150.0 / (double)highestValue;
 	for (int i = 0; i < heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3; i++)
 	{
 		normalisedValues[i] = (unsigned char)((double)combinedValues[i] * factor);
+		if (normalisedValues[i] > 125)
+			normalisedValues[i] += worleyNoise[i];
 	}
 	heightmapLayers.clear();
+
 	return normalisedValues;
+}
+
+void Terrain::detectContinents(Bitmap heightMap)
+{
+	cout << "Creating basic terrain from heightmap" << endl;
+	set<uint32_t> unassignedPixels;
+	vector<set<uint32_t>> continents;
+	double tempLandPercentage = 0;
+	long long value = 0;
+	for (auto i = 0u; i < heightMap.bInfoHeader.biSizeImage; i++)
+	{
+		value += heightMap.getValueAtIndex(i);
+	}
+	int average = (double)value / (double)(heightMap.bInfoHeader.biSizeImage / 3) *1.1;
+	cout << average << endl;
+	for (auto i = 0u; i < heightMap.bInfoHeader.biSizeImage / 3; i++)
+	{
+		if (heightMap.getValueAtIndex(i) > average)
+		{
+			heightMap.setValueAtIndex(i, 255);
+			unassignedPixels.insert(i);
+		}
+	}
+	while (unassignedPixels.size())
+	{
+		auto pixel = *unassignedPixels.begin();
+		set<uint32_t> tempPixels;
+		set<uint32_t> pixelStack;
+		tempPixels.insert(pixel);
+		pixelStack.insert(pixel);
+		unassignedPixels.erase(pixel);
+
+		while (pixelStack.size())
+		{
+			pixel = *pixelStack.begin();
+			auto savePixel = pixel;
+			while (heightMap.getValueAtIndex(pixel++) == 255)
+			{
+				if (tempPixels.find(pixel) == tempPixels.end())
+				{
+					tempPixels.insert(pixel);
+					pixelStack.insert(pixel);
+					unassignedPixels.erase(pixel);
+				}
+				else
+					break;
+			}
+			pixel = savePixel;
+			while (heightMap.getValueAtIndex(pixel--) == 255)
+			{
+				if (tempPixels.find(pixel) == tempPixels.end())
+				{
+					tempPixels.insert(pixel);
+					pixelStack.insert(pixel);
+					unassignedPixels.erase(pixel);
+				}
+				else
+					break;
+			}
+			pixel = savePixel;
+			while (heightMap.getValueAtIndex(pixel += heightMap.bInfoHeader.biWidth) == 255)
+			{
+				if (tempPixels.find(pixel) == tempPixels.end())
+				{
+					tempPixels.insert(pixel);
+					pixelStack.insert(pixel);
+					unassignedPixels.erase(pixel);
+				}
+				else
+					break;
+			}
+			pixel = savePixel;
+			while (heightMap.getValueAtIndex(pixel -= heightMap.bInfoHeader.biWidth) == 255)
+			{
+				if (tempPixels.find(pixel) == tempPixels.end())
+				{
+					tempPixels.insert(pixel);
+					pixelStack.insert(pixel);
+					unassignedPixels.erase(pixel);
+				}
+				else
+					break;
+			}
+			pixelStack.erase(savePixel);
+		}
+
+		unsigned char blue = rand() % 255;
+		for (auto pixel : tempPixels)
+		{
+			heightMap.setValueAtIndex(pixel, blue);
+
+		}
+		continents.push_back(tempPixels);
+	}
+	BMPHandler::getInstance().SaveBMPToFile(heightMap, (Data::getInstance().debugMapsPath + ("detectedContinents.bmp")).c_str());
 }
 
 //creates the heightmap with a given seed
 vector<BYTE> Terrain::heightMap(uint32_t seed)
 {
-	Bitmap RGBBMP(Data::getInstance().width, Data::getInstance().height, 24);
-	const auto width = (double)RGBBMP.bInfoHeader.biWidth;
-	const auto height = (double)RGBBMP.bInfoHeader.biHeight;
+	double sizeFactor = 1;
+	Bitmap largeHeightmap(Data::getInstance().width * sizeFactor, Data::getInstance().height * sizeFactor, 24);
+	Bitmap detectedContinents(Data::getInstance().width * sizeFactor, Data::getInstance().height * sizeFactor, 24);
+	const auto width = (uint32_t)((double)largeHeightmap.bInfoHeader.biWidth);
+	const auto height = (uint32_t)((double)largeHeightmap.bInfoHeader.biHeight);
 	cout << "Creating Heightmap" << endl;
 	for (auto layer = 0; layer < Data::getInstance().layerAmount; layer++)
 	{
-		vector<BYTE> layerValues = vector<BYTE>(RGBBMP.bInfoHeader.biWidth*RGBBMP.bInfoHeader.biHeight * 3);
+		vector<BYTE> layerValues = vector<BYTE>(width*height * 3 * sizeFactor);
 		FastNoise myNoise; // Create a FastNoise object
 		// adjusting frequency is necessary when map size increases, 
 		// as the heightmap will be noisier the larger the map
 		const double sizeNoiseFactor = (double)(1024.0 * 1024.0) / (double)(width * height);
 		//double sizeNoiseFactor = 1.0 / log2f((double)(width * height)) * 20.0;
-		myNoise.SetSeed(seed + layer);
+		myNoise.SetSeed(seed + layer * 100);
 		const uint32_t type = Data::getInstance().type[layer];
 		cout << sizeNoiseFactor << endl;
 		myNoise.SetFrequency((double)Data::getInstance().fractalFrequency[layer] * sizeNoiseFactor);
@@ -300,7 +442,6 @@ vector<BYTE> Terrain::heightMap(uint32_t seed)
 			myNoise.SetFractalType(FastNoise::FractalType::RigidMulti);
 			break;
 		}
-
 		default:
 		{
 			myNoise.SetNoiseType(FastNoise::NoiseType::SimplexFractal); // Set the desired noise type
@@ -308,7 +449,10 @@ vector<BYTE> Terrain::heightMap(uint32_t seed)
 			break;
 		}
 		}
+		unsigned char minHeight; unsigned char maxHeight;
 
+		std::tie(minHeight, maxHeight) = Data::getInstance().heightRange[layer];
+		maxHeight /= 2;
 		// set the point at which heightvalues are reduced towards 0 
 		// this eliminates provinces overlapping at the east/west map boundaries
 		const double delimiter = width / Data::getInstance().divideThreshold[layer];
@@ -326,7 +470,7 @@ vector<BYTE> Terrain::heightMap(uint32_t seed)
 				//{
 				//	factor = ((double)width - (double)yf) / (double)delimiter;
 				//}
-				FN_DECIMAL noiseLevel = /*RGBBMP.getValueAtXYPosition(x, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0) * 64.0 * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
+				FN_DECIMAL noiseLevel = (double)minHeight + /*largeHeightmap.getValueAtXYPosition(lowerSegment, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0) * (double)maxHeight * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
 				BYTE completeNoise = (BYTE)noiseLevel + static_cast<BYTE>(1u);
 
 				RGBTRIPLE colour{ completeNoise, completeNoise, completeNoise };
@@ -336,9 +480,28 @@ vector<BYTE> Terrain::heightMap(uint32_t seed)
 			}
 		}
 		heightmapLayers.push_back(layerValues);
+		Bitmap layerBMP(width, height, 24, layerValues);
+		BMPHandler::getInstance().SaveBMPToFile(layerBMP, (Data::getInstance().debugMapsPath + ("layers/layer" + to_string(layer) + ".bmp")).c_str());
 	}
-	RGBBMP.setBuffer(normalizeHeightMap(RGBBMP));
-	return RGBBMP.getBuffer();
+
+	/*vector<BYTE> layerValues = vector<BYTE>(width*height * 3 * sizeFactor);
+	worleyNoise(layerValues, width, height);
+	Bitmap worley(width, height, 24, layerValues);
+	BMPHandler::getInstance().SaveBMPToFile(worley, (Data::getInstance().debugMapsPath + ("layers/worleyLayer.bmp")).c_str());*/
+
+	//FOR NORMALIZATION
+	//largeHeightmap.setBuffer(normalizeHeightMap(largeHeightmap, heightmapLayers));
+
+	// NO NORM
+	largeHeightmap.setBuffer((heightmapLayers[0]));
+
+	//for heightmap extraction after collison
+	//detectContinents(largeHeightmap);
+	//vector<BYTE>buff(Data::getInstance().width * Data::getInstance().height * 3);
+	//largeHeightmap.getArea(largeHeightmap.bInfoHeader.biSizeImage / 2, Data::getInstance().width, Data::getInstance().height, buff);
+
+
+	return largeHeightmap.getBuffer();
 }
 //creates the terrain, factoring in heightmap
 void Terrain::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp)
@@ -367,9 +530,9 @@ void Terrain::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp)
 		" to achieve a landMassPercentage of " << tempLandPercentage << endl;
 }
 //generates all land provinces
-vector<BYTE> Terrain::landProvinces(uint32_t numoflandprov, Bitmap terrainBMP, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold)
+vector<BYTE> Terrain::landProvinces(Bitmap terrainBMP, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold)
 {
-	cout << "Generating landprovinces" << endl;
+	cout << "Generating provinces" << endl;
 	const uint32_t bmpWidth = terrainBMP.bInfoHeader.biWidth;
 	const uint32_t bmpHeight = terrainBMP.bInfoHeader.biHeight;
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
@@ -379,11 +542,13 @@ vector<BYTE> Terrain::landProvinces(uint32_t numoflandprov, Bitmap terrainBMP, B
 	for (uint32_t i = 0; i < bmpSize; i++) {
 		provinceBMP->setTripleAtIndex(terrainBMP.getValueAtIndex(i) == 254 ? rgbHigh : rgbLow, i);
 	}
-	//assign province size
-	uint32_t provincesize = (int)((double)bmpSize * 0.6f / (double)numoflandprov);//better calculation?
+	//assign province size //better calculation?
+	uint32_t landProvSize = (int)((double)bmpSize * 0.6f / (double)Data::getInstance().landProv);
+	uint32_t seaProvSize = (int)((double)bmpSize * 1.2f / (double)Data::getInstance().seaProv);
 	//assign pixels to this new province
-	cout << provincesize << endl;
-	provinceCreation(provinceBMP, provincesize, numoflandprov, 0, 0);
+	//cout << landProvSize << endl;
+	provinceCreation(provinceBMP, landProvSize, Data::getInstance().landProv, 0, 0);
+	provinceCreation(provinceBMP, seaProvSize, Data::getInstance().seaProv, Data::getInstance().landProv, 254);
 	//For multithreading: create vector of random values. Used for performance improvements, as ranlux24 is using locks, and new instances would remove determination.
 	uint32_t threadAmount = Data::getInstance().threadAmount;
 	//decrement number of threads, until biSizeImage can be divided by threadCount without any rest
@@ -396,46 +561,19 @@ vector<BYTE> Terrain::landProvinces(uint32_t numoflandprov, Bitmap terrainBMP, B
 		uint32_t from = i * (bmpSize / threadAmount);
 		uint32_t to = (i + 1) * (bmpSize / threadAmount);
 		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)1, (uint32_t)0, from, to, updateThreshold));
-	}
-	//wait for threads to finish
-	for (auto& t : threads) {
-		t.join();
-	}
-	//fill(std::ref(provinceBMP), std::ref(riverBMP), (unsigned char)1, (unsigned char)0, from, to, std::ref(randomValuesCached), updateThreshold);
-	assignRemainingPixels(provinceBMP, false);
-	return provinceBMP->getBuffer();
-}
-//generates all land provinces
-vector<BYTE> Terrain::seaProvinces(uint32_t numOfSeaProv, uint32_t numoflandprov, Bitmap terrainBMP, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold)
-{
-	const uint32_t bmpWidth = terrainBMP.bInfoHeader.biWidth;
-	const uint32_t bmpHeight = terrainBMP.bInfoHeader.biHeight;
-	const uint32_t bmpSize = bmpWidth * bmpHeight;
-	cout << "Generating seaprovinces" << endl;
-	uint32_t provincesize = bmpSize / numOfSeaProv;//better calculation?
-	provinceCreation(provinceBMP, provincesize, numOfSeaProv, numoflandprov, 254);
-	//multithreading
-	uint32_t threadAmount = Data::getInstance().threadAmount;
-
-	while (provinceBMP->bInfoHeader.biSizeImage % threadAmount != 0)
-	{
-		threadAmount--;
-	}
-	std::vector<std::thread> threads;
-	for (uint32_t i = 0; i < threadAmount; ++i) {
-		const uint32_t from = i * (bmpSize / threadAmount);
-		const uint32_t to = (i + 1) * (bmpSize / threadAmount);
 		threads.push_back(std::thread(&Terrain::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)255, (uint32_t)254, from, to, updateThreshold));
 	}
 	//wait for threads to finish
 	for (auto& t : threads) {
 		t.join();
 	}
+	assignRemainingPixels(provinceBMP, false);
 	assignRemainingPixels(provinceBMP, true);
+	threads.clear();
 	return provinceBMP->getBuffer();
 }
 //creates the basic province with a random shape
-void Terrain::provinceCreation(Bitmap* provinceBMP, uint32_t provinceSize, uint32_t numOfLandProv, uint32_t offset, uint32_t greyval)
+void Terrain::provinceCreation(Bitmap* provinceBMP, uint32_t provinceSize, uint32_t numOfProvs, uint32_t offset, uint32_t greyval)
 {
 	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = provinceBMP->bInfoHeader.biHeight;
@@ -444,7 +582,7 @@ void Terrain::provinceCreation(Bitmap* provinceBMP, uint32_t provinceSize, uint3
 	uint32_t green = 0;
 	RGBTRIPLE provinceColour;
 
-	for (uint32_t i = offset + 1; i < numOfLandProv + offset + 1; i++)
+	for (uint32_t i = offset + 1; i < numOfProvs + offset + 1; i++)
 	{
 		provinceColour.rgbtRed = 1 + red;
 		provinceColour.rgbtGreen = 1 + green;
@@ -477,7 +615,7 @@ void Terrain::provinceCreation(Bitmap* provinceBMP, uint32_t provinceSize, uint3
 						//if ((newpixel) % (bmpWidth / 2) != 0) {
 						provinceBMP->setTripleAtIndex(provinceColour, newPixel);
 						P->pixels.push_back(newPixel);
-						//x++;
+						//lowerSegment++;
 						//}
 					}
 			}
@@ -494,37 +632,52 @@ void Terrain::fill(Bitmap* provinceBMP, const Bitmap riverBMP, const unsigned ch
 	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = provinceBMP->bInfoHeader.biHeight;
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
-	uint32_t unassignedPixels = bmpSize;
+	thread_local uint32_t unassignedPixels = bmpSize;
 	uint32_t previousUnassignedPixels = unassignedPixels + 1;
 	uint32_t randomValueIndex = 0u;
 	const vector<int> offsets = { 1,-1, (int)bmpWidth, -(int)(bmpWidth) };
-	int counter = 0;
-	while (unassignedPixels > 0u)
+	int breakCounter = 0;
+	int switchCounter = 0;
+
+
+	vector<unsigned char> blueMap(bmpWidth*bmpHeight);
+
+
+	while (unassignedPixels > 0)
 	{
-		//cout << "Pixels still unassigned: " << unassignedPixels << endl;
+		cout << "Pixels still unassigned: " << unassignedPixels << endl;
 		previousUnassignedPixels = unassignedPixels;
-		unassignedPixels = 0u;
-		for (uint32_t unassignedPixel = from; unassignedPixel < to; unassignedPixel++)
+		unassignedPixels = 0;
+		switchCounter++;
+		for (int unassignedPixel = from; unassignedPixel < to; unassignedPixel++)
 		{
-			if (provinceBMP->getValueAtIndex(unassignedPixel) == fillVal)
+			int accessedPixel = unassignedPixel;
+
+			if (switchCounter % 2 == 1) // we need to change iteration direction, otherwise provinces will look warped
+				accessedPixel = (int)to - ((int)unassignedPixel - (int)from) - 1;
+			if (provinceBMP->getValueAtIndex(accessedPixel) == fillVal)
+				//if (provinceBMP->getBuffer()[accessedPixel*3] == fillVal)
 			{
 				unassignedPixels++;
-				const uint32_t direction = randomValuesCached[randomValueIndex++%randomValuesCached.size()];
-				const uint32_t newPixel = (int)unassignedPixel + offsets[direction];
-				if (newPixel < bmpSize && newPixel > 0u)
+				const int direction = randomValuesCached[randomValueIndex++%randomValuesCached.size()];
+				const int newPixel = (int)accessedPixel + offsets[direction];
+				if (newPixel < bmpSize && newPixel > 0)
 				{
 					if (provinceBMP->getValueAtIndex(newPixel) == greyVal)
 					{
 						//TODO: add river crossings to each province
 						if (newPixel % bmpWidth && !(riverBMP.getValueAtIndex(newPixel) <= 10u))
-							provinceBMP->copyTripleToIndex(unassignedPixel, newPixel);
+							provinceBMP->copyTripleToIndex(accessedPixel, newPixel);
 					}
 				}
 			}
 		}
-		unassignedPixels == previousUnassignedPixels ? counter++ : counter = 0;
-		if (counter > 3)
+		unassignedPixels == previousUnassignedPixels ? breakCounter++ : breakCounter = 0;
+		//cout << "Previous: " << previousUnassignedPixels << " now: " << unassignedPixels << endl;
+		if (breakCounter > 3)
+		{
 			break;
+		}
 	}
 }
 //evaluates province size to define wether it should be deleted in case it is too small
@@ -591,7 +744,9 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_
 			i--;
 		}
 	}
-	for (int i = 0; i < 5; i++)
+	// Grow regions a few times before ignoring adjacencies 
+	// (for example overseas provinces that can't find a adjacent province with a region)
+	for (auto i = 0u; i < 50; i++)
 	{
 		for (auto prov : provinces)
 		{
@@ -607,7 +762,7 @@ void Terrain::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_
 						const int y1 = P->center / height;
 						const int y2 = prov->center / height;
 						if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-							if (prov->hasAdjacent(P) || i==5)
+							if (prov->hasAdjacent(P) || i == 5u)
 							{
 								distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
 								nextOwner = P->region;
@@ -750,7 +905,7 @@ double calcMountainShadowAridity(Bitmap heightmapBMP, uint32_t heightPos, uint32
 	for (uint32_t i = 0; i < maxEffectDistance; i++)
 	{
 		//TODO
-		//if (heightmapBMP.getValueAtIndex((heightPos * width + widthPos + (currentDirection * i)) ) > seaLevel * 1.4)
+		//if (heightmapBMP.getValueAtIndex((heightPos * width + widthPos + (currentDirection * upperSegment)) ) > seaLevel * 1.4)
 		//{
 		//	mountainPixelsInRange++;
 		//}
@@ -942,22 +1097,22 @@ void Terrain::humidityMap(Bitmap heightmapBMP, Bitmap* humidityBMP, uint32_t sea
 	}
 
 	/*uint32_t smoothDistance = 2;
-	for (int i = width  * smoothDistance + smoothDistance; i < humidityBMP.bInfoHeader.biSizeImage - width  * smoothDistance - smoothDistance; i += 3)
+	for (int upperSegment = width  * smoothDistance + smoothDistance; upperSegment < humidityBMP.bInfoHeader.biSizeImage - width  * smoothDistance - smoothDistance; upperSegment += 3)
 	{
-		RGBTRIPLE north = humidityBMP.getTripleAtIndex(i - width  * smoothDistance);
-		RGBTRIPLE northwest = humidityBMP.getTripleAtIndex(i - width  * smoothDistance - smoothDistance );
-		RGBTRIPLE northeast = humidityBMP.getTripleAtIndex(i - width  * smoothDistance + smoothDistance );
-		RGBTRIPLE south = humidityBMP.getTripleAtIndex(i + width  * smoothDistance);
-		RGBTRIPLE southwest = humidityBMP.getTripleAtIndex(i + width  * smoothDistance - smoothDistance );
-		RGBTRIPLE southeast = humidityBMP.getTripleAtIndex(i + width  * smoothDistance + smoothDistance );
-		RGBTRIPLE west = humidityBMP.getTripleAtIndex(i + smoothDistance );
-		RGBTRIPLE east = humidityBMP.getTripleAtIndex(i - smoothDistance );
+		RGBTRIPLE north = humidityBMP.getTripleAtIndex(upperSegment - width  * smoothDistance);
+		RGBTRIPLE northwest = humidityBMP.getTripleAtIndex(upperSegment - width  * smoothDistance - smoothDistance );
+		RGBTRIPLE northeast = humidityBMP.getTripleAtIndex(upperSegment - width  * smoothDistance + smoothDistance );
+		RGBTRIPLE south = humidityBMP.getTripleAtIndex(upperSegment + width  * smoothDistance);
+		RGBTRIPLE southwest = humidityBMP.getTripleAtIndex(upperSegment + width  * smoothDistance - smoothDistance );
+		RGBTRIPLE southeast = humidityBMP.getTripleAtIndex(upperSegment + width  * smoothDistance + smoothDistance );
+		RGBTRIPLE west = humidityBMP.getTripleAtIndex(upperSegment + smoothDistance );
+		RGBTRIPLE east = humidityBMP.getTripleAtIndex(upperSegment - smoothDistance );
 		RGBTRIPLE colour;
 		colour.rgbtBlue = (double)((int)north.rgbtBlue + (int)northwest.rgbtBlue + (int)northeast.rgbtBlue + (int)southwest.rgbtBlue + (int)southeast.rgbtBlue + (int)south.rgbtBlue + (int)west.rgbtBlue + (int)east.rgbtBlue) / 8;
 		colour.rgbtGreen = (double)((int)north.rgbtGreen + (int)northwest.rgbtGreen + (int)northeast.rgbtGreen + (int)southwest.rgbtGreen + (int)southeast.rgbtGreen + (int)south.rgbtGreen + (int)west.rgbtGreen + (int)east.rgbtGreen) / 8;
 		colour.rgbtRed = (double)((int)north.rgbtRed + (int)northwest.rgbtRed + (int)northeast.rgbtRed + (int)southwest.rgbtRed + (int)southeast.rgbtRed + (int)south.rgbtRed + (int)west.rgbtRed + (int)east.rgbtRed) / 8;
 
-		humidityBMP.setTripleAtIndex(colour, i);
+		humidityBMP.setTripleAtIndex(colour, upperSegment);
 	}*/
 }
 //assigns all unassigned pixels to the nearest province
@@ -1029,7 +1184,7 @@ void Terrain::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 		else {
 			if (provinceBMP->getValueAtIndex(unassignedPixel) == 0)
 			{
-				auto distance = numeric_limits<uint32_t>().max();
+				auto distance = numeric_limits<int>().max();
 				Prov* nextOwner = nullptr;
 				for (Prov* P : provinces)
 				{
@@ -1137,7 +1292,7 @@ void Terrain::prettyTerrain(Bitmap* terrainBMP, const Bitmap heightMap, uint32_t
 		uint32_t distanceSouth = 0;
 		uint32_t distanceEast = 0;
 		uint32_t distanceWest = 0;
-		uint32_t bitmapWidth = terrainBMP->bInfoHeader.biWidth;
+		const uint32_t bitmapWidth = terrainBMP->bInfoHeader.biWidth;
 		//TODO
 		while (terrainBMP->getValueAtIndex(prov->center + offset) != 254) {
 			offset += 3;
@@ -1454,8 +1609,8 @@ void Terrain::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 	}
 
 
-	//for (int i = 0; i < provinces.size(); i++)
-	//	provinces[i]->computeCandidates();
+	//for (int upperSegment = 0; upperSegment < provinces.size(); upperSegment++)
+	//	provinces[upperSegment]->computeCandidates();
 }
 
 void Terrain::prettyRivers(Bitmap* riverBMP, const Bitmap heightMap)
@@ -1575,8 +1730,8 @@ void Terrain::sanityChecks(Bitmap provinceBMP)
 			cout << (prov->sea ? "WARNING: " : "ERROR: ") << "Small province remaining, Colour: " << (int)prov->colour.rgbtRed << " " << (int)prov->colour.rgbtGreen << " " << (int)prov->colour.rgbtBlue << endl;
 			cout << "\tCenter at: " << prov->center << " size is: " << prov->pixels.size() << std::endl;
 		}
-		if (!prov->adjProv.size())
-			cout << "Province with ID: " << prov->provID << " has 0 adjacent provinces" << endl;
+		//if (!prov->adjProv.size())
+		//	cout << "Province with ID: " << prov->provID << " has 0 adjacent provinces" << endl;
 		if (prov->coastal)
 			coastals++;
 	}
