@@ -1,6 +1,6 @@
 #include "Terrain.h"
 #include "../utils/BMPHandler.h"
-#include "../FastNoise/Cpp/FastNoiseLite.h"
+#include "../FastNoiseLite/Cpp/FastNoiseLite.h"
 #include "boost/algorithm/clamp.hpp"
 #include <windows.h>
 #include <thread>

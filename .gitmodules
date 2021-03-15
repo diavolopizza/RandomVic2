@@ -1,0 +1,3 @@
+[submodule "RandomVic2/FastNoiseLite"]
+	path = RandomVic2/FastNoiseLite
+	url = https://github.com/Auburn/FastNoiseLite.git
