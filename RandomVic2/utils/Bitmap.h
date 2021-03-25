@@ -1,15 +1,13 @@
 #pragma once
 #include <Windows.h>
 #include <vector>
-#include "boost\multi_array.hpp"
+#include <iostream>
 using namespace std;
 class Bitmap
 {
 private:
-	//BYTE* Buffer = nullptr;
 	vector<BYTE> Buffer;
-	//std::unique_ptr<BYTE> Buffer;
-	//Bitmap bit24Representation;
+	vector<BYTE> colourtable;
 	uint32_t indexFactor;
 
 public:
@@ -24,7 +22,6 @@ public:
 	BITMAPINFOHEADER bInfoHeader;
 	Bitmap get24BitRepresentation();
 
-	BYTE* colourtable;
 	RGBTRIPLE getColourTableEntry(const uint32_t index) const;
 	void setBitmapSize(const uint32_t width, const uint32_t height);
 
@@ -40,6 +37,7 @@ public:
 	void setTripleAtXYPosition(const RGBTRIPLE colour, const uint32_t heightPos, const uint32_t widthPos);
 
 	const vector<BYTE>& getBuffer() const;
+	vector<BYTE>& getColourtable();
 	const vector<BYTE>& getArea(uint32_t center, uint32_t width, uint32_t height, vector<BYTE> &buff) const;
 	void setBuffer(vector<BYTE> Buffer);
 

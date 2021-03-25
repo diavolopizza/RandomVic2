@@ -2,9 +2,9 @@
 
 
 
-CountryGenerator::CountryGenerator(Terrain *terrain)
+CountryGenerator::CountryGenerator(Provinces *provinceGenerator)
 {
-	this->terrain = terrain;
+	this->provinceGenerator = provinceGenerator;
 	this->random = Data::getInstance().random2;
 }
 
@@ -190,10 +190,10 @@ Bitmap CountryGenerator::civilizationBMP()
 {
 	Bitmap civilizationBMP(Data::getInstance().width, Data::getInstance().height, 24);
 	uint32_t conIndex = 0;
-	for (auto continent : terrain->continents)
+	for (auto continent : provinceGenerator->continents)
 	{
 		//lets make half uncivilized and round down.
-		if (conIndex < (terrain->continents.size() / 2))
+		if (conIndex < (provinceGenerator->continents.size() / 2))
 		{
 			continent->civilized = true;
 		}

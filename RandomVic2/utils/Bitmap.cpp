@@ -1,9 +1,9 @@
 #include "Bitmap.h"
-#include <iostream>
 
 
 Bitmap::Bitmap()
 {
+	this->colourtable = vector<BYTE>(1024);
 }
 
 Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
@@ -44,7 +44,12 @@ Bitmap::Bitmap(uint32_t width, uint32_t height, uint32_t bitCount)
 		this->bInfoHeader.biWidth = width;
 		this->bInfoHeader.biHeight = height;
 		this->bInfoHeader.biSizeImage = width * height;
+		this->colourtable = vector<BYTE>(1024);
 		this->Buffer = vector<BYTE>(width*height);
+		for (uint32_t i = 0; i < 1024; i++)
+		{
+			colourtable[i] = i % 256;
+		}
 		for (uint32_t i = 0; i < width*height; i++)
 		{
 			Buffer[i] = 0;
@@ -164,6 +169,11 @@ void Bitmap::setIndexFactor(const uint32_t indexFactor)
 const vector<BYTE>& Bitmap::getBuffer() const
 {
 	return this->Buffer;
+}
+
+vector<BYTE>& Bitmap::getColourtable()
+{
+	return colourtable;
 }
 
 const vector<BYTE>& Bitmap::getArea(uint32_t center, uint32_t width, uint32_t height, vector<BYTE> &buff) const

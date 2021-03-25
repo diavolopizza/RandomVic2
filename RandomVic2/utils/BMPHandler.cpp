@@ -15,9 +15,6 @@ Bitmap BMPHandler::findBitmapByKey(string key) {
 	return bitmaps.find(key)->second;
 }
 
-
-
-
 //BASIC BITMAP OPERATIONS START
 bool BMPHandler::SaveBMPToFile(Bitmap B, LPCTSTR outputFile)
 {
@@ -51,7 +48,7 @@ bool BMPHandler::SaveBMPToFile(Bitmap B, LPCTSTR outputFile)
 	}
 	else {
 		paddedsize = (B.bInfoHeader.biWidth)*(B.bInfoHeader.biHeight);
-		if (WriteFile(file, B.colourtable, 1024, &bwritten, NULL) == false)
+		if (WriteFile(file, B.getColourtable().data() , 1024, &bwritten, NULL) == false)
 		{
 			CloseHandle(file);
 			return false;
@@ -128,7 +125,7 @@ Bitmap BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 {
 	Bitmap B;
 	long* size = new long(0);
-	B.colourtable = new unsigned char[1024];
+	//B.colourtable = new unsigned char[1024];
 	DWORD bytesread;	// value to be used in ReadFile funcs
 	HANDLE file = CreateFile(input, GENERIC_READ, FILE_SHARE_READ,
 		NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);	// open file to read from
@@ -162,11 +159,10 @@ Bitmap BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 	int offset = 54;
 	*size = B.bFileHeader.bfSize - 1078;	// create buffer to hold the data,-headerbyte-colourablebyte
 	B.setBuffer(vector<BYTE>(*size));
-
 	SetFilePointer(file, offset, NULL, FILE_BEGIN); //start reading at beginning of colourtable
-	if (ReadFile(file, B.colourtable, 1024, &bytesread, NULL) == false)
+	if (ReadFile(file, B.getColourtable().data(), 1024, &bytesread, NULL) == false)
 	{
-		delete[] B.colourtable;
+		//delete[] B.colourtable;
 		CloseHandle(file);
 		return Bitmap();
 	}
@@ -175,7 +171,7 @@ Bitmap BMPHandler::Load8bitBMP(LPCTSTR input, string key)
 
 	// necessary due to const
 	auto buffer = B.getBuffer();
-	SetFilePointer(file, 1078, NULL, FILE_BEGIN); //start reading after end of colourtable
+	SetFilePointer(file, 1078, NULL, FILE_BEGIN); //start reading after end of header + colourtable 
 	if (ReadFile(file, buffer.data(), *size, &bytesread, NULL) == false)
 	{
 		//delete[]  B.getBuffer();

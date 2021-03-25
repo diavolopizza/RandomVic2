@@ -10,9 +10,9 @@
 
 	"map": 
 	{
-		"seed" : 2,
-        "height" : 1000,
-		"width" : 1000,
+		"seed" : 3,
+        "height" : 2000,
+		"width" : 5616,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		
@@ -122,7 +122,7 @@
 
     "v2": 
 	{
-        "source": "C:\\SteamLibrary\\steamapps\\common\\Victoria 2\\",
+        "source": "F:\\Program Files (x86)\\Steam\\SteamApps\\common\\Victoria 2\\",
         "destination": "C:\\SteamLibrary\\steamapps\\common\\Victoria 2\\mod\\myMod\\"
     },
 	
