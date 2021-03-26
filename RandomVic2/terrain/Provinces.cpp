@@ -22,6 +22,8 @@ Provinces::Provinces()
 Provinces::~Provinces()
 {
 }
+//creates the province map for fast access of provinces when only
+//rgb values are available, removes need to search this province
 MultiArray Provinces::createProvinceMap()
 {
 	for (auto& province : provinces) {
@@ -45,7 +47,7 @@ int Provinces::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint3
 	}
 	return distance;
 }
-
+//Utility to find starting point of new province
 void Provinces::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize) {
 	const uint32_t bmpWidth = bitmap->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = bitmap->bInfoHeader.biHeight;

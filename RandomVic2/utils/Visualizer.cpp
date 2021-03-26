@@ -2,9 +2,9 @@
 
 
 
-Visualizer::Visualizer(/*Terrain* terrainGenerator*/)
+Visualizer::Visualizer(Terrain& terrainGenerator)
 {
-	/*this->terrainGenerator = terrainGenerator;*/
+	this->terrainGenerator = terrainGenerator;
 }
 
 
@@ -55,7 +55,7 @@ Visualizer::~Visualizer()
 	//resizeWindow("Display window", 1920, 1080);
 	//cvSetWindowProperty("Display window", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 //}
-/*
+
 void Visualizer::prettyRivers(Bitmap* riverBMP, const Bitmap heightMap)
 {
 	const uint32_t maxRiverColour = 10;
@@ -82,4 +82,4 @@ void Visualizer::prettyRivers(Bitmap* riverBMP, const Bitmap heightMap)
 	for (River* river : terrainGenerator.rivers) {
 		riverBMP->setValueAtIndex(river->getSource(), 0);
 	}
-}*/
+}

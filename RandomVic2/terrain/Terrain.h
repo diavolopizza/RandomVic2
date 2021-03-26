@@ -10,13 +10,15 @@
 #include <math.h>
 #include <vector>
 #include <random>
+#include <thread>
 #include "../utils/Bitmap.h"
 #include "../entities/Prov.h"
 //#include "boost\multi_array.hpp"
 #include "../entities/River.h"
 #include "../utils/Buffer.h"
 #include "../utils/UtilLib.h"
-
+#include "../utils/BMPHandler.h"
+#include "../FastNoiseLite/Cpp/FastNoiseLite.h"
 using namespace std;
 //static array_type provinceMap(boost::extents[256][256][256]);
 
@@ -40,15 +42,12 @@ public:
 	void createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp);
 	void worleyNoise(vector<BYTE> &layerValues, uint32_t width, uint32_t height);
 	void detectContinents(Bitmap heightMap);
-	void humidityMap(Bitmap heightmapBMP, Bitmap* humidityBMP, uint32_t seaLevel, uint32_t updateThreshold);
 	void generateRivers(Bitmap* riverBMP, const Bitmap heightmap);
 
 	//Utilities
 	//Prov* Terrain::GetNearestProvince(uint32_t position, uint32_t width, uint32_t height);
 
 
-	// visuals:
-	void prettyTerrain(Bitmap* terrainBMP, const Bitmap heightmap, uint32_t seaLevel, uint32_t updateThreshold);
 
 
 

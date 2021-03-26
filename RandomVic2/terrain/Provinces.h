@@ -1,5 +1,6 @@
 #pragma once
-
+#define D_SCL_SECURE_NO_WARNINGS
+#define _SCL_SECURE_NO_WARNINGS
 #include "Terrain.h"
 #include "../utils/MultiArray.h"
 #include "../entities/Prov.h"

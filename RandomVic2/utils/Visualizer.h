@@ -10,12 +10,12 @@ class Visualizer
 
 
 public:
-	Visualizer();
+	Visualizer(Terrain& terrainGenerator);
 	~Visualizer();
 	//static void displayImage(Bitmap bitmap);
 	//static void Visualizer::initializeWindow();
-	//void prettyRivers(Bitmap* riverBMP, const Bitmap heightmap);
-	Terrain t;
+	void prettyRivers(Bitmap* riverBMP, const Bitmap heightmap);
+	Terrain terrainGenerator;
 
 };
 

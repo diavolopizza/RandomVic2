@@ -12,7 +12,7 @@
 	{
 		"seed" : 3,
         "height" : 2000,
-		"width" : 5616,
+		"width" : 5000,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		

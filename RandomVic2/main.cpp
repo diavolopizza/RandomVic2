@@ -2,9 +2,10 @@
 #define _SCL_SECURE_NO_WARNINGS
 #pragma warning(disable:4996) 
 #include "utils/BMPHandler.h"
-#include "terrain\Terrain.h"
-#include "utils\Data.h"
-#include "utils\Parser.h"
+#include "terrain/Terrain.h"
+#include "terrain/ClimateGenerator.h"
+#include "utils/Data.h"
+#include "utils/Parser.h"
 #include "victoria2/VictoriaModule.h"
 #include "utils/CountryGenerator.h"
 #include <memory.h>
@@ -59,7 +60,8 @@ int main() {
 	Parser genericParser;
 	Terrain terrainGenerator;
 	Provinces provinceGenerator;
-//	Visualizer visualizer(terrainGenerator);
+	ClimateGenerator climateGenerator;
+	Visualizer visualizer(terrainGenerator);
 	//const Bitmap heightMapBMP;
 	const string heightmapSourceString = Data::getInstance().debugMapsPath + ("heightmap.bmp");
 	uint32_t layer = 0;
@@ -104,7 +106,7 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("simpleterrain.bmp")).c_str());
 		//generate rivers according to terrain and climate
 		terrainGenerator.generateRivers(&riverBMP, heightMapBMP);
-		//visualizer.prettyRivers(&riverBMP, heightMapBMP);
+		visualizer.prettyRivers(&riverBMP, heightMapBMP);
 	}
 	else {
 		terrainBMP = BMPHandler::getInstance().Load8bitBMP(simpleTerrainsource, "simpleterrain");
@@ -143,7 +145,7 @@ int main() {
 		//terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		//BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (Data::getInstance().debugMapsPath + ("humidity.bmp")).c_str());
 		//generate terrain and rivers according to simplistic climate model
-		terrainGenerator.prettyTerrain(&terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
+		climateGenerator.prettyTerrain(&terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("terrain.bmp")).c_str());
 	}
 	else {
