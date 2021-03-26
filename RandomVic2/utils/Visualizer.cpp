@@ -2,9 +2,8 @@
 
 
 
-Visualizer::Visualizer(Terrain& terrainGenerator)
+Visualizer::Visualizer()
 {
-	this->terrainGenerator = terrainGenerator;
 }
 
 
@@ -56,15 +55,15 @@ Visualizer::~Visualizer()
 	//cvSetWindowProperty("Display window", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 //}
 
-void Visualizer::prettyRivers(Bitmap* riverBMP, const Bitmap heightMap)
+void Visualizer::prettyRivers(Bitmap& riverBMP, const Bitmap heightMap, const Terrain& terrainGenerator)
 {
 	const uint32_t maxRiverColour = 10;
-	for (uint32_t i = 0; i < (uint32_t)(riverBMP->bInfoHeader.biWidth * riverBMP->bInfoHeader.biHeight); i++)
+	for (uint32_t i = 0; i < (uint32_t)(riverBMP.bInfoHeader.biWidth * riverBMP.bInfoHeader.biHeight); i++)
 	{
 		if (heightMap.getValueAtIndex(i) > Data::getInstance().seaLevel)
-			riverBMP->setValueAtIndex(i, 255);
+			riverBMP.setValueAtIndex(i, 255);
 		else
-			riverBMP->setValueAtIndex(i, 254);
+			riverBMP.setValueAtIndex(i, 254);
 	}
 	for (River* river : terrainGenerator.rivers) {
 		if (river->pixels.size() < 10)
@@ -76,10 +75,10 @@ void Visualizer::prettyRivers(Bitmap* riverBMP, const Bitmap heightMap)
 				if (riverColour > maxRiverColour)
 					riverColour = maxRiverColour;
 			}
-			riverBMP->setValueAtIndex(pix, riverColour);
+			riverBMP.setValueAtIndex(pix, riverColour);
 		}
 	}
 	for (River* river : terrainGenerator.rivers) {
-		riverBMP->setValueAtIndex(river->getSource(), 0);
+		riverBMP.setValueAtIndex(river->getSource(), 0);
 	}
 }

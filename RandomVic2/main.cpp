@@ -61,7 +61,7 @@ int main() {
 	Terrain terrainGenerator;
 	Provinces provinceGenerator;
 	ClimateGenerator climateGenerator;
-	Visualizer visualizer(terrainGenerator);
+	Visualizer visualizer;
 	//const Bitmap heightMapBMP;
 	const string heightmapSourceString = Data::getInstance().debugMapsPath + ("heightmap.bmp");
 	uint32_t layer = 0;
@@ -106,7 +106,7 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("simpleterrain.bmp")).c_str());
 		//generate rivers according to terrain and climate
 		terrainGenerator.generateRivers(&riverBMP, heightMapBMP);
-		visualizer.prettyRivers(&riverBMP, heightMapBMP);
+		visualizer.prettyRivers(riverBMP, heightMapBMP, terrainGenerator);
 	}
 	else {
 		terrainBMP = BMPHandler::getInstance().Load8bitBMP(simpleTerrainsource, "simpleterrain");

@@ -61,7 +61,7 @@ public:
 	//ranlux24* random;
 	ranlux24 random2;
 	int maxNumOfCountries = 20;
-	uint32_t threadAmount = 1;
+	uint32_t threadAmount = 8;
 
 
 	void getConfig(string configPath);
