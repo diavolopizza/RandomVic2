@@ -2,7 +2,7 @@
 #include "../utils/Parser.h"
 #include "../utils/Data.h"
 #include "../utils/BMPHandler.h"
-#include "CountryCreation.h"
+#include "VictoriaCountryCreation.h"
 #include "Victoria2Parser.h"
 #include "../entities/Province.h"
 #include "../terrain/TerrainGenerator.h"

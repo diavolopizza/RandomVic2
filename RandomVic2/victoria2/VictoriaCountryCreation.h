@@ -1,10 +1,10 @@
 #pragma once
 #include "../entities/Province.h"
-class CountryCreation
+class VictoriaCountryCreation
 {
 public:
-	CountryCreation();
-	~CountryCreation();
+	VictoriaCountryCreation();
+	~VictoriaCountryCreation();
 
 	static void distributeCountries(vector<Province*> provinces);
 };

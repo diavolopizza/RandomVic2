@@ -16,7 +16,7 @@ VictoriaModule::VictoriaModule(Data *data, ProvinceGenerator *terrainGenerator)
 		genericParser.writeClimate((data->modPath + ("map/climate.txt")).c_str(), terrainGenerator->provinces);//general
 		genericParser.writeDefaultMapHeader((data->modPath + ("map/default.map")).c_str(), terrainGenerator->provinces);//general
 	}
-	CountryCreation::distributeCountries(terrainGenerator->provinces);
+	VictoriaCountryCreation::distributeCountries(terrainGenerator->provinces);
 	Victoria2Parser::writeCountries(data->modPath, terrainGenerator->provinces);
 	Victoria2Parser::writePops(data->modPath, terrainGenerator->provinces);
 	Victoria2Parser::writeClimate(data->modPath, (data->mapSource + ("/climate.txt")).c_str(), terrainGenerator->provinces);
