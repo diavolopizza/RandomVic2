@@ -1,4 +1,4 @@
-#include "Terrain.h"
+#include "TerrainGenerator.h"
 
 //MACROS
 #define LEFT(val) \
@@ -10,17 +10,17 @@
 #define BELOW(val, offset) \
 (val-1*offset)
 
-Terrain::Terrain()
+TerrainGenerator::TerrainGenerator()
 {
 	this->random = Data::getInstance().random2;
 }
 
-Terrain::~Terrain()
+TerrainGenerator::~TerrainGenerator()
 {
 
 }
 
-void Terrain::worleyNoise(vector<BYTE>& layerValues, uint32_t width, uint32_t height)
+void TerrainGenerator::worleyNoise(vector<BYTE>& layerValues, uint32_t width, uint32_t height)
 {
 	vector<uint32_t> points;
 	for (int i = 0; i < width * height / 10000; i++)
@@ -52,7 +52,7 @@ void Terrain::worleyNoise(vector<BYTE>& layerValues, uint32_t width, uint32_t he
 	}
 }
 //creates the heightmap with a given seed
-vector<BYTE> Terrain::heightMap(uint32_t seed)
+vector<BYTE> TerrainGenerator::heightMap(uint32_t seed)
 {
 	double sizeFactor = 1;
 	Bitmap largeHeightmap(Data::getInstance().width * sizeFactor, Data::getInstance().height * sizeFactor, 24);
@@ -160,7 +160,7 @@ vector<BYTE> Terrain::heightMap(uint32_t seed)
 	return largeHeightmap.getBuffer();
 }
 // normalize the heightmap to values between 0-255
-vector<BYTE> Terrain::normalizeHeightMap(Bitmap heightMap, vector<BYTE> worleyNoise)
+vector<BYTE> TerrainGenerator::normalizeHeightMap(Bitmap heightMap, vector<BYTE> worleyNoise)
 {
 	double highestValue = 0.0;
 	vector<double> combinedValues = vector<double>(heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3);
@@ -188,7 +188,7 @@ vector<BYTE> Terrain::normalizeHeightMap(Bitmap heightMap, vector<BYTE> worleyNo
 	return normalisedValues;
 }
 // Out of basic landmass shape, create continents
-void Terrain::detectContinents(Bitmap heightMap)
+void TerrainGenerator::detectContinents(Bitmap heightMap)
 {
 	cout << "Creating basic terrain from heightmap" << endl;
 	set<uint32_t> unassignedPixels;
@@ -282,7 +282,7 @@ void Terrain::detectContinents(Bitmap heightMap)
 	BMPHandler::getInstance().SaveBMPToFile(heightMap, (Data::getInstance().debugMapsPath + ("detectedContinents.bmp")).c_str());
 }
 //creates the terrain, factoring in heightmap
-void Terrain::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp)
+void TerrainGenerator::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp)
 {
 	cout << "Creating basic terrain from heightmap" << endl;
 	uint32_t corrections = 0;
@@ -308,7 +308,7 @@ void Terrain::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp)
 		" to achieve a landMassPercentage of " << tempLandPercentage << endl;
 }
 //creates rivers 
-void Terrain::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
+void TerrainGenerator::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 {
 	cout << "Creating rivers" << endl;
 	set<int> riverPixels;
@@ -459,7 +459,7 @@ void Terrain::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 	//	provinces[upperSegment]->computeCandidates();
 }
 
-void Terrain::sanityChecks(Bitmap provinceBMP)
+void TerrainGenerator::sanityChecks(Bitmap provinceBMP)
 {
 	/*cout << "Doing terrain sanity checks" << endl;
 

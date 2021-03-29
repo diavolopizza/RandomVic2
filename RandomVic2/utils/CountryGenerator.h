@@ -3,7 +3,7 @@
 #include "../entities/Prov.h"
 #include "../entities/Country.h"
 #include "../utils/Bitmap.h"
-#include "../terrain/Terrain.h"
+#include "../terrain/TerrainGenerator.h"
 #include "../terrain/Provinces.h"
 #include <random>
 #include <map>

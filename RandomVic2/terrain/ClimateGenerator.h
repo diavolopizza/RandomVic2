@@ -12,7 +12,7 @@
 #include <vector>
 #include <random>
 #include <boost/algorithm/clamp.hpp>
-#include "Terrain.h"
+#include "TerrainGenerator.h"
 
 
 using namespace std;

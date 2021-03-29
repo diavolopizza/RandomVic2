@@ -20,7 +20,7 @@
 #include "../FastNoiseLite/Cpp/FastNoiseLite.h"
 using namespace std;
 
-class Terrain
+class TerrainGenerator
 {
 	ranlux24 random;
 	vector<vector<BYTE>> heightmapLayers;
@@ -28,8 +28,8 @@ class Terrain
 
 public:
 	vector<River*> rivers;
-	Terrain();
-	~Terrain();
+	TerrainGenerator();
+	~TerrainGenerator();
 
 	//TERRAIN
 	vector<BYTE> heightMap(uint32_t seed);

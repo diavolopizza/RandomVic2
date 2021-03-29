@@ -56,7 +56,7 @@ Visualizer::~Visualizer()
 	//cvSetWindowProperty("Display window", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 //}
 
-void Visualizer::prettyRivers(Bitmap& riverBMP, const Bitmap heightMap, const Terrain& terrainGenerator)
+void Visualizer::prettyRivers(Bitmap& riverBMP, const Bitmap heightMap, const TerrainGenerator& terrainGenerator)
 {
 	const uint32_t maxRiverColour = 10;
 	for (uint32_t i = 0; i < (uint32_t)(riverBMP.bInfoHeader.biWidth * riverBMP.bInfoHeader.biHeight); i++)

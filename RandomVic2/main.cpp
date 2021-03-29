@@ -2,7 +2,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 #pragma warning(disable:4996) 
 #include "utils/BMPHandler.h"
-#include "terrain/Terrain.h"
+#include "terrain/TerrainGenerator.h"
 #include "terrain/ClimateGenerator.h"
 #include "utils/Data.h"
 #include "utils/Parser.h"
@@ -58,7 +58,7 @@ int main() {
 	Data::getInstance();
 	Data::getInstance().getConfig("C:/Users/Paul/Documents/Visual Studio 2017/Projects/RandomVic2/config.json");
 	Parser genericParser;
-	Terrain terrainGenerator;
+	TerrainGenerator terrainGenerator;
 	Provinces provinceGenerator;
 	ClimateGenerator climateGenerator;
 	Visualizer visualizer;

@@ -5,7 +5,7 @@
 #include "CountryCreation.h"
 #include "Victoria2Parser.h"
 #include "../entities/Prov.h"
-#include "../terrain/Terrain.h"
+#include "../terrain/TerrainGenerator.h"
 #include "../terrain/Provinces.h"
 #pragma once
 class VictoriaModule
