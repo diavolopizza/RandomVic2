@@ -33,7 +33,7 @@ void Region::assignContinent(Continent * C, uint32_t recursionDepth, uint32_t mi
 				break;
 		}
 	}
-	for (Prov *prov : provinces)
+	for (Province *prov : provinces)
 	{
 		prov->assignContinent(C);
 	}

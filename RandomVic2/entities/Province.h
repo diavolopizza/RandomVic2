@@ -10,15 +10,15 @@
 #include <random>
 using namespace std;
 
-class Prov
+class Province
 {
 	string path;
 	ranlux24 random;
 public:
-	Prov();
-	Prov(int, RGBTRIPLE);
-	Prov(int, RGBTRIPLE, bool);
-	~Prov();
+	Province();
+	Province(int, RGBTRIPLE);
+	Province(int, RGBTRIPLE, bool);
+	~Province();
 	RGBTRIPLE colour;
 
 	uint32_t provID = 0;
@@ -27,7 +27,7 @@ public:
 	Region* region = nullptr;
 	Country * country = nullptr;
 	bool placed = false, coastal = false, island = false, sea = false;
-	bool operator==(const Prov& right) const;
+	bool operator==(const Province& right) const;
 	string terrain_type = "";
 	string climate = "";
 	string owner = "";//tag who owns prov
@@ -41,14 +41,14 @@ public:
 	bool developed = false;
 	void checkDeveloped(vector <int> developed_continent);
 
-	vector <Prov*> adjProv;//contains all the province Ids of the neighbouring provinces
+	vector <Province*> adjProv;//contains all the province Ids of the neighbouring provinces
 	vector<uint32_t> pixels;
 	vector<uint32_t> borderPixels;
 	set<uint32_t> positionCandidates;
-	void setNeighbour(Prov*P, bool level);
+	void setNeighbour(Province*P, bool level);
 	void assignContinent(Continent *C);
 	void assignRegion(Region *R, bool recursive, uint32_t minProvPerRegion);
 	void computeCandidates();
-	bool hasAdjacent(Prov*P);
+	bool hasAdjacent(Province*P);
 };
 

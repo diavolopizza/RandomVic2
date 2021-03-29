@@ -28,7 +28,7 @@ void Victoria2Parser::createFolders(string modPath) {
 
 }
 
-void Victoria2Parser::writeCountries(string modPath, vector<Prov*> provinces)
+void Victoria2Parser::writeCountries(string modPath, vector<Province*> provinces)
 {
 	modPath.append("history/provinces/germany/");
 	for (auto prov : provinces)
@@ -59,7 +59,7 @@ void Victoria2Parser::writeCountries(string modPath, vector<Prov*> provinces)
 
 }
 
-void Victoria2Parser::writePops(string modPath, vector<Prov*> provinces)
+void Victoria2Parser::writePops(string modPath, vector<Province*> provinces)
 {
 	vector<string> popTypes = { "aristocrats", "bureaucrats", "officers", "clergymen", "artisans", "soldiers", "farmers" };
 
@@ -100,7 +100,7 @@ string Victoria2Parser::readClimateHeader(string filePath)
 	content.erase(pos, string::npos);
 	return content;
 }
-void Victoria2Parser::writeClimate(string filePath, string originalClimatePath, vector<Prov*> provinces)
+void Victoria2Parser::writeClimate(string filePath, string originalClimatePath, vector<Province*> provinces)
 {
 	string completeFile = readClimateHeader(originalClimatePath);
 	string mildClimate = "mild_climate = {\n\t";
@@ -156,7 +156,7 @@ string Victoria2Parser::readDefaultMapHeader(string filePath)
 	return content.substr(pos, string::npos);
 }
 
-void Victoria2Parser::writeDefaultMapHeader(string filePath, string originalDefaultMapPath, vector<Prov*> provinces)
+void Victoria2Parser::writeDefaultMapHeader(string filePath, string originalDefaultMapPath, vector<Province*> provinces)
 {
 	string completeFile = "max_provinces = " + to_string(provinces.size()+1);
 	completeFile.append("\n\nsea_starts = {\n\t");
@@ -176,7 +176,7 @@ void Victoria2Parser::writeDefaultMapHeader(string filePath, string originalDefa
 	defaultMap.close();
 }
 
-void Victoria2Parser::writePositions(string modPath, vector<Prov*> provinces)
+void Victoria2Parser::writePositions(string modPath, vector<Province*> provinces)
 {
 	string completeFile = "";
 	for (auto province : provinces) {

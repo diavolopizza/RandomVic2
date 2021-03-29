@@ -4,7 +4,7 @@
 #include "../utils/BMPHandler.h"
 #include "CountryCreation.h"
 #include "Victoria2Parser.h"
-#include "../entities/Prov.h"
+#include "../entities/Province.h"
 #include "../terrain/TerrainGenerator.h"
 #include "../terrain/ProvinceGenerator.h"
 #pragma once

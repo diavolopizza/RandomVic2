@@ -1,18 +1,18 @@
-#include "Prov.h"
+#include "Province.h"
 
 
-Prov::Prov()
+Province::Province()
 {
 }
 
-Prov::Prov(int provID, RGBTRIPLE colour)
+Province::Province(int provID, RGBTRIPLE colour)
 {
 	this->provID = provID;
 	this->colour = colour;
 	this->owner = "DUM";
 }
 
-Prov::Prov(int provID, RGBTRIPLE colour, bool sea)
+Province::Province(int provID, RGBTRIPLE colour, bool sea)
 {
 	this->colour = colour;
 	this->provID = provID;
@@ -24,12 +24,12 @@ Prov::Prov(int provID, RGBTRIPLE colour, bool sea)
 	this->climate = "mild_climate";
 }
 
-Prov::~Prov()
+Province::~Province()
 {
 }
 
 
-bool Prov::operator==(const Prov& right) const
+bool Province::operator==(const Province& right) const
 {
 
 	if (this->colour.rgbtRed == right.colour.rgbtRed)
@@ -44,7 +44,7 @@ bool Prov::operator==(const Prov& right) const
 
 
 
-void Prov::setNeighbour(Prov*P, bool level = false)
+void Province::setNeighbour(Province*P, bool level = false)
 {
 	bool found = false;
 	for (auto neighbour : adjProv)
@@ -59,7 +59,7 @@ void Prov::setNeighbour(Prov*P, bool level = false)
 		P->setNeighbour(this, false);
 }
 
-void Prov::checkDeveloped(vector <int> developed_continent) {
+void Province::checkDeveloped(vector <int> developed_continent) {
 	for (auto dev_con : developed_continent)
 	{
 		//if (this->continent == dev_con)
@@ -70,7 +70,7 @@ void Prov::checkDeveloped(vector <int> developed_continent) {
 	}
 }
 
-void Prov::assignContinent(Continent * C)
+void Province::assignContinent(Continent * C)
 {
 	this->continent = C;
 	C->provinces.push_back(this);
@@ -82,7 +82,7 @@ void Prov::assignContinent(Continent * C)
 	}
 }
 
-void Prov::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)
+void Province::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)
 {
 	this->region = R;
 	R->provinces.push_back(this);
@@ -117,7 +117,7 @@ void Prov::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)
 	}
 }
 
-void Prov::computeCandidates()
+void Province::computeCandidates()
 {
 	while (positionCandidates.size() < 20 && positionCandidates.size() < pixels.size() - 1)
 	{
@@ -125,7 +125,7 @@ void Prov::computeCandidates()
 	}
 }
 
-bool Prov::hasAdjacent(Prov * P)
+bool Province::hasAdjacent(Province * P)
 {
 	for (auto adjProvince : adjProv)
 	{

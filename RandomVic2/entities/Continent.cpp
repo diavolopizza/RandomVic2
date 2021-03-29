@@ -11,11 +11,11 @@ Continent::~Continent()
 {
 }
 
-void Continent::addProvince(Prov * P)
+void Continent::addProvince(Province * P)
 {
 	provinces.push_back(P);
 }
 
-void Continent::removeProvince(Prov * P)
+void Continent::removeProvince(Province * P)
 {
 }

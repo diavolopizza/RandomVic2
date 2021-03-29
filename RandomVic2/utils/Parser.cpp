@@ -11,7 +11,7 @@ Parser::~Parser()
 {
 }
 
-void Parser::writeDefinition(string filePath, vector<Prov*> provinces)
+void Parser::writeDefinition(string filePath, vector<Province*> provinces)
 {
 	string completeString = "province;red;green;blue;x;x\n";
 	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
@@ -37,7 +37,7 @@ void Parser::writeDefinition(string filePath, vector<Prov*> provinces)
 	definitionFile.close();
 }
 
-void Parser::writeAdjacency(string filePath, vector<Prov*> provinces)
+void Parser::writeAdjacency(string filePath, vector<Province*> provinces)
 {
 	string completeString = "provinceID;red;green;blue;Neighbours\n";
 	for (uint32_t provNr = 0; provNr < provinces.size(); provNr++)
@@ -116,7 +116,7 @@ string Parser::readClimateHeader(string filePath)
 	return content;
 }
 
-void Parser::writeClimate(string filePath, /*string originalClimatePath,*/ vector<Prov*> provinces)
+void Parser::writeClimate(string filePath, /*string originalClimatePath,*/ vector<Province*> provinces)
 {
 	string completeString = "";//this is VIC 2 SPECIFIC readClimateHeader(originalClimatePath);
 	string mildClimate = "mild_climate = {\n\t";
@@ -172,7 +172,7 @@ string Parser::readDefaultMapHeader(string filePath)
 	return content.substr(pos, string::npos);
 }
 
-void Parser::writeDefaultMapHeader(string filePath, /*string originalDefaultMapPath, */vector<Prov*> provinces)
+void Parser::writeDefaultMapHeader(string filePath, /*string originalDefaultMapPath, */vector<Province*> provinces)
 {
 	string completeString = "max_provinces = " + to_string(provinces.size());
 	completeString.append("\n\nsea_starts = {\n\t");

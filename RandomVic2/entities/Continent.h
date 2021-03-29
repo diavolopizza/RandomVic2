@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 using namespace std;
-class Prov;
+class Province;
 class Region;
 class Continent
 {
@@ -12,11 +12,11 @@ public:
 	string name;
 	uint32_t ID;
 	bool civilized;
-	vector<Prov*> provinces;
+	vector<Province*> provinces;
 	vector<Region*> regions;
 	Continent(string name, uint32_t ID);
 	~Continent();
-	void addProvince(Prov*P);
-	void removeProvince(Prov *P);
+	void addProvince(Province*P);
+	void removeProvince(Province *P);
 };
 

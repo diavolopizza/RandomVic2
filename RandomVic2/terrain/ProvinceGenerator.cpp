@@ -87,9 +87,9 @@ void ProvinceGenerator::evaluateNeighbours(Bitmap provinceBMP)
 	const uint32_t size = width * height;
 	for (auto i = 0u; i < size - width; i++)
 	{
-		Prov* left = provinceMap[provinceBMP.getTripleAtIndex(i)];
-		Prov* right = provinceMap[provinceBMP.getTripleAtIndex(i + 1u)];
-		Prov* below = provinceMap[provinceBMP.getTripleAtIndex(i + width)];
+		Province* left = provinceMap[provinceBMP.getTripleAtIndex(i)];
+		Province* right = provinceMap[provinceBMP.getTripleAtIndex(i + 1u)];
+		Province* below = provinceMap[provinceBMP.getTripleAtIndex(i + width)];
 
 		if (!(left == right)) {
 			left->setNeighbour(right, true);
@@ -196,7 +196,7 @@ void ProvinceGenerator::provinceCreation(Bitmap* provinceBMP, uint32_t provinceS
 			red = 1; //reset red
 		}
 		//create new landprovince
-		Prov* P = new Prov(i, provinceColour, provinceColour.rgbtBlue == 255);
+		Province* P = new Province(i, provinceColour, provinceColour.rgbtBlue == 255);
 
 		determineStartingPixel(provinceBMP, P->pixels, provinceColour, provinceSize);
 		vector<unsigned int> newPixels(4);
@@ -301,7 +301,7 @@ void ProvinceGenerator::beautifyProvinces(Bitmap* provinceBMP, Bitmap riverBMP, 
 		}
 	}
 	// delete provinces in province list
-	provinces.erase(std::remove_if(provinces.begin(), provinces.end(), [](const Prov* p) {return p->pixels.size() == 0 && !p->sea; }), provinces.end());
+	provinces.erase(std::remove_if(provinces.begin(), provinces.end(), [](const Province* p) {return p->pixels.size() == 0 && !p->sea; }), provinces.end());
 	// correct provinceIDs
 	for (uint32_t i = 0; i < provinces.size(); i++)
 		provinces[i]->provID = i;
@@ -335,7 +335,7 @@ void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 						unique = true;
 					}
 				}
-				Prov * lake = new Prov((int)provinces.size() + 1, lakeColour, true);
+				Province * lake = new Province((int)provinces.size() + 1, lakeColour, true);
 				provinceMap.setValue(lakeColour, lake);
 				provinces.push_back(lake);
 				lake->pixels.push_back(unassignedPixel);
@@ -380,8 +380,8 @@ void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 			if (provinceBMP->getValueAtIndex(unassignedPixel) == 0)
 			{
 				auto distance = 10000000;
-				Prov* nextOwner = nullptr;
-				for (Prov* P : provinces)
+				Province* nextOwner = nullptr;
+				for (Province* P : provinces)
 				{
 					if ((P->colour.rgbtBlue == 1) /*|| (provinceBuffer[unassignedPixel] == 254 && P->colour.rgbtBlue == 255)*/) {
 						//length of vector between current pixel and province pixel
@@ -460,7 +460,7 @@ void ProvinceGenerator::evaluateRegions(uint32_t minProvPerRegion, uint32_t widt
 			if (prov->region == nullptr && !prov->sea) {
 				uint32_t distance = MAXUINT32;
 				Region* nextOwner = nullptr;
-				for (Prov* P : provinces)
+				for (Province* P : provinces)
 				{
 
 					if (P->region != nullptr) {
@@ -548,7 +548,7 @@ void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_
 		if (prov->continent == nullptr && !prov->sea) {
 			uint32_t distance = MAXUINT32;
 			Continent* nextOwner = nullptr;
-			for (Prov* P : provinces)
+			for (Province* P : provinces)
 			{
 				if (P->continent != nullptr) {
 					const int x1 = P->center  % width;

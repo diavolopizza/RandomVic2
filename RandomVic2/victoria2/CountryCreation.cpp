@@ -11,7 +11,7 @@ CountryCreation::~CountryCreation()
 {
 }
 
-void CountryCreation::distributeCountries(vector<Prov*> provinces)
+void CountryCreation::distributeCountries(vector<Province*> provinces)
 {
 	for (auto prov : provinces) {
 		if (prov->sea)

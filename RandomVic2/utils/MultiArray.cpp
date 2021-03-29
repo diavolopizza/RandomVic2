@@ -15,12 +15,12 @@ MultiArray::~MultiArray()
 {
 }
 
-Prov * MultiArray::operator[](RGBTRIPLE colour)
+Province * MultiArray::operator[](RGBTRIPLE colour)
 {
 	return provinceMap[colour.rgbtRed][colour.rgbtGreen][colour.rgbtBlue];
 }
 
-void MultiArray::setValue(RGBTRIPLE colour, Prov * value)
+void MultiArray::setValue(RGBTRIPLE colour, Province * value)
 {
 	provinceMap[colour.rgbtRed][colour.rgbtGreen][colour.rgbtBlue] = value;
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include <iostream>
-#include "../entities/Prov.h"
+#include "../entities/Province.h"
 #include "../entities/Country.h"
 #include "../utils/Bitmap.h"
 #include "../terrain/TerrainGenerator.h"
@@ -21,7 +21,7 @@ public:
 	
 	void generateCountries(uint32_t amount);
 	Flag * createFlag();
-	Country * GetClosestCountry(vector<Prov*> provinces, Prov * seekingProv);
+	Country * GetClosestCountry(vector<Province*> provinces, Province * seekingProv);
 	void distributeCountries(uint32_t amount, uint32_t sizeVariation, vector<Region*> regions);
 	Bitmap countryBMP();
 	Bitmap wealthBMP();

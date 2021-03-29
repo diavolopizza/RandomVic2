@@ -12,7 +12,7 @@
 #include <random>
 #include <thread>
 #include "../utils/Bitmap.h"
-#include "../entities/Prov.h"
+#include "../entities/Province.h"
 #include "../entities/River.h"
 #include "../utils/Buffer.h"
 #include "../utils/UtilLib.h"

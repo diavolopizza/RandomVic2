@@ -6,7 +6,7 @@
 #include <random>
 #include "Flag.h"
 using namespace std;
-class Prov;
+class Province;
 class Region;
 class Country
 {
@@ -14,15 +14,15 @@ class Country
 
 	string tag;
 	uint32_t ID;
-	Prov* capital;
+	Province* capital;
 	RGBTRIPLE colour;
 
 public:
 	Country(string tag, uint32_t ID, RGBTRIPLE colour, ranlux24 random);
 	~Country();
 
-	vector<Prov*> provinces;
-	void addProvince(Prov *P);
+	vector<Province*> provinces;
+	void addProvince(Province *P);
 	vector <Region*> regions;
 	void addRegion(Region * R);
 	RGBTRIPLE getColour();

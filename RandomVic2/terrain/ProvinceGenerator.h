@@ -3,7 +3,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 #include "TerrainGenerator.h"
 #include "../utils/MultiArray.h"
-#include "../entities/Prov.h"
+#include "../entities/Province.h"
 #include <thread>
 using namespace std;
 
@@ -15,7 +15,7 @@ class ProvinceGenerator
 	vector<unsigned char> randomValuesCached;
 
 public:
-	vector<Prov*> provinces;
+	vector<Province*> provinces;
 	vector<Region*> regions;
 	vector<Continent*> continents;
 	ProvinceGenerator();

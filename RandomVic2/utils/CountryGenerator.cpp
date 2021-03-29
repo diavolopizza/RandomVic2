@@ -62,10 +62,10 @@ Flag * CountryGenerator::createFlag()
 	return flag;
 }
 
-Country * CountryGenerator::GetClosestCountry(vector<Prov*> provinces, Prov * seekingProv) {
+Country * CountryGenerator::GetClosestCountry(vector<Province*> provinces, Province * seekingProv) {
 	uint32_t distance = MAXUINT32;
 	Country * C = nullptr;
-	for (Prov* P : provinces)
+	for (Province* P : provinces)
 	{
 		if (!P->country)
 			continue;
@@ -202,7 +202,7 @@ Bitmap CountryGenerator::civilizationBMP()
 		}
 		conIndex++;
 
-		for (Prov* prov : continent->provinces)
+		for (Province* prov : continent->provinces)
 		{
 			prov->civLevel = (continent->civilized ? 0.0 : 0.5) + (double)(random() % 3) / 10.0;
 		}

@@ -20,7 +20,7 @@ Country::~Country()
 {
 }
 
-void Country::addProvince(Prov * P)
+void Country::addProvince(Province * P)
 {
 	this->provinces.push_back(P);
 }

@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include "Continent.h"
-#include "Prov.h"
+#include "Province.h"
 #include "Country.h"
 using namespace std;
 class Region
@@ -11,7 +11,7 @@ class Region
 public:
 	string name;
 	uint32_t ID;
-	vector<Prov*> provinces;	
+	vector<Province*> provinces;	
 	Country * country = nullptr;
 	vector<Region*> neighbourRegions;
 	void setNeighbour(Region*R, bool level);
