@@ -85,7 +85,7 @@ void Visualizer::prettyRivers(Bitmap& riverBMP, const Bitmap heightMap, const Te
 }
 
 //writes the continents to a bitmap, non-unique colours
-void Visualizer::prettyContinents(Bitmap* continentBMP, const Provinces& provinceGenerator)
+void Visualizer::prettyContinents(Bitmap* continentBMP, const ProvinceGenerator& provinceGenerator)
 {
 	cout << "Creating continent" << endl;
 	//delete continentBMP->getBuffer();
@@ -106,7 +106,7 @@ void Visualizer::prettyContinents(Bitmap* continentBMP, const Provinces& provinc
 	}
 }
 //writes the regions to a bitmap, non-unique colours
-void Visualizer::prettyRegions(Bitmap* regionBMP, const Provinces& provinceGenerator)
+void Visualizer::prettyRegions(Bitmap* regionBMP, const ProvinceGenerator& provinceGenerator)
 {
 	std::cout << "Creating regions" << std::endl;
 	//delete regionBMP->getBuffer();

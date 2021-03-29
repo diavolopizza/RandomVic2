@@ -59,7 +59,7 @@ int main() {
 	Data::getInstance().getConfig("C:/Users/Paul/Documents/Visual Studio 2017/Projects/RandomVic2/config.json");
 	Parser genericParser;
 	TerrainGenerator terrainGenerator;
-	Provinces provinceGenerator;
+	ProvinceGenerator provinceGenerator;
 	ClimateGenerator climateGenerator;
 	Visualizer visualizer;
 	//const Bitmap heightMapBMP;

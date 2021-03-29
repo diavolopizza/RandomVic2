@@ -7,7 +7,7 @@
 #include <thread>
 using namespace std;
 
-class Provinces
+class ProvinceGenerator
 {
 	ranlux24 random;
 	hash <int> prov_hash;
@@ -18,8 +18,8 @@ public:
 	vector<Prov*> provinces;
 	vector<Region*> regions;
 	vector<Continent*> continents;
-	Provinces();
-	~Provinces();
+	ProvinceGenerator();
+	~ProvinceGenerator();
 	vector<BYTE> landProvinces(Bitmap terrain, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold);
 	void determineStartingPixel(Bitmap* b, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize);
 	void provinceCreation(Bitmap* provinceBMP, uint32_t provinceSize, uint32_t numOfProvs, uint32_t offset, uint32_t greyval);

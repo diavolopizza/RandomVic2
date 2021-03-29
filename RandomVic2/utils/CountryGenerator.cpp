@@ -2,7 +2,7 @@
 
 
 
-CountryGenerator::CountryGenerator(Provinces *provinceGenerator)
+CountryGenerator::CountryGenerator(ProvinceGenerator *provinceGenerator)
 {
 	this->provinceGenerator = provinceGenerator;
 	this->random = Data::getInstance().random2;

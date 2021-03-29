@@ -2,7 +2,7 @@
 
 
 
-VictoriaModule::VictoriaModule(Data *data, Provinces *terrainGenerator)
+VictoriaModule::VictoriaModule(Data *data, ProvinceGenerator *terrainGenerator)
 {
 	Parser genericParser;
 	//VIC2 stuff starts here

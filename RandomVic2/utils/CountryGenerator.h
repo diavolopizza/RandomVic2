@@ -4,7 +4,7 @@
 #include "../entities/Country.h"
 #include "../utils/Bitmap.h"
 #include "../terrain/TerrainGenerator.h"
-#include "../terrain/Provinces.h"
+#include "../terrain/ProvinceGenerator.h"
 #include <random>
 #include <map>
 #include "Data.h"
@@ -12,9 +12,9 @@ using namespace std;
 class CountryGenerator
 {
 	ranlux24 random;
-	Provinces *provinceGenerator;
+	ProvinceGenerator *provinceGenerator;
 public:
-	CountryGenerator(Provinces *provinceGenerator);
+	CountryGenerator(ProvinceGenerator *provinceGenerator);
 	~CountryGenerator();
 	map<string, Country*> countriesM;
 	vector<Country*> countriesV;

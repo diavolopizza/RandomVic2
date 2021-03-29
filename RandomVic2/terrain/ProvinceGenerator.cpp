@@ -1,4 +1,4 @@
-#include "Provinces.h"
+#include "ProvinceGenerator.h"
 //MACROS
 #define LEFT(val) \
 (val-1*1)
@@ -9,7 +9,7 @@
 #define BELOW(val, offset) \
 (val-1*offset)
 
-Provinces::Provinces()
+ProvinceGenerator::ProvinceGenerator()
 {
 	this->random = Data::getInstance().random2;
 	provinceMap.resize(256);	
@@ -19,12 +19,12 @@ Provinces::Provinces()
 	}
 }
 
-Provinces::~Provinces()
+ProvinceGenerator::~ProvinceGenerator()
 {
 }
 //creates the province map for fast access of provinces when only
 //rgb values are available, removes need to search this province
-MultiArray Provinces::createProvinceMap()
+MultiArray ProvinceGenerator::createProvinceMap()
 {
 	for (auto& province : provinces) {
 
@@ -33,7 +33,7 @@ MultiArray Provinces::createProvinceMap()
 	return provinceMap;
 }
 //
-int Provinces::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height) {
+int ProvinceGenerator::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint32_t height) {
 	int distance = MAXINT32;
 	for (auto& P : provinces)
 	{
@@ -48,7 +48,7 @@ int Provinces::GetMinDistanceToProvince(uint32_t position, uint32_t width, uint3
 	return distance;
 }
 //Utility to find starting point of new province
-void Provinces::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize) {
+void ProvinceGenerator::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize) {
 	const uint32_t bmpWidth = bitmap->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = bitmap->bInfoHeader.biHeight;
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
@@ -64,7 +64,7 @@ void Provinces::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provinc
 	provincePixels.push_back(startingPixel);
 }
 //evaluate if province is coastal
-void Provinces::evaluateCoasts(Bitmap provinceBMP)
+void ProvinceGenerator::evaluateCoasts(Bitmap provinceBMP)
 {
 	for (auto prov : provinces) {
 		if (!prov->sea) {
@@ -80,7 +80,7 @@ void Provinces::evaluateCoasts(Bitmap provinceBMP)
 	}
 }
 //Finds neighbours of all provinces and assigns them
-void Provinces::evaluateNeighbours(Bitmap provinceBMP)
+void ProvinceGenerator::evaluateNeighbours(Bitmap provinceBMP)
 {
 	const uint32_t width = provinceBMP.bInfoHeader.biWidth;
 	const uint32_t height = provinceBMP.bInfoHeader.biHeight;
@@ -100,7 +100,7 @@ void Provinces::evaluateNeighbours(Bitmap provinceBMP)
 	}
 }
 //Reads Pixels from bitmap and assigns them to provinces
-void Provinces::provPixels(const Bitmap* provinceBMP)
+void ProvinceGenerator::provPixels(const Bitmap* provinceBMP)
 {
 	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = provinceBMP->bInfoHeader.biHeight;
@@ -132,7 +132,7 @@ void Provinces::provPixels(const Bitmap* provinceBMP)
 }
 
 //generates all land provinces
-vector<BYTE> Provinces::landProvinces(Bitmap terrainBMP, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold)
+vector<BYTE> ProvinceGenerator::landProvinces(Bitmap terrainBMP, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold)
 {
 	cout << "Generating provinces" << endl;
 	const uint32_t bmpWidth = terrainBMP.bInfoHeader.biWidth;
@@ -162,8 +162,8 @@ vector<BYTE> Provinces::landProvinces(Bitmap terrainBMP, Bitmap* provinceBMP, Bi
 	for (auto i = 0; i < threadAmount; ++i) {
 		uint32_t from = i * (bmpSize / threadAmount);
 		uint32_t to = (i + 1) * (bmpSize / threadAmount);
-		threads.push_back(std::thread(&Provinces::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)1, (uint32_t)0, from, to, updateThreshold));
-		threads.push_back(std::thread(&Provinces::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)255, (uint32_t)254, from, to, updateThreshold));
+		threads.push_back(std::thread(&ProvinceGenerator::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)1, (uint32_t)0, from, to, updateThreshold));
+		threads.push_back(std::thread(&ProvinceGenerator::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)255, (uint32_t)254, from, to, updateThreshold));
 	}
 	//wait for threads to finish
 	for (auto& t : threads) {
@@ -175,7 +175,7 @@ vector<BYTE> Provinces::landProvinces(Bitmap terrainBMP, Bitmap* provinceBMP, Bi
 	return provinceBMP->getBuffer();
 }
 //creates the basic province with a random shape
-void Provinces::provinceCreation(Bitmap* provinceBMP, uint32_t provinceSize, uint32_t numOfProvs, uint32_t offset, uint32_t greyval)
+void ProvinceGenerator::provinceCreation(Bitmap* provinceBMP, uint32_t provinceSize, uint32_t numOfProvs, uint32_t offset, uint32_t greyval)
 {
 	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = provinceBMP->bInfoHeader.biHeight;
@@ -229,7 +229,7 @@ void Provinces::provinceCreation(Bitmap* provinceBMP, uint32_t provinceSize, uin
 }
 
 //fills unassigned pixels in iterations, so provinces grow
-void Provinces::fill(Bitmap* provinceBMP, const Bitmap riverBMP, const unsigned char greyVal, const unsigned char fillVal, const uint32_t from, const uint32_t to, uint32_t updateThreshold)
+void ProvinceGenerator::fill(Bitmap* provinceBMP, const Bitmap riverBMP, const unsigned char greyVal, const unsigned char fillVal, const uint32_t from, const uint32_t to, uint32_t updateThreshold)
 {
 	cout << "Starting filling of unassigned pixels from pixel " << from << " to pixel " << to << endl;
 	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;
@@ -284,7 +284,7 @@ void Provinces::fill(Bitmap* provinceBMP, const Bitmap riverBMP, const unsigned 
 	}
 }
 //evaluates province size to define wether it should be deleted in case it is too small
-void Provinces::beautifyProvinces(Bitmap* provinceBMP, Bitmap riverBMP, uint32_t minProvSize)
+void ProvinceGenerator::beautifyProvinces(Bitmap* provinceBMP, Bitmap riverBMP, uint32_t minProvSize)
 {
 	cout << "Beautifying provinces" << endl;
 	// delete province on map by setting colour to black
@@ -311,7 +311,7 @@ void Provinces::beautifyProvinces(Bitmap* provinceBMP, Bitmap riverBMP, uint32_t
 	provPixels(provinceBMP);
 }
 //assigns all unassigned pixels to the nearest province
-void Provinces::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
+void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 	cout << "Assigning remaining pixels provinces" << endl;
 	//Assign remaining pixels
 	const uint32_t bmpWidth = provinceBMP->bInfoHeader.biWidth;
@@ -428,7 +428,7 @@ void Provinces::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 
 //creates region of defined size on each continent and assigns
 //provinces to those regions
-void Provinces::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_t height)
+void ProvinceGenerator::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_t height)
 {
 	uint32_t regionID = 0;
 	for (auto prov : provinces)
@@ -510,7 +510,7 @@ void Provinces::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint3
 }
 //creates continents from the random landmasses and assigns
 //provinces to those continents
-void Provinces::evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height) {
+void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height) {
 	uint32_t continentID = 0;
 
 	//for (auto region : regions)

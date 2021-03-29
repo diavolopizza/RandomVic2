@@ -6,12 +6,12 @@
 #include "Victoria2Parser.h"
 #include "../entities/Prov.h"
 #include "../terrain/TerrainGenerator.h"
-#include "../terrain/Provinces.h"
+#include "../terrain/ProvinceGenerator.h"
 #pragma once
 class VictoriaModule
 {
 public:
-	VictoriaModule(Data *data, Provinces *terraingenerator);
+	VictoriaModule(Data *data, ProvinceGenerator *terraingenerator);
 	~VictoriaModule();
 	void dumpMapFiles(Data* data, Bitmap terrainbmp, Bitmap riverBMP, Bitmap continents, Bitmap regionBMP, Bitmap heightmapBMP, Bitmap provincesBMP);
 };
