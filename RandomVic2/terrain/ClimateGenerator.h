@@ -28,5 +28,5 @@ public:
 	//TERRAIN
 	void humidityMap(Bitmap heightmapBMP, Bitmap* humidityBMP, uint32_t seaLevel, uint32_t updateThreshold);
 	// visuals:
-	void prettyTerrain(Bitmap* terrainBMP, const Bitmap heightmap, uint32_t seaLevel, uint32_t updateThreshold);
+	void complexTerrain(Bitmap* terrainBMP, const Bitmap heightmap, uint32_t seaLevel, uint32_t updateThreshold);
 };

@@ -311,18 +311,18 @@ void Terrain::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp)
 void Terrain::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 {
 	cout << "Creating rivers" << endl;
-	set<uint32_t> riverPixels;
+	set<int> riverPixels;
 	//TODO PARAMETRISATION
 		//ELEVATION
 		//COLOURRANGE
-	const uint32_t heightmapWidth = heightMap.bInfoHeader.biWidth;
-	for (uint32_t i = 0; i < Data::getInstance().numRivers; i++) {
+	const int heightmapWidth = heightMap.bInfoHeader.biWidth;
+	for (int i = 0; i < Data::getInstance().numRivers; i++) {
 		//start a new river
 		River* R = new River();
 		this->rivers.push_back(R);
 
 		//find random start point
-		uint32_t start = 0;
+		int start = 0;
 		while (!(heightMap.getValueAtIndex(start) > Data::getInstance().seaLevel) && riverPixels.find(start) == riverPixels.end())
 		{
 			start = (random() % heightMap.bInfoHeader.biSizeImage);
@@ -332,35 +332,37 @@ void Terrain::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 		R->pixels.push_back(start);
 		riverPixels.insert(R->getCurrentEnd());
 
-		//check each direction for fastest decay in altitude, each direction checked 5 pixels away
-		vector<uint32_t> altitudes{ heightMap.getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth * 5)),
-			heightMap.getValueAtIndex(BELOW(R->getCurrentEnd(), heightmapWidth * 5)),
-			heightMap.getValueAtIndex(R->getCurrentEnd() - 5),
-			heightMap.getValueAtIndex(R->getCurrentEnd() + 5) };
 
-		const std::vector<uint32_t>::iterator result = std::min_element(std::begin(altitudes), std::end(altitudes));
-		const uint32_t favDirection = (uint32_t)std::distance(std::begin(altitudes), result);
+		//const int favDirection = 1;
 
 		int previous = 0; //this variable is used to avoid rectangles in the river
 		//continue the river until the sealevel is reached, either at a lake or the ocean
 		while (heightMap.getValueAtIndex(R->getCurrentEnd()) > Data::getInstance().seaLevel - 1) {
-			uint32_t elevationToleranceOffset = 0;
-			vector<uint32_t> candidates;
+			//check each direction for fastest decay in altitude, each direction checked 5 pixels away
+			vector<int> altitudes{ heightMap.getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth * 5)),
+				heightMap.getValueAtIndex(BELOW(R->getCurrentEnd(), heightmapWidth * 5)),
+				heightMap.getValueAtIndex(R->getCurrentEnd() - 5),
+				heightMap.getValueAtIndex(R->getCurrentEnd() + 5) };
+
+			const std::vector<int>::iterator result = std::min_element(std::begin(altitudes), std::end(altitudes));
+			const int favDirection = (int)std::distance(std::begin(altitudes), result);
+			int elevationToleranceOffset = 0;
+			vector<int> candidates;
 			//now expand to lower or equal pixel as long as possible
 			while (elevationToleranceOffset < Data::getInstance().elevationTolerance && !candidates.size()) {
-				if (heightMap.getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth)) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth)) && favDirection != 1) {
+				if (heightMap.getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth)) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth))) {
 					if (ABOVE(R->getCurrentEnd(), heightmapWidth) < riverBMP->bInfoHeader.biSizeImage && previous != -(int)heightmapWidth)
 						candidates.push_back(ABOVE(R->getCurrentEnd(), heightmapWidth));
 				}
-				if (heightMap.getValueAtIndex(BELOW(R->getCurrentEnd(), heightmapWidth)) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(BELOW(R->getCurrentEnd(), heightmapWidth)) && favDirection != 0) {
+				if (heightMap.getValueAtIndex(BELOW(R->getCurrentEnd(), heightmapWidth)) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(BELOW(R->getCurrentEnd(), heightmapWidth))) {
 					if (BELOW(R->getCurrentEnd(), heightmapWidth) > heightmapWidth && previous != heightmapWidth)
 						candidates.push_back(BELOW(R->getCurrentEnd(), heightmapWidth));
 				}
-				if (heightMap.getValueAtIndex(LEFT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(LEFT(R->getCurrentEnd())) && favDirection != 3) {
+				if (heightMap.getValueAtIndex(LEFT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(LEFT(R->getCurrentEnd())) ) {
 					if (LEFT(R->getCurrentEnd()) > 3 && previous != 1)
 						candidates.push_back(LEFT(R->getCurrentEnd()));
 				}
-				if (heightMap.getValueAtIndex(RIGHT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(RIGHT(R->getCurrentEnd())) && favDirection != 2) {
+				if (heightMap.getValueAtIndex(RIGHT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(RIGHT(R->getCurrentEnd())) ) {
 					if (RIGHT(R->getCurrentEnd()) < heightMap.bInfoHeader.biSizeImage - 1 && previous != -1)
 						candidates.push_back(RIGHT(R->getCurrentEnd()));
 				}
@@ -375,10 +377,10 @@ void Terrain::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 			if (candidates.size() == 0) {
 				break;
 			}
-			uint32_t newPixel = candidates[random() % candidates.size()];
+			int newPixel = candidates[random() % candidates.size()];
 
 
-			vector<uint32_t> directions;
+			vector<int> directions;
 			directions.push_back(LEFT(newPixel));
 			directions.push_back(RIGHT(newPixel));
 			directions.push_back(BELOW(newPixel, heightmapWidth));
@@ -390,12 +392,11 @@ void Terrain::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 					directions.erase(directions.begin() + index);
 				}
 			}
-			vector<uint32_t> neighbouringRiverPixels;
+			vector<int> neighbouringRiverPixels;
 			for (auto directionPixel : directions) {
 				if (riverPixels.find(directionPixel) != riverPixels.end())
 					neighbouringRiverPixels.push_back(directionPixel);
 			}
-
 
 			if (neighbouringRiverPixels.size() > 0) { //newpixel is next to another river, which means we terminate this river inside the other river
 				if (R->pixels.size() > 1)

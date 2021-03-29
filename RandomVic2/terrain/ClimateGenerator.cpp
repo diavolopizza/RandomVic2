@@ -230,7 +230,7 @@ void ClimateGenerator::humidityMap(Bitmap heightmapBMP, Bitmap* humidityBMP, uin
 	}*/
 }
 //creates terrain around simplistic climate model
-void ClimateGenerator::prettyTerrain(Bitmap* terrainBMP, const Bitmap heightMap, uint32_t seaLevel, uint32_t updateThreshold)
+void ClimateGenerator::complexTerrain(Bitmap* terrainBMP, const Bitmap heightMap, uint32_t seaLevel, uint32_t updateThreshold)
 {
 	/*cout << "Creating complex terrain" << endl;
 	if (Data::getInstance().opencvVisualisation)

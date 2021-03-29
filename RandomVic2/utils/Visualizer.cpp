@@ -4,6 +4,7 @@
 
 Visualizer::Visualizer()
 {
+	this->random = Data::getInstance().random2;
 }
 
 
@@ -44,7 +45,7 @@ Visualizer::~Visualizer()
 	//HWND hwnd = (HWND)cvGetWindowHandle("Display window");
 	//BringWindowToTop(hwnd);
 	//ShowWindow(hwnd, SW_RESTORE);*/
-                           // Wait for a keystroke in the window
+						   // Wait for a keystroke in the window
 //}
 
 //void Visualizer::initializeWindow()
@@ -80,5 +81,55 @@ void Visualizer::prettyRivers(Bitmap& riverBMP, const Bitmap heightMap, const Te
 	}
 	for (River* river : terrainGenerator.rivers) {
 		riverBMP.setValueAtIndex(river->getSource(), 0);
+	}
+}
+
+//writes the continents to a bitmap, non-unique colours
+void Visualizer::prettyContinents(Bitmap* continentBMP, const Provinces& provinceGenerator)
+{
+	cout << "Creating continent" << endl;
+	//delete continentBMP->getBuffer();
+	continentBMP->setBuffer(vector<BYTE>(continentBMP->bInfoHeader.biSizeImage));
+	for (auto continent : provinceGenerator.continents) {
+		RGBTRIPLE continentColour;
+		continentColour.rgbtBlue = random() % 256;
+		continentColour.rgbtGreen = random() % 256;
+		continentColour.rgbtRed = random() % 256;
+
+		for (auto province : continent->provinces)
+		{
+			for (uint32_t pixel : province->pixels)
+			{
+				continentBMP->setTripleAtIndex(continentColour, pixel);
+			}
+		}
+	}
+}
+//writes the regions to a bitmap, non-unique colours
+void Visualizer::prettyRegions(Bitmap* regionBMP, const Provinces& provinceGenerator)
+{
+	std::cout << "Creating regions" << std::endl;
+	//delete regionBMP->getBuffer();
+	regionBMP->setBuffer(vector<BYTE>(regionBMP->bInfoHeader.biSizeImage));
+	for (auto region : provinceGenerator.regions) {
+		RGBTRIPLE regionColour;
+		regionColour.rgbtBlue = random() % 256;
+		regionColour.rgbtGreen = random() % 256;
+		regionColour.rgbtRed = random() % 256;
+		RGBTRIPLE borderColour = { 255,255,255 };
+		RGBTRIPLE centerColour = { 0,0,0 };
+
+		for (auto province : region->provinces)
+		{
+			for (auto pixel : province->pixels)
+			{
+				regionBMP->setTripleAtIndex(regionColour, pixel);
+			}
+			for (auto pixel : province->borderPixels)
+			{
+				regionBMP->setTripleAtIndex(borderColour, pixel);
+			}
+			regionBMP->setTripleAtIndex(centerColour, province->center);
+		}
 	}
 }

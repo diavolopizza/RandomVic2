@@ -11,27 +11,27 @@ River::~River()
 {
 }
 
-void River::setSource(uint32_t pixel)
+void River::setSource(int pixel)
 {
 	this->source = pixel;
 }
 
-uint32_t River::getSource()
+int River::getSource()
 {
 	return source;
 }
 
-uint32_t River::getCurrentEnd()
+int River::getCurrentEnd()
 {
 	return currentEnd;
 }
 
-void River::setcurrentEnd(uint32_t pixel)
+void River::setcurrentEnd(int pixel)
 {
 	this->currentEnd = pixel;
 }
 
-bool River::contains(uint32_t pixel)
+bool River::contains(int pixel)
 {
 	for (auto pix : pixels)
 	{
@@ -41,7 +41,7 @@ bool River::contains(uint32_t pixel)
 	return false;
 }
 
-void River::addIngoing(River * ingoing, uint32_t pixel)
+void River::addIngoing(River * ingoing, int pixel)
 {
 	this->ingoing.push_back(ingoing);
 	ingoing->addEndsIn(this);
@@ -58,7 +58,7 @@ void River::addEndsIn(River * river)
 	this->endsIn = river;
 }
 
-River * River::getIngoingForKey(uint32_t pixel)
+River * River::getIngoingForKey(int pixel)
 {
 	if (ingoingRivers.find(pixel) != ingoingRivers.end())
 		return ingoingRivers.at(pixel);

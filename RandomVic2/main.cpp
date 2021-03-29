@@ -118,7 +118,7 @@ int main() {
 		//BMPHandler::getInstance().SaveBMPToFile(provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
 		provinceGenerator.createProvinceMap();
 		provinceGenerator.provPixels(&provincesBMP);
-		provinceGenerator.prettyProvinces(&provincesBMP, riverBMP, Data::getInstance().minProvSize);
+		provinceGenerator.beautifyProvinces(&provincesBMP, riverBMP, Data::getInstance().minProvSize);
 		{
 			provinceGenerator.evaluateNeighbours(provincesBMP);
 			genericParser.writeAdjacency((Data::getInstance().debugMapsPath + ("adjacency.csv")).c_str(), provinceGenerator.provinces);
@@ -132,20 +132,20 @@ int main() {
 	//assign provinces to regions and dump them
 	{
 		provinceGenerator.evaluateRegions(Data::getInstance().minProvPerRegion, Data::getInstance().width, Data::getInstance().height);
-		provinceGenerator.prettyRegions(&regionBMP);
+		visualizer.prettyRegions(&regionBMP, provinceGenerator);
 		genericParser.writeRegions((Data::getInstance().debugMapsPath + ("region.txt")).c_str(), provinceGenerator.regions);
 	}
 	//assign provinces to continents and dump them
 	{
 		provinceGenerator.evaluateContinents(Data::getInstance().minProvPerContinent, Data::getInstance().width, Data::getInstance().height);
-		provinceGenerator.prettyContinents(&continents);
+		visualizer.prettyContinents(&continents, provinceGenerator);
 		genericParser.writeContinents((Data::getInstance().debugMapsPath + ("continent.txt")).c_str(), provinceGenerator.continents);
 	}
 	if (Data::getInstance().genComplexTerrain) {
 		//terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		//BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (Data::getInstance().debugMapsPath + ("humidity.bmp")).c_str());
 		//generate terrain and rivers according to simplistic climate model
-		climateGenerator.prettyTerrain(&terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
+		climateGenerator.complexTerrain(&terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("terrain.bmp")).c_str());
 	}
 	else {

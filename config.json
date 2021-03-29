@@ -10,9 +10,9 @@
 
 	"map": 
 	{
-		"seed" : 3,
+		"seed" : 4,
         "height" : 2000,
-		"width" : 5000,
+		"width" : 2000,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		

@@ -284,7 +284,7 @@ void Provinces::fill(Bitmap* provinceBMP, const Bitmap riverBMP, const unsigned 
 	}
 }
 //evaluates province size to define wether it should be deleted in case it is too small
-void Provinces::prettyProvinces(Bitmap* provinceBMP, Bitmap riverBMP, uint32_t minProvSize)
+void Provinces::beautifyProvinces(Bitmap* provinceBMP, Bitmap riverBMP, uint32_t minProvSize)
 {
 	cout << "Beautifying provinces" << endl;
 	// delete province on map by setting colour to black
@@ -508,35 +508,6 @@ void Provinces::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint3
 		}
 	}
 }
-//writes the regions to a bitmap, non-unique colours
-void Provinces::prettyRegions(Bitmap* regionBMP)
-{
-	std::cout << "Creating regions" << std::endl;
-	//delete regionBMP->getBuffer();
-	regionBMP->setBuffer(vector<BYTE>(regionBMP->bInfoHeader.biSizeImage));
-	for (auto region : regions) {
-		RGBTRIPLE regionColour;
-		regionColour.rgbtBlue = random() % 256;
-		regionColour.rgbtGreen = random() % 256;
-		regionColour.rgbtRed = random() % 256;
-		RGBTRIPLE borderColour = { 255,255,255 };
-		RGBTRIPLE centerColour = { 0,0,0 };
-
-		for (auto province : region->provinces)
-		{
-			for (auto pixel : province->pixels)
-			{
-				regionBMP->setTripleAtIndex(regionColour, pixel);
-			}
-			for (auto pixel : province->borderPixels)
-			{
-				regionBMP->setTripleAtIndex(borderColour, pixel);
-			}
-			regionBMP->setTripleAtIndex(centerColour, province->center);
-
-		}
-	}
-}
 //creates continents from the random landmasses and assigns
 //provinces to those continents
 void Provinces::evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height) {
@@ -592,27 +563,6 @@ void Provinces::evaluateContinents(uint32_t minProvPerContinent, uint32_t width,
 			}
 			//if (nextOwner != nullptr)
 			prov->assignContinent(nextOwner);
-		}
-	}
-}
-//writes the continents to a bitmap, non-unique colours
-void Provinces::prettyContinents(Bitmap* continentBMP)
-{
-	cout << "Creating continent" << endl;
-	//delete continentBMP->getBuffer();
-	continentBMP->setBuffer(vector<BYTE>(continentBMP->bInfoHeader.biSizeImage));
-	for (auto continent : continents) {
-		RGBTRIPLE continentColour;
-		continentColour.rgbtBlue = random() % 256;
-		continentColour.rgbtGreen = random() % 256;
-		continentColour.rgbtRed = random() % 256;
-
-		for (auto province : continent->provinces)
-		{
-			for (uint32_t pixel : province->pixels)
-			{
-				continentBMP->setTripleAtIndex(continentColour, pixel);
-			}
 		}
 	}
 }
