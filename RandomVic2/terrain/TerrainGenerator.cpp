@@ -212,70 +212,30 @@ void TerrainGenerator::detectContinents(Bitmap heightMap)
 	while (unassignedPixels.size())
 	{
 		auto pixel = *unassignedPixels.begin();
-		set<uint32_t> tempPixels;
-		set<uint32_t> pixelStack;
-		tempPixels.insert(pixel);
-		pixelStack.insert(pixel);
+		set<uint32_t> tempPixels = { pixel };
+		set<uint32_t> pixelStack = { pixel };
 		unassignedPixels.erase(pixel);
+		vector<int> offsets = { 1 ,-1, heightMap.bInfoHeader.biWidth, -heightMap.bInfoHeader.biWidth };
 
 		while (pixelStack.size())
 		{
 			pixel = *pixelStack.begin();
-			const auto savePixel = pixel;
-			while (heightMap.getValueAtIndex(pixel++) == 255)
+			pixelStack.erase(pixel);
+			//const auto savePixel = pixel;
+			for (auto offset : offsets)
 			{
-				if (tempPixels.find(pixel) == tempPixels.end())
+				while (heightMap.getValueAtIndex(pixel += offset) == 255)
 				{
-					tempPixels.insert(pixel);
-					pixelStack.insert(pixel);
-					unassignedPixels.erase(pixel);
+					if (tempPixels.find(pixel) == tempPixels.end())
+					{
+						tempPixels.insert(pixel);
+						pixelStack.insert(pixel);
+						unassignedPixels.erase(pixel);
+					}
+					else
+						break;
 				}
-				else
-					break;
 			}
-			pixel = savePixel;
-			while (heightMap.getValueAtIndex(pixel--) == 255)
-			{
-				if (tempPixels.find(pixel) == tempPixels.end())
-				{
-					tempPixels.insert(pixel);
-					pixelStack.insert(pixel);
-					unassignedPixels.erase(pixel);
-				}
-				else
-					break;
-			}
-			pixel = savePixel;
-			while (heightMap.getValueAtIndex(pixel += heightMap.bInfoHeader.biWidth) == 255)
-			{
-				if (tempPixels.find(pixel) == tempPixels.end())
-				{
-					tempPixels.insert(pixel);
-					pixelStack.insert(pixel);
-					unassignedPixels.erase(pixel);
-				}
-				else
-					break;
-			}
-			pixel = savePixel;
-			while (heightMap.getValueAtIndex(pixel -= heightMap.bInfoHeader.biWidth) == 255)
-			{
-				if (tempPixels.find(pixel) == tempPixels.end())
-				{
-					tempPixels.insert(pixel);
-					pixelStack.insert(pixel);
-					unassignedPixels.erase(pixel);
-				}
-				else
-					break;
-			}
-			pixelStack.erase(savePixel);
-		}
-
-		unsigned char blue = rand() % 255;
-		for (const auto& pixel : tempPixels)
-		{
-			heightMap.setValueAtIndex(pixel, blue);
 		}
 		continents.push_back(tempPixels);
 	}
@@ -332,7 +292,6 @@ void TerrainGenerator::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 		R->pixels.push_back(start);
 		riverPixels.insert(R->getCurrentEnd());
 
-
 		//const int favDirection = 1;
 
 		int previous = 0; //this variable is used to avoid rectangles in the river
@@ -358,11 +317,11 @@ void TerrainGenerator::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 					if (BELOW(R->getCurrentEnd(), heightmapWidth) > heightmapWidth && previous != heightmapWidth)
 						candidates.push_back(BELOW(R->getCurrentEnd(), heightmapWidth));
 				}
-				if (heightMap.getValueAtIndex(LEFT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(LEFT(R->getCurrentEnd())) ) {
+				if (heightMap.getValueAtIndex(LEFT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(LEFT(R->getCurrentEnd()))) {
 					if (LEFT(R->getCurrentEnd()) > 3 && previous != 1)
 						candidates.push_back(LEFT(R->getCurrentEnd()));
 				}
-				if (heightMap.getValueAtIndex(RIGHT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(RIGHT(R->getCurrentEnd())) ) {
+				if (heightMap.getValueAtIndex(RIGHT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(RIGHT(R->getCurrentEnd()))) {
 					if (RIGHT(R->getCurrentEnd()) < heightMap.bInfoHeader.biSizeImage - 1 && previous != -1)
 						candidates.push_back(RIGHT(R->getCurrentEnd()));
 				}
@@ -380,11 +339,7 @@ void TerrainGenerator::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 			int newPixel = candidates[random() % candidates.size()];
 
 
-			vector<int> directions;
-			directions.push_back(LEFT(newPixel));
-			directions.push_back(RIGHT(newPixel));
-			directions.push_back(BELOW(newPixel, heightmapWidth));
-			directions.push_back(ABOVE(newPixel, heightmapWidth));
+			vector<int> directions = { LEFT(newPixel), RIGHT(newPixel), BELOW(newPixel, heightmapWidth),ABOVE(newPixel, heightmapWidth) };
 			for (uint32_t index = 0; index < directions.size(); index++)
 			{
 				if (directions[index] == R->pixels.back())
@@ -414,9 +369,6 @@ void TerrainGenerator::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 				//cout << "1::RIVER ENDED IN OTHER river with length: " << R->pixels.size() << endl;
 				break;
 			}
-
-
-
 			bool found = false;
 			for (auto river : rivers)
 			{
