@@ -34,7 +34,6 @@ public:
 	vector<string>cores;
 	double civLevel;
 
-
 	//VIC2
 	uint32_t lifeRating;
 	string tradegood;

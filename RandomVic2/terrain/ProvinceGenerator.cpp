@@ -12,7 +12,6 @@
 ProvinceGenerator::ProvinceGenerator()
 {
 	this->random = Data::getInstance().random2;
-	provinceMap.resize(256);	
 	randomValuesCached.resize(Data::getInstance().bitmapSize / 16);
 	for (auto &val : randomValuesCached) {
 		val = Data::getInstance().random2() % 4;
@@ -24,7 +23,7 @@ ProvinceGenerator::~ProvinceGenerator()
 }
 //creates the province map for fast access of provinces when only
 //rgb values are available, removes need to search this province
-MultiArray ProvinceGenerator::createProvinceMap()
+ProvinceMap ProvinceGenerator::createProvinceMap()
 {
 	for (auto& province : provinces) {
 
