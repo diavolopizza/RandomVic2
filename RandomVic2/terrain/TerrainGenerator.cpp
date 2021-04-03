@@ -241,6 +241,7 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 					}
 				}
 				newContinentPixels.resize(sizeCounter);
+				std::sort(newContinentPixels.begin(), newContinentPixels.end());
 				continents.push_back(newContinentPixels);
 			}
 		}

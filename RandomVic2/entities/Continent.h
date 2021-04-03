@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 using namespace std;
 class Province;
 class Region;
@@ -12,7 +13,8 @@ public:
 	string name;
 	uint32_t ID;
 	bool civilized;
-	vector<Province*> provinces;
+	//vector<Province*> provinces;
+	vector<uint32_t> provinceIDs;
 	vector<Region*> regions;
 	Continent();
 	Continent(vector<uint32_t> continentPixels);

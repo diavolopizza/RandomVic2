@@ -16,7 +16,7 @@ class ProvinceGenerator
 
 public:
 	vector<Province*> provinces;
-	vector<Region*> regions;
+	vector<Region> regions;
 	vector<Continent> continents;
 	ProvinceGenerator();
 	~ProvinceGenerator();
@@ -31,6 +31,8 @@ public:
 	void evaluateNeighbours(Bitmap provinceBMP);
 	void provPixels(const Bitmap* provinceBMP);
 	void assignRemainingPixels(Bitmap* provinceBMP, bool sea);
+	Province* getProvinceByID(uint32_t ID);
+	Region& getRegionByID(uint32_t ID);
 
 
 

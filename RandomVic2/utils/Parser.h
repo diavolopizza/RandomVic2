@@ -15,7 +15,7 @@ public:
 	void writeDefinition(string filePath, vector<Province*> provinces);
 	void writeAdjacency(string filePath, vector<Province*> provinces);
 	void writeContinents(string filePath, vector<Continent> continents);
-	void writeRegions(string filePath, vector<Region*> regions);
+	void writeRegions(string filePath, vector<Region> regions);
 	string readClimateHeader(string filePath);
 	void writeClimate(string filePath, /*string originalClimatePath,*/ vector<Province*> provinces);
 	string readDefaultMapHeader(string filePath);

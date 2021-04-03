@@ -25,9 +25,9 @@ void Country::addProvince(Province * P)
 	this->provinces.push_back(P);
 }
 
-void Country::addRegion(Region * R)
+void Country::addRegion(uint32_t regionID)
 {
-	regions.push_back(R);
+	regionIDs.push_back(regionID);
 }
 
 RGBTRIPLE Country::getColour()

@@ -23,8 +23,8 @@ public:
 
 	vector<Province*> provinces;
 	void addProvince(Province *P);
-	vector <Region*> regions;
-	void addRegion(Region * R);
+	vector <uint32_t> regionIDs;
+	void addRegion(uint32_t regionID);
 	RGBTRIPLE getColour();
 	bool equalColour(RGBTRIPLE other);
 	Flag * flag;

@@ -22,7 +22,7 @@ Continent::~Continent()
 
 void Continent::addProvince(Province * P)
 {
-	provinces.push_back(P);
+//	provinces.push_back(P);
 }
 
 void Continent::removeProvince(Province * P)
@@ -31,5 +31,5 @@ void Continent::removeProvince(Province * P)
 
 bool Continent::findPixel(uint32_t pixel)
 {
-	return false;// pixels.find(pixel) != pixels.end();
+	return std::binary_search(pixels.begin(), pixels.end(), pixel);
 }

@@ -73,9 +73,9 @@ void Parser::writeContinents(string filePath, const vector<Continent> continents
 	{
 		completeString.append(continent.name);
 		completeString.append(" = {\n\tprovinces = {\n\t\t");
-		for (auto province : continent.provinces)
+		for (auto provID : continent.provinceIDs)
 		{
-			completeString.append(to_string(province->provID));
+			completeString.append(to_string(provID));
 			completeString.append(" ");
 		}
 		completeString.append("\n\t}\n\tassimilation_rate = 0.01\n}\n");
@@ -86,14 +86,14 @@ void Parser::writeContinents(string filePath, const vector<Continent> continents
 	continentFile.close();
 }
 
-void Parser::writeRegions(string filePath, vector<Region*> regions)
+void Parser::writeRegions(string filePath, vector<Region> regions)
 {
 	string completeString = "";
 	for (auto region : regions)
 	{
-		completeString.append(region->name);
+		completeString.append(region.name);
 		completeString.append(" = { ");
-		for (auto province : region->provinces)
+		for (auto province : region.provinces)
 		{
 			completeString.append(to_string(province->provID));
 			completeString.append(" ");

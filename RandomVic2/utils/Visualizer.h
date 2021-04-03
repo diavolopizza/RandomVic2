@@ -16,7 +16,7 @@ public:
 	//static void displayImage(Bitmap bitmap);
 	//static void Visualizer::initializeWindow();
 	void prettyRivers(Bitmap& riverBMP, const Bitmap heightma, const TerrainGenerator& terrainGeneratorp);
-	void prettyContinents(Bitmap* continents, const ProvinceGenerator& provinceGenerator);  //visualizer?
+	void prettyContinents(Bitmap* continents, ProvinceGenerator& provinceGenerator);  //visualizer?
 	void prettyRegions(Bitmap* regions, const ProvinceGenerator& provinceGenerator); //visualizer?
 
 };

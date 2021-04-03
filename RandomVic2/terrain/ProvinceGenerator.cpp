@@ -425,6 +425,16 @@ void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 	}
 }
 
+Province * ProvinceGenerator::getProvinceByID(uint32_t ID)
+{
+	return provinces[ID];
+}
+
+Region& ProvinceGenerator::getRegionByID(uint32_t ID)
+{
+	return regions[ID];
+}
+
 //creates region of defined size on each continent and assigns
 //provinces to those regions
 void ProvinceGenerator::evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_t height)
@@ -432,76 +442,70 @@ void ProvinceGenerator::evaluateRegions(uint32_t minProvPerRegion, uint32_t widt
 	uint32_t regionID = 0;
 	for (auto prov : provinces)
 	{
-		if (prov->region == nullptr && !prov->sea) {
-			Region *R = new Region(to_string(regionID), regionID);
-			regions.push_back(R);
+		if (prov->regionID == 1000000 && !prov->sea) {
+			Region R(to_string(regionID), regionID);
 			regionID++;
-			prov->assignRegion(R, true, minProvPerRegion);
+			prov->assignRegion(regionID, true, minProvPerRegion, R);
+			regions.push_back(R);
 		}
 	}
 	for (uint32_t i = 0; i < regions.size(); i++)
 	{
-		if (regions[i]->provinces.size() < minProvPerRegion - 1) {
-			for (auto province : regions[i]->provinces) {
-				province->region = nullptr;
+		if (regions[i].provinces.size() < minProvPerRegion - 1) {
+			for (auto province : regions[i].provinces) {
+				province->regionID = 1000000;
 			}
 			regions.erase(regions.begin() + i);
 			i--;
 		}
 	}
+	for (int i = 0; i < regions.size(); i++)
+	{
+		regions[i].ID = i;
+		for (auto& prov : regions[i].provinces)
+		{
+			prov->regionID = i;
+		}
+	}
 
 	// Grow regions a few times before ignoring adjacencies 
 	// (for example overseas provinces that can't find a adjacent province with a region)
-	for (auto i = 0u; i < 50; i++)
+	for (auto i = 0u; i < 6; i++)
 	{
 		for (auto prov : provinces)
 		{
-			if (prov->region == nullptr && !prov->sea) {
+			if (prov->regionID == 1000000 && !prov->sea) {
 				uint32_t distance = MAXUINT32;
-				Region* nextOwner = nullptr;
+				uint32_t nextOwner = 1000000;
 				for (Province* P : provinces)
 				{
-
-					if (P->region != nullptr) {
-
-						//getDistance(int p1, int p2, int width, int height)
-
+					if (P->regionID != 1000000) {
 						if (getDistance(P->center, prov->center, width, height) < distance)
 						{
 							if (prov->hasAdjacent(P) || i == 5u)
 							{
 								distance = getDistance(P->center, prov->center, width, height);
-								nextOwner = P->region;
+								nextOwner = P->regionID;
 							}
 						}
-
-						//const int x1 = P->center  % width;
-						//const int x2 = prov->center  % width;
-						//const int y1 = P->center / height;
-						//const int y2 = prov->center / height;
-						//if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-						//	if (prov->hasAdjacent(P) || i == 5u)
-						//	{
-						//		distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
-						//		nextOwner = P->region;
-						//	}
-						//}
 					}
 				}
-				if (nextOwner != nullptr)
-					prov->assignRegion(nextOwner, false, minProvPerRegion);
+				if (nextOwner != 1000000)
+				{
+					prov->assignRegion(nextOwner, false, minProvPerRegion, getRegionByID(nextOwner));
+					getRegionByID(nextOwner).provinces.push_back(prov);
+				}
 			}
 		}
 	}
-
-	for (auto region : regions)
+	for (auto& region : regions)
 	{
-		for (auto prov : region->provinces)
+		for (auto& prov : region.provinces)
 		{
-			for (auto prov2 : prov->adjProv) {
-				if (!prov2->sea && prov2->region != region)
+			for (auto& prov2 : prov->adjProv) {
+				if (!prov2->sea && prov2->regionID != regionID)
 				{
-					region->setNeighbour(prov2->region, true);
+					region.setNeighbour(prov2->regionID, true);
 				}
 			}
 		}
@@ -517,22 +521,20 @@ void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_
 		C.ID = continentID++;
 		C.name = "";
 		continents.push_back(C);
-		
 	}
 
 	for (auto& prov : provinces)
 	{
-		//cout << prov->provID << endl;
 		for (auto& continent : continents)
 		{
 			if (continent.findPixel(prov->center)) {
-				prov->continent = continent;
-				//continent.provinces.push_back(prov);
+				prov->continentID = continent.ID;
+				continent.provinceIDs.push_back(prov->provID);
+				regions[prov->regionID].continentID = continent.ID;
 				break;
 			}
 		}
 	}
-
 
 	//for (auto region : regions)
 	//{

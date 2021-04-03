@@ -60,7 +60,7 @@ public:
 
 	//ranlux24* random;
 	ranlux24 random2;
-	int maxNumOfCountries = 20;
+	int maxNumOfCountries = 1;
 	uint32_t threadAmount = 8;
 
 

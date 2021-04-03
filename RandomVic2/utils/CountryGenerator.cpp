@@ -81,54 +81,55 @@ Country * CountryGenerator::GetClosestCountry(vector<Province*> provinces, Provi
 	return C;
 }
 
-void CountryGenerator::distributeCountries(uint32_t amount, uint32_t sizeVariation, vector<Region*> regions)
+void CountryGenerator::distributeCountries(uint32_t amount, uint32_t sizeVariation)
 {
 	generateCountries(amount);
 	for (auto C : countriesV)
 	{
-		uint32_t regionIndex = random() % regions.size();
-		if (!regions[regionIndex]->country) {
-			C->addRegion(regions[regionIndex]);
-			regions[regionIndex]->setCountry(C);
+		uint32_t regionIndex = random() % provinceGenerator->regions.size();
+		if (!provinceGenerator->regions[regionIndex].country) {
+			C->addRegion(provinceGenerator->regions[regionIndex].ID);
+			provinceGenerator->regions[regionIndex].setCountry(C);
 		}
 	}
 	bool allAssigned = false;
-	for (Region * R : regions)
+	for (auto R : provinceGenerator->regions)
 	{
-		if (R->country == nullptr)
+		if (R.country == nullptr)
 		{
-			for (auto neighbour : R->neighbourRegions)
+			for (auto neighbour : R.neighbourRegions)
 			{
-				if (neighbour->country != nullptr)
+				auto& neighbourR = provinceGenerator->getRegionByID(neighbour);
+				if (neighbourR.country != nullptr)
 				{
-					R->setCountry(neighbour->country);
-					neighbour->country->addRegion(R);
+					R.setCountry(neighbourR.country);
+					neighbourR.country->addRegion(R.ID);
 					break;
 				}
 			}
 		}
 	}
-	for (Region * R : regions)
+	for (auto R : provinceGenerator->regions)
 	{
-		if (R->country == nullptr)
+		if (R.country == nullptr)
 		{
 			uint32_t distance = MAXUINT32;
 			Country* nextOwner = nullptr;
-			for (Region* R2 : regions)
+			for (auto R2 : provinceGenerator->regions)
 			{
-				if (R2->country != nullptr) {
-					uint32_t x1 = R2->provinces[0]->center  % Data::getInstance().width;
-					uint32_t x2 = R->provinces[0]->center  % Data::getInstance().width;
-					uint32_t y1 = R2->provinces[0]->center / Data::getInstance().height;
-					uint32_t y2 = R->provinces[0]->center / Data::getInstance().height;
+				if (R2.country != nullptr) {
+					uint32_t x1 = R2.provinces[0]->center  % Data::getInstance().width;
+					uint32_t x2 = R.provinces[0]->center  % Data::getInstance().width;
+					uint32_t y1 = R2.provinces[0]->center / Data::getInstance().height;
+					uint32_t y2 = R.provinces[0]->center / Data::getInstance().height;
 					if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
 						distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
-						nextOwner = R2->country;
+						nextOwner = R2.country;
 					}
 				}
 			}
-			R->setCountry(nextOwner);
-			nextOwner->addRegion(R);
+			R.setCountry(nextOwner);
+			nextOwner->addRegion(R.ID);
 		}
 	}
 }
@@ -140,8 +141,9 @@ Bitmap CountryGenerator::countryBMP() {
 	{
 		int countryXspan = country->maxX - country->minX;
 		int countryYspan = country->maxY - country->minY;
-		for (auto region : country->regions)
-			for (auto prov : region->provinces)
+		for (auto regionID : country->regionIDs)
+		{
+			for (auto prov : provinceGenerator->getRegionByID(regionID).provinces)
 			{
 				for (auto pixelIndex : prov->pixels)
 				{
@@ -158,6 +160,7 @@ Bitmap CountryGenerator::countryBMP() {
 
 				}
 			}
+		}
 	}
 	return countryBMP;
 }
@@ -202,17 +205,19 @@ Bitmap CountryGenerator::civilizationBMP()
 		}
 		conIndex++;
 
-		for (Province* prov : continent.provinces)
+		for (auto provID : continent.provinceIDs)
 		{
+			auto prov = provinceGenerator->getProvinceByID(provID);
 			prov->civLevel = (continent.civilized ? 0.0 : 0.5) + (double)(random() % 3) / 10.0;
 		}
 	}
 	for (int i = 0; i < 3; i++)
 		for (auto country : countriesV)
 		{
-			for (auto region : country->regions)
+			for (auto regionID : country->regionIDs)
 			{
-				for (auto prov : region->provinces)
+				auto& region = provinceGenerator->getRegionByID(regionID);
+				for (auto prov : region.provinces)
 				{
 					if (prov->adjProv.size())
 						prov->civLevel *= (1 + (prov->adjProv[random() % prov->adjProv.size()]->civLevel) / 10);
@@ -224,9 +229,10 @@ Bitmap CountryGenerator::civilizationBMP()
 
 	for (auto country : countriesV)
 	{
-		for (auto region : country->regions)
+		for (auto regionID : country->regionIDs)
 		{
-			for (auto prov : region->provinces)
+			auto& region = provinceGenerator->getRegionByID(regionID);
+			for (auto prov : region.provinces)
 			{
 				for (auto pixelIndex : prov->pixels)
 				{

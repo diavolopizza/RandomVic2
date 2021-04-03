@@ -22,7 +22,7 @@ public:
 	void generateCountries(uint32_t amount);
 	Flag * createFlag();
 	Country * GetClosestCountry(vector<Province*> provinces, Province * seekingProv);
-	void distributeCountries(uint32_t amount, uint32_t sizeVariation, vector<Region*> regions);
+	void distributeCountries(uint32_t amount, uint32_t sizeVariation);
 	Bitmap countryBMP();
 	Bitmap wealthBMP();
 	Bitmap resourceBMP();

@@ -23,8 +23,8 @@ public:
 
 	uint32_t provID = 0;
 	uint32_t center = 0;
-	Continent continent;
-	Region* region = nullptr;
+	uint32_t continentID;
+	uint32_t regionID;
 	Country * country = nullptr;
 	bool placed = false, coastal = false, island = false, sea = false;
 	bool operator==(const Province& right) const;
@@ -46,7 +46,7 @@ public:
 	set<uint32_t> positionCandidates;
 	void setNeighbour(Province*P, bool level);
 	void assignContinent(Continent *C);
-	void assignRegion(Region *R, bool recursive, uint32_t minProvPerRegion);
+	void assignRegion(uint32_t regionID, bool recursive, uint32_t minProvPerRegion, Region& R);
 	void computeCandidates();
 	bool hasAdjacent(Province*P);
 };

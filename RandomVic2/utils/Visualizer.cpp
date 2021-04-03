@@ -85,7 +85,7 @@ void Visualizer::prettyRivers(Bitmap& riverBMP, const Bitmap heightMap, const Te
 }
 
 //writes the continents to a bitmap, non-unique colours
-void Visualizer::prettyContinents(Bitmap* continentBMP, const ProvinceGenerator& provinceGenerator)
+void Visualizer::prettyContinents(Bitmap* continentBMP, ProvinceGenerator& provinceGenerator)
 {
 	cout << "Creating continent" << endl;
 	//delete continentBMP->getBuffer();
@@ -96,9 +96,9 @@ void Visualizer::prettyContinents(Bitmap* continentBMP, const ProvinceGenerator&
 		continentColour.rgbtGreen = random() % 256;
 		continentColour.rgbtRed = random() % 256;
 
-		for (auto province : continent.provinces)
+		for (auto province : continent.provinceIDs)
 		{
-			for (uint32_t pixel : province->pixels)
+			for (uint32_t pixel : provinceGenerator.getProvinceByID(province)->pixels)
 			{
 				continentBMP->setTripleAtIndex(continentColour, pixel);
 			}
@@ -119,7 +119,7 @@ void Visualizer::prettyRegions(Bitmap* regionBMP, const ProvinceGenerator& provi
 		RGBTRIPLE borderColour = { 255,255,255 };
 		RGBTRIPLE centerColour = { 0,0,0 };
 
-		for (auto province : region->provinces)
+		for (auto province : region.provinces)
 		{
 			for (auto pixel : province->pixels)
 			{

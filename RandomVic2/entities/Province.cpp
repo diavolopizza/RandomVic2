@@ -18,7 +18,7 @@ Province::Province(int provID, RGBTRIPLE colour, bool sea)
 	this->provID = provID;
 	this->owner = "DUM";
 	this->sea = sea;
-	this->region = nullptr;
+	this->regionID = 1000000;
 	this->random = Data::getInstance().random2;
 	this->climate = "mild_climate";
 }
@@ -26,7 +26,6 @@ Province::Province(int provID, RGBTRIPLE colour, bool sea)
 Province::~Province()
 {
 }
-
 
 bool Province::operator==(const Province& right) const
 {
@@ -40,8 +39,6 @@ bool Province::operator==(const Province& right) const
 	return false;
 
 }
-
-
 
 void Province::setNeighbour(Province*P, bool level = false)
 {
@@ -81,12 +78,12 @@ void Province::assignContinent(Continent * C)
 	//}
 }
 
-void Province::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)
+void Province::assignRegion(uint32_t regionID, bool recursive, uint32_t minProvPerRegion, Region& R)
 {
-	this->region = R;
-	R->provinces.push_back(this);
+	this->regionID = regionID;
+	R.provinces.push_back(this);
 
-	if (recursive && R->provinces.size() < minProvPerRegion) {
+	if (recursive && R.provinces.size() < minProvPerRegion) {
 
 		//for (auto neighbour : this->adjProv)
 		//{
@@ -105,15 +102,15 @@ void Province::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegio
 
 		for (auto neighbour : this->adjProv)
 		{
-			if (neighbour->region == nullptr && !neighbour->sea && R->provinces.size() < minProvPerRegion) {
-				neighbour->assignRegion(R, false, minProvPerRegion);
+			if (neighbour->regionID == 1000000 && !neighbour->sea && R.provinces.size() < minProvPerRegion) {
+				neighbour->assignRegion(R.ID, false, minProvPerRegion, R);
 			}
 		}
 	}
-	if (R->provinces.size() < minProvPerRegion)
-	{
+	//if (R->provinces.size() < minProvPerRegion)
+	//{
 
-	}
+	//}
 }
 
 void Province::computeCandidates()

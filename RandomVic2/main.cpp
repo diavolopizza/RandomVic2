@@ -168,7 +168,7 @@ int main() {
 	}
 
 	CountryGenerator cG(&provinceGenerator);
-	cG.distributeCountries(Data::getInstance().maxNumOfCountries, 0, provinceGenerator.regions);
+	cG.distributeCountries(Data::getInstance().maxNumOfCountries, 0);
 	cG.determineDimensions();
 	cG.sanityChecks();
 	Bitmap countryBMP = cG.countryBMP();
