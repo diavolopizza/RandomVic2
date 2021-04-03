@@ -27,6 +27,7 @@ class TerrainGenerator
 	vector<unsigned char> randomValuesCached;
 
 public:
+	vector<vector<uint32_t>> continents;
 	vector<River*> rivers;
 	TerrainGenerator();
 	~TerrainGenerator();

@@ -103,6 +103,7 @@ int main() {
 	if (Data::getInstance().genSimpleTerrain) {
 		//create simplistic terrain shape from noise map
 		terrainGenerator.createTerrain(&terrainBMP, heightMapBMP);
+		terrainGenerator.detectContinents(terrainBMP);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("simpleterrain.bmp")).c_str());
 		//generate rivers according to terrain and climate
 		terrainGenerator.generateRivers(&riverBMP, heightMapBMP);
@@ -137,7 +138,7 @@ int main() {
 	}
 	//assign provinces to continents and dump them
 	{
-		provinceGenerator.evaluateContinents(Data::getInstance().minProvPerContinent, Data::getInstance().width, Data::getInstance().height);
+		provinceGenerator.evaluateContinents(Data::getInstance().minProvPerContinent, Data::getInstance().width, Data::getInstance().height, terrainGenerator);
 		visualizer.prettyContinents(&continents, provinceGenerator);
 		genericParser.writeContinents((Data::getInstance().debugMapsPath + ("continent.txt")).c_str(), provinceGenerator.continents);
 	}

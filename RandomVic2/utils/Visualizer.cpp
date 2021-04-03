@@ -90,13 +90,13 @@ void Visualizer::prettyContinents(Bitmap* continentBMP, const ProvinceGenerator&
 	cout << "Creating continent" << endl;
 	//delete continentBMP->getBuffer();
 	continentBMP->setBuffer(vector<BYTE>(continentBMP->bInfoHeader.biSizeImage));
-	for (auto continent : provinceGenerator.continents) {
+	for (const auto& continent : provinceGenerator.continents) {
 		RGBTRIPLE continentColour;
 		continentColour.rgbtBlue = random() % 256;
 		continentColour.rgbtGreen = random() % 256;
 		continentColour.rgbtRed = random() % 256;
 
-		for (auto province : continent->provinces)
+		for (auto province : continent.provinces)
 		{
 			for (uint32_t pixel : province->pixels)
 			{

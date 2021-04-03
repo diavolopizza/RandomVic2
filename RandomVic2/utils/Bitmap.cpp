@@ -104,6 +104,7 @@ void Bitmap::setBitmapSize(const uint32_t width, const uint32_t height)
 
 unsigned char Bitmap::getValueAtIndex(const uint32_t index, const uint32_t mode) const noexcept
 {
+	//cout << "Getting " << index << endl;
 	if (index < bInfoHeader.biSizeImage)
 		return index * indexFactor < this->bInfoHeader.biSizeImage ? Buffer[index * indexFactor + mode] : 0;
 }

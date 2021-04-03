@@ -18,7 +18,6 @@ Province::Province(int provID, RGBTRIPLE colour, bool sea)
 	this->provID = provID;
 	this->owner = "DUM";
 	this->sea = sea;
-	this->continent = nullptr;
 	this->region = nullptr;
 	this->random = Data::getInstance().random2;
 	this->climate = "mild_climate";
@@ -72,14 +71,14 @@ void Province::checkDeveloped(vector <int> developed_continent) {
 
 void Province::assignContinent(Continent * C)
 {
-	this->continent = C;
-	C->provinces.push_back(this);
-	for (auto neighbour : this->adjProv)
-	{
-		if (neighbour->continent == nullptr && !neighbour->sea) {
-			neighbour->assignContinent(C);
-		}
-	}
+	////this->continent = C;
+	//C->provinces.push_back(this);
+	//for (auto neighbour : this->adjProv)
+	//{
+	//	if (neighbour->continent == nullptr && !neighbour->sea) {
+	//		neighbour->assignContinent(C);
+	//	}
+	//}
 }
 
 void Province::assignRegion(Region * R, bool recursive, uint32_t minProvPerRegion)

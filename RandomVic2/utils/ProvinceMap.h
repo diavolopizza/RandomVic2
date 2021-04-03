@@ -10,7 +10,7 @@ public:
 	constexpr RGBTRIPLE to_rgb(int hash) { return { (unsigned char)(hash >> 16), (unsigned char)((hash >> 8) & 0xFF), (unsigned char)(hash & 0xFF) }; }
 	ProvinceMap();
 	~ProvinceMap();
-	Province * operator[] (RGBTRIPLE colour);
-	void setValue(RGBTRIPLE colour, Province * value);
+	Province * operator[] (const RGBTRIPLE colour);
+	void setValue(const RGBTRIPLE colour, Province * value);
 };
 

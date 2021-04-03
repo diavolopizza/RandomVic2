@@ -17,7 +17,7 @@ class ProvinceGenerator
 public:
 	vector<Province*> provinces;
 	vector<Region*> regions;
-	vector<Continent*> continents;
+	vector<Continent> continents;
 	ProvinceGenerator();
 	~ProvinceGenerator();
 	vector<BYTE> landProvinces(Bitmap terrain, Bitmap* provinceBMP, Bitmap riverBMP, uint32_t updateThreshold);
@@ -38,5 +38,5 @@ public:
 	// regions
 	void evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_t height);
 	//continentes
-	void evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height);
+	void evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height, const TerrainGenerator terrainGen);
 };

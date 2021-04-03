@@ -509,8 +509,30 @@ void ProvinceGenerator::evaluateRegions(uint32_t minProvPerRegion, uint32_t widt
 }
 //creates continents from the random landmasses and assigns
 //provinces to those continents
-void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height) {
+void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height, const TerrainGenerator terrainGen) {
 	uint32_t continentID = 0;
+	for (const auto& continentPixels : terrainGen.continents)
+	{
+		Continent C(continentPixels);
+		C.ID = continentID++;
+		C.name = "";
+		continents.push_back(C);
+		
+	}
+
+	for (auto& prov : provinces)
+	{
+		//cout << prov->provID << endl;
+		for (auto& continent : continents)
+		{
+			if (continent.findPixel(prov->center)) {
+				prov->continent = continent;
+				//continent.provinces.push_back(prov);
+				break;
+			}
+		}
+	}
+
 
 	//for (auto region : regions)
 	//{
@@ -523,19 +545,20 @@ void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_
 	//	}
 	//}
 
-	for (auto prov : provinces)
+
+	/*for (auto prov : provinces)
 	{
 		if (prov->continent == nullptr && !prov->sea) {
-			Continent *C = new Continent(to_string(continentID), continentID);
+			Continent C(to_string(continentID), continentID);
 			continents.push_back(C);
 			continentID++;
-			prov->assignContinent(C);
+			prov->assignContinent(&C);
 		}
 	}
 	for (uint32_t i = 0; i < continents.size(); i++)
 	{
-		if (continents[i]->provinces.size() < minProvPerContinent) {
-			for (auto province : continents[i]->provinces) {
+		if (continents[i].provinces.size() < minProvPerContinent) {
+			for (auto province : continents[i].provinces) {
 				province->continent = nullptr;
 			}
 			continents.erase(continents.begin() + i);
@@ -546,7 +569,7 @@ void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_
 	{
 		if (prov->continent == nullptr && !prov->sea) {
 			uint32_t distance = MAXUINT32;
-			Continent* nextOwner = nullptr;
+			Continent nextOwner;
 			for (Province* P : provinces)
 			{
 				if (P->continent != nullptr) {
@@ -556,12 +579,12 @@ void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_
 					const int y2 = prov->center / height;
 					if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
 						distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
-						nextOwner = P->continent;
+						nextOwner = *(P->continent);
 					}
 				}
 			}
 			//if (nextOwner != nullptr)
-			prov->assignContinent(nextOwner);
+			prov->assignContinent(&nextOwner);
 		}
-	}
+	}*/
 }

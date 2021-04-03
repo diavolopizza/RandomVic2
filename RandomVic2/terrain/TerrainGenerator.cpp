@@ -188,58 +188,72 @@ vector<BYTE> TerrainGenerator::normalizeHeightMap(Bitmap heightMap, vector<BYTE>
 	return normalisedValues;
 }
 // Out of basic landmass shape, create continents
-void TerrainGenerator::detectContinents(Bitmap heightMap)
+void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 {
-	cout << "Creating basic terrain from heightmap" << endl;
-	set<uint32_t> unassignedPixels;
-	vector<set<uint32_t>> continents;
-	double tempLandPercentage = 0;
-	long long value = 0;
-	for (auto i = 0u; i < heightMap.bInfoHeader.biSizeImage; i++)
+	cout << "Detecting continents from terrain" << endl;
+	vector<int> offsets = { 1 ,-1, terrainBMP.bInfoHeader.biWidth, -terrainBMP.bInfoHeader.biWidth };
+	vector<uint32_t> unassignedPixels(terrainBMP.bInfoHeader.biSizeImage, 999);
+	int unassignedCounter = 0;
+	for (auto i = 0u; i < terrainBMP.bInfoHeader.biSizeImage; i++)
 	{
-		value += heightMap.getValueAtIndex(i);
-	}
-	int average = (double)value / (double)(heightMap.bInfoHeader.biSizeImage / 3) *1.1;
-	cout << average << endl;
-	for (auto i = 0u; i < heightMap.bInfoHeader.biSizeImage / 3; i++)
-	{
-		if (heightMap.getValueAtIndex(i) > average)
+		if (terrainBMP.getValueAtIndex(i) == 13)
 		{
-			heightMap.setValueAtIndex(i, 255);
-			unassignedPixels.insert(i);
+			terrainBMP.setValueAtIndex(i, 255);
+			unassignedCounter++;
+			unassignedPixels[i] = 0; //is unassigned
 		}
 	}
-	while (unassignedPixels.size())
+	while (unassignedCounter)
 	{
-		auto pixel = *unassignedPixels.begin();
-		set<uint32_t> tempPixels = { pixel };
-		set<uint32_t> pixelStack = { pixel };
-		unassignedPixels.erase(pixel);
-		vector<int> offsets = { 1 ,-1, heightMap.bInfoHeader.biWidth, -heightMap.bInfoHeader.biWidth };
-
-		while (pixelStack.size())
+		for (auto i = 0u; i < unassignedPixels.size(); i++)//find start
 		{
-			pixel = *pixelStack.begin();
-			pixelStack.erase(pixel);
-			//const auto savePixel = pixel;
-			for (auto offset : offsets)
+			if (!unassignedPixels[i]) // this index is unassigned
 			{
-				while (heightMap.getValueAtIndex(pixel += offset) == 255)
+				uint32_t sizeCounter = 0;
+				// now expand?
+				vector<uint32_t> newContinentPixels(terrainBMP.bInfoHeader.biSizeImage, 0);
+				newContinentPixels[sizeCounter] = i; //the first pixel of the new continent is at index i
+				unassignedPixels[i] = 1; // this pix is now assigned to a continent
+				unassignedCounter--;
+				auto pixel = i;
+				set<uint32_t> pixelStack = { pixel };
+				while (pixelStack.size())
 				{
-					if (tempPixels.find(pixel) == tempPixels.end())
+					pixel = *pixelStack.begin();
+					pixelStack.erase(pixel);
+					const auto savePixel = pixel;
+					for (auto offset : offsets)
 					{
-						tempPixels.insert(pixel);
-						pixelStack.insert(pixel);
-						unassignedPixels.erase(pixel);
+						while (terrainBMP.getValueAtIndex(pixel += offset) == 255)
+						{
+							if (unassignedPixels[pixel] == 0)
+							{
+								unassignedPixels[pixel] = 1; //assigned
+								unassignedCounter--;
+								pixelStack.insert(pixel);
+								newContinentPixels[sizeCounter] = pixel;
+								sizeCounter++;
+							}
+							else
+								break;
+						}
+						pixel = savePixel;
 					}
-					else
-						break;
 				}
+				newContinentPixels.resize(sizeCounter);
+				continents.push_back(newContinentPixels);
 			}
 		}
-		continents.push_back(tempPixels);
 	}
-	BMPHandler::getInstance().SaveBMPToFile(heightMap, (Data::getInstance().debugMapsPath + ("detectedContinents.bmp")).c_str());
+	for (const auto& continent : continents)
+	{
+		unsigned char blue = rand() % 255;
+		for (const auto& pixel : continent)
+		{
+			terrainBMP.setValueAtIndex(pixel, blue);
+		}
+	}
+	BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("detectedContinents.bmp")).c_str());
 }
 //creates the terrain, factoring in heightmap
 void TerrainGenerator::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp)

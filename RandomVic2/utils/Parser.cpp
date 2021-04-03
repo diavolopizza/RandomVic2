@@ -66,14 +66,14 @@ void Parser::writeAdjacency(string filePath, vector<Province*> provinces)
 	adjacencyFile.close();
 }
 
-void Parser::writeContinents(string filePath, vector<Continent*> continents)
+void Parser::writeContinents(string filePath, const vector<Continent> continents)
 {
 	string completeString = "";
 	for (auto continent : continents)
 	{
-		completeString.append(continent->name);
+		completeString.append(continent.name);
 		completeString.append(" = {\n\tprovinces = {\n\t\t");
-		for (auto province : continent->provinces)
+		for (auto province : continent.provinces)
 		{
 			completeString.append(to_string(province->provID));
 			completeString.append(" ");

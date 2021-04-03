@@ -23,7 +23,7 @@ public:
 
 	uint32_t provID = 0;
 	uint32_t center = 0;
-	Continent* continent = nullptr;
+	Continent continent;
 	Region* region = nullptr;
 	Country * country = nullptr;
 	bool placed = false, coastal = false, island = false, sea = false;
