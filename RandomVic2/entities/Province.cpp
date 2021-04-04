@@ -18,7 +18,8 @@ Province::Province(int provID, RGBTRIPLE colour, bool sea)
 	this->provID = provID;
 	this->owner = "DUM";
 	this->sea = sea;
-	this->regionID = 1000000;
+	this->regionID = 1000000; // unassigned
+	this->continentID = 1000000; // unassigned
 	this->random = Data::getInstance().random2;
 	this->climate = "mild_climate";
 }

@@ -39,5 +39,5 @@ public:
 	void worleyNoise(vector<BYTE> &layerValues, uint32_t width, uint32_t height);
 	void detectContinents(Bitmap heightMap);
 	void generateRivers(const Bitmap heightmap);
-	void sanityChecks(Bitmap provinceBMP);
+	bool sanityChecks();
 };

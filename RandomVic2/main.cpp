@@ -118,6 +118,11 @@ int main() {
 	else {
 		terrainBMP = BMPHandler::getInstance().Load8bitBMP(simpleTerrainsource, "simpleterrain");
 	}
+	if (!terrainGenerator.sanityChecks())
+	{
+		system("pause");
+		return -1; // return early if severe errors in terrain generation
+	}
 	//create provinces
 	{
 		provincesBMP.setBuffer(provinceGenerator.landProvinces(terrainBMP, &provincesBMP, riverBMP, Data::getInstance().updateThreshold));
@@ -127,6 +132,7 @@ int main() {
 		provinceGenerator.provPixels(&provincesBMP);
 		provinceGenerator.beautifyProvinces(&provincesBMP, riverBMP, Data::getInstance().minProvSize);
 		{
+			//calculate neighbours and dump them
 			provinceGenerator.evaluateNeighbours(provincesBMP);
 			genericParser.writeAdjacency((Data::getInstance().debugMapsPath + ("adjacency.csv")).c_str(), provinceGenerator.provinces);
 		}
@@ -134,8 +140,6 @@ int main() {
 		//dump to file
 		genericParser.writeDefinition((Data::getInstance().debugMapsPath + ("definition.csv")).c_str(), provinceGenerator.provinces);
 	}
-	//calculate neighbours and dump them
-
 	//assign provinces to regions and dump them
 	{
 		provinceGenerator.evaluateRegions(Data::getInstance().minProvPerRegion, Data::getInstance().width, Data::getInstance().height);
@@ -147,6 +151,11 @@ int main() {
 		provinceGenerator.evaluateContinents(Data::getInstance().minProvPerContinent, Data::getInstance().width, Data::getInstance().height, terrainGenerator);
 		visualizer.prettyContinents(&continents, provinceGenerator);
 		genericParser.writeContinents((Data::getInstance().debugMapsPath + ("continent.txt")).c_str(), provinceGenerator.continents);
+	}
+	if (!provinceGenerator.sanityChecks(provincesBMP))
+	{
+		system("pause");
+		return -1;
 	}
 	if (Data::getInstance().genComplexTerrain) {
 		//terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
@@ -191,7 +200,6 @@ int main() {
 		//	VictoriaModule vMod(&Data::getInstance(), terrainGenerator);
 		//	vMod.dumpMapFiles(&Data::getInstance(), terrainBMP, riverBMP, &continents, &regionBMP, heightMapBMP, &provincesBMP);
 	}
-	terrainGenerator.sanityChecks(provincesBMP);
 	MapMerger merger;
 	Bitmap heightRiver = merger.mergeHeightRiver(heightMapBMP, riverBMP);
 	BMPHandler::getInstance().SaveBMPToFile(heightRiver, (Data::getInstance().debugMapsPath + ("heightRiver.bmp")).c_str());

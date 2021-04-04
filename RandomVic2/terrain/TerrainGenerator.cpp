@@ -268,7 +268,6 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 							distance = pixDistance;
 							nextCont = x;
 						}
-
 					}
 				}
 			}
@@ -278,10 +277,6 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 			i--;
 		}
 	}
-
-
-
-
 	for (const auto& continent : continents)
 	{
 		unsigned char blue = rand() % 255;
@@ -462,104 +457,16 @@ void TerrainGenerator::generateRivers(const Bitmap heightMap)
 	//	provinces[upperSegment]->computeCandidates();
 }
 
-void TerrainGenerator::sanityChecks(Bitmap provinceBMP)
+bool TerrainGenerator::sanityChecks()
 {
-	/*cout << "Doing terrain sanity checks" << endl;
-
-	for (uint32_t i = 0; i < provinceBMP.bInfoHeader.biSizeImage; i++)
-	{
-		if (provinceBMP.getBuffer()[i] == 0)
-			cout << "0 value in provinceBMP " << endl;
-	}
-	for (uint32_t index = 0; index < provinceBMP.bInfoHeader.biSizeImage / 3; index++) {
-		if (provinceBMP.getValueAtIndex(index) == 0 || provinceBMP.getValueAtIndex(index, 1) == 0 || provinceBMP.getValueAtIndex(index, 2) == 0)
-			cout << "FATAL ERROR: Unassigned pixel in provinceBMP" << endl;
-		if (provinceMap[provinceBMP.getTripleAtIndex(index)] == nullptr)
-		{
-			cout << "FATAL ERROR: Pixel colourcode results in nullptr" << endl;
-		}
-	}
-
+	cout << "Doing terrain sanity checks" << endl;
 	for (auto continent : continents)
 	{
-		if (continent == nullptr)
+		if (continent.size() == 0)
 		{
-			cout << "ERROR: Continent list contains nullptr" << endl;
+			cout << "ERROR: Continent is 0 size, terminating" << endl;
+			return false;
 		}
-		else if (continent->provinces.size() == 0)
-			cout << "ERROR: Continent " << continent->ID << " has no provinces" << endl;
-		if (continent->regions.size() == 0)
-			cout << "INFO: Continent " << continent->ID << " has no regions" << endl;
 	}
-	for (auto region : regions)
-	{
-		if (region == nullptr)
-		{
-			cout << "ERROR: region list contains nullptr" << endl;
-		}
-		if (region->provinces.size() == 0)
-		{
-			cout << "ERROR: Region " << region->ID << " has no provinces" << endl;
-		}
-		if (region->country == nullptr)
-		{
-			cout << "ERROR: Region " << region->ID << " has no country" << endl;
-		}
-		if (region->continent == nullptr)
-		{
-			//cout << "Region " << region->ID << " has no continent" << endl;
-		}
-		for (auto prov : region->provinces)
-		{
-			if (prov == nullptr)
-				cout << "ERROR: Region " << region->ID << " contains nullptr province" << endl;
-		}
-
-	}
-	unsigned int coastals(0);
-	for (auto prov : provinces)
-	{
-		if (prov == nullptr) {
-			cout << "ERROR: Province list contains nullptr" << endl;
-			continue;
-		}
-
-		if (provinceMap[prov->colour] == nullptr)
-		{
-			cout << "ERROR: Province colourcode results in nullptr" << endl;
-		}
-		if (!prov->sea) {
-			if (prov->pixels.size() == 0)
-				cout << "ERROR: Province has no pixels" << prov->provID << endl;
-			if (prov->center == 0)
-				cout << "ERROR: Province center is 0" << prov->provID << endl;
-			if (prov->continent == nullptr)
-				cout << "ERROR: Province has nullptr continent" << prov->provID << endl;
-			if (prov->country == nullptr)
-				cout << "ERROR: Province has nullptr country: ID: " << prov->provID << endl;
-			if (prov->region == nullptr)
-				cout << "ERROR: Province has nullptr region" << prov->provID << endl;
-		}
-		else
-		{
-			if (prov->country != nullptr)
-				cout << "ERROR: Seaprovince has country assigned" << endl;
-		}
-		if (prov->pixels.size() < Data::getInstance().minProvSize)
-		{
-
-			cout << (prov->sea ? "WARNING: " : "ERROR: ") << "Small province remaining, Colour: " << (int)prov->colour.rgbtRed << " " << (int)prov->colour.rgbtGreen << " " << (int)prov->colour.rgbtBlue << endl;
-			cout << "\tCenter at: " << prov->center << " size is: " << prov->pixels.size() << std::endl;
-		}
-		//if (!prov->adjProv.size())
-		//	cout << "Province with ID: " << prov->provID << " has 0 adjacent provinces" << endl;
-		if (prov->coastal)
-			coastals++;
-	}
-	if (provinces.back()->provID > provinces.size())
-		cout << "ERROR: Higher province IDs than the total amount of provinces. Check deletion of small provinces" << endl;
-	if (provinces.size() != Data::getInstance().landProv + Data::getInstance().seaProv)
-		cout << "INFO: Amount of provinces diverges from requested amount of provinces by " << (int)((int)provinces.size() - (int)Data::getInstance().landProv - (int)Data::getInstance().seaProv) << endl;
-
-	cout << "INFO: There are a total of " << coastals << " coastal provinces" << endl;*/
+	return true;
 }

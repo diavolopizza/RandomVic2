@@ -13,7 +13,7 @@ ProvinceGenerator::ProvinceGenerator()
 {
 	this->random = Data::getInstance().random2;
 	randomValuesCached.resize(Data::getInstance().bitmapSize / 16);
-	for (auto &val : randomValuesCached) {
+	for (auto& val : randomValuesCached) {
 		val = Data::getInstance().random2() % 4;
 	}
 }
@@ -40,14 +40,14 @@ int ProvinceGenerator::GetMinDistanceToProvince(uint32_t position, uint32_t widt
 		const int x2 = position % width;
 		const int y1 = P->center / height;
 		const int y2 = position / height;
-		if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-			distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
+		if (sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2))) < distance) {
+			distance = (uint32_t)sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)));
 		}
 	}
 	return distance;
 }
 //Utility to find starting point of new province
-void ProvinceGenerator::determineStartingPixel(Bitmap* bitmap, vector<uint32_t> &provincePixels, RGBTRIPLE &provinceColour, uint32_t provinceSize) {
+void ProvinceGenerator::determineStartingPixel(Bitmap* bitmap, vector<uint32_t>& provincePixels, RGBTRIPLE& provinceColour, uint32_t provinceSize) {
 	const uint32_t bmpWidth = bitmap->bInfoHeader.biWidth;
 	const uint32_t bmpHeight = bitmap->bInfoHeader.biHeight;
 	const uint32_t bmpSize = bmpWidth * bmpHeight;
@@ -237,12 +237,12 @@ void ProvinceGenerator::fill(Bitmap* provinceBMP, const Bitmap riverBMP, const u
 	int switchCounter = 0;
 
 
-	vector<unsigned char> blueMap(bmpWidth*bmpHeight);
+	vector<unsigned char> blueMap(bmpWidth * bmpHeight);
 
 
 	while (unassignedPixels > 0)
 	{
-		cout << "Pixels still unassigned: " << unassignedPixels << endl;
+		//cout << "Pixels still unassigned: " << unassignedPixels << endl;
 		previousUnassignedPixels = unassignedPixels;
 		unassignedPixels = 0;
 		switchCounter++;
@@ -256,7 +256,7 @@ void ProvinceGenerator::fill(Bitmap* provinceBMP, const Bitmap riverBMP, const u
 				//if (provinceBMP->getBuffer()[accessedPixel*3] == fillVal)
 			{
 				unassignedPixels++;
-				const int direction = randomValuesCached[randomValueIndex++%randomValuesCached.size()];
+				const int direction = randomValuesCached[randomValueIndex++ % randomValuesCached.size()];
 				const int newPixel = (int)accessedPixel + offsets[direction];
 				if (newPixel < bmpSize && newPixel > 0)
 				{
@@ -329,7 +329,7 @@ void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 						unique = true;
 					}
 				}
-				Province * lake = new Province((int)provinces.size() + 1, lakeColour, true);
+				Province* lake = new Province((int)provinces.size() + 1, lakeColour, true);
 				provinceMap.setValue(lakeColour, lake);
 				provinces.push_back(lake);
 				lake->pixels.push_back(unassignedPixel);
@@ -348,7 +348,7 @@ void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 							lake->pixels.push_back(ABOVE(i, bmpWidth));
 							newFound = true;
 						}
-						if (i > bmpWidth  && provinceBMP->getValueAtIndex(BELOW(i, bmpWidth)) == 254)
+						if (i > bmpWidth && provinceBMP->getValueAtIndex(BELOW(i, bmpWidth)) == 254)
 						{
 							provinceBMP->setTripleAtIndex(lakeColour, BELOW(i, bmpWidth));
 							lake->pixels.push_back(BELOW(i, bmpWidth));
@@ -393,8 +393,8 @@ void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 									const int x2temp = unassignedPixel % bmpWidth;
 									const int y1temp = provincePixel / bmpHeight;
 									const int y2temp = unassignedPixel / bmpHeight;
-									if (sqrt(((x1temp - x2temp) *(x1temp - x2temp)) + ((y1temp - y2temp) *(y1temp - y2temp))) < pixelDistance) {
-										pixelDistance = sqrt(((x1temp - x2temp) *(x1temp - x2temp)) + ((y1temp - y2temp) *(y1temp - y2temp)));
+									if (sqrt(((x1temp - x2temp) * (x1temp - x2temp)) + ((y1temp - y2temp) * (y1temp - y2temp))) < pixelDistance) {
+										pixelDistance = sqrt(((x1temp - x2temp) * (x1temp - x2temp)) + ((y1temp - y2temp) * (y1temp - y2temp)));
 										nearestPixelOfThatProvince = provincePixel;
 									}
 								}
@@ -408,8 +408,8 @@ void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 						}
 						auto x2 = (unassignedPixel) % bmpWidth;
 						auto y2 = (unassignedPixel) / bmpHeight;
-						if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-							distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
+						if (sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2))) < distance) {
+							distance = (uint32_t)sqrt(((x1 - x2) * (x1 - x2)) + ((y1 - y2) * (y1 - y2)));
 							nextOwner = P;
 						}
 					}
@@ -420,7 +420,7 @@ void ProvinceGenerator::assignRemainingPixels(Bitmap* provinceBMP, bool sea) {
 	}
 }
 
-Province * ProvinceGenerator::getProvinceByID(uint32_t ID)
+Province* ProvinceGenerator::getProvinceByID(uint32_t ID)
 {
 	return provinces[ID];
 }
@@ -544,3 +544,117 @@ void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_
 	//	}
 	//}
 }
+
+bool ProvinceGenerator::sanityChecks(const Bitmap& provinceBMP)
+{
+	for (uint32_t i = 0; i < provinceBMP.bInfoHeader.biSizeImage; i++)
+	{
+		if (provinceBMP.getBuffer()[i] == 0)
+			cout << "0 value in provinceBMP " << endl;
+	}
+	for (uint32_t index = 0; index < provinceBMP.bInfoHeader.biSizeImage / 3; index++) {
+		if (provinceBMP.getValueAtIndex(index) == 0 || provinceBMP.getValueAtIndex(index, 1) == 0 || provinceBMP.getValueAtIndex(index, 2) == 0)
+			cout << "FATAL ERROR: Unassigned pixel in provinceBMP" << endl;
+		if (provinceMap[provinceBMP.getTripleAtIndex(index)] == nullptr)
+		{
+			cout << "FATAL ERROR: Pixel colourcode results in nullptr" << endl;
+		}
+	}
+
+	for (auto continent : continents)
+	{
+		 if (continent.provinceIDs.size() == 0)
+			cout << "ERROR: Continent " << continent.ID << " has no provinces" << endl;
+		if (continent.regions.size() == 0)
+			cout << "INFO: Continent " << continent.ID << " has no regions" << endl;
+	}
+	for (auto region : regions)
+	{
+		if (region.provinces.size() == 0)
+		{
+			cout << "ERROR: Region " << region.ID << " has no provinces" << endl;
+		}
+		if (region.country == nullptr)
+		{
+			cout << "ERROR: Region " << region.ID << " has no country" << endl;
+		}
+		if (region.continentID == 1000000)
+		{
+			//cout << "Region " << region->ID << " has no continent" << endl;
+		}
+		for (auto prov : region.provinces)
+		{
+			if (prov == nullptr)
+				cout << "ERROR: Region " << region.ID << " contains nullptr province" << endl;
+		}
+	}
+	unsigned int coastals(0);
+	for (auto prov : provinces)
+	{
+		if (prov == nullptr) {
+			cout << "ERROR: Province list contains nullptr" << endl;
+			return false;
+		}
+		if (provinceMap[prov->colour] == nullptr)
+		{
+			cout << "ERROR: Province colourcode results in nullptr" << endl;
+			return false;
+		}
+		if (!prov->sea) {
+			if (prov->pixels.size() == 0)
+			{
+				cout << "ERROR: Province has no pixels" << prov->provID << endl;
+				return false;
+			}
+			if (prov->center == 0)
+			{
+				cout << "ERROR: Province center is 0" << prov->provID << endl;
+				return false;
+		}
+			if (prov->continentID == 1000000)
+			{
+				//cout << "ERROR: Province has nullptr continent" << prov->provID << endl;
+				//return false;
+	}
+			if (prov->country == nullptr)
+			{
+				//cout << "ERROR: Province has nullptr country: ID: " << prov->provID << endl;
+				//return false;
+}
+			if (prov->regionID == 1000000)
+			{
+				//cout << "ERROR: Province has nullptr region" << prov->provID << endl;
+				//return false;
+			}
+		}
+		else
+		{
+			if (prov->country != nullptr)
+			{
+				cout << "ERROR: Seaprovince has country assigned" << endl;
+				return false;
+			}
+		}
+		if (prov->pixels.size() < Data::getInstance().minProvSize)
+		{
+			cout << (prov->sea ? "WARNING: " : "ERROR: ") << "Small province remaining, Colour: " << (int)prov->colour.rgbtRed << " " << (int)prov->colour.rgbtGreen << " " << (int)prov->colour.rgbtBlue << endl;
+			cout << "\tCenter at: " << prov->center << " size is: " << prov->pixels.size() << std::endl;
+		}
+		//if (!prov->adjProv.size())
+		//	cout << "Province with ID: " << prov->provID << " has 0 adjacent provinces" << endl;
+		if (prov->coastal)
+			coastals++;
+	}
+	if (provinces.back()->provID > provinces.size())
+	{
+		cout << "ERROR: Higher province IDs than the total amount of provinces. Check deletion of small provinces" << endl;
+		return false;
+	}
+	if (provinces.size() != Data::getInstance().landProv + Data::getInstance().seaProv)
+		cout << "INFO: Amount of provinces diverges from requested amount of provinces by " << (int)((int)provinces.size() - (int)Data::getInstance().landProv - (int)Data::getInstance().seaProv) << endl;
+
+	cout << "INFO: There are a total of " << coastals << " coastal provinces" << endl;
+	return true;
+}
+
+

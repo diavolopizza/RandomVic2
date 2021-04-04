@@ -53,6 +53,7 @@ Region::Region(string name, uint32_t ID)
 {
 	this->name = name;
 	this->ID = ID;
+	this->continentID = 1000000; //unassigned
 }
 
 

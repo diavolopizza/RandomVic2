@@ -41,4 +41,7 @@ public:
 	void evaluateRegions(uint32_t minProvPerRegion, uint32_t width, uint32_t height);
 	//continentes
 	void evaluateContinents(uint32_t minProvPerContinent, uint32_t width, uint32_t height, const TerrainGenerator terrainGen);
+
+	bool sanityChecks(const Bitmap& provinceBMP);
+
 };
