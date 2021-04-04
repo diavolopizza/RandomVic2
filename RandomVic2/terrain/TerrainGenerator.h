@@ -33,6 +33,7 @@ public:
 	~TerrainGenerator();
 
 	//TERRAIN
+	vector<unsigned char> generateLayer(int seed, int layer, double sizeFactor);
 	vector<BYTE> heightMap(uint32_t seed);
 	vector<BYTE> normalizeHeightMap(Bitmap heightMap, vector<BYTE> worleyNoise);
 	void createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp);

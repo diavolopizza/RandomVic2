@@ -51,6 +51,90 @@ void TerrainGenerator::worleyNoise(vector<BYTE>& layerValues, uint32_t width, ui
 		}
 	}
 }
+vector<unsigned char> TerrainGenerator::generateLayer(int seed, int layer, double sizeFactor)
+{
+	auto height = Data::getInstance().height;
+	auto width = Data::getInstance().width;
+	vector<BYTE> layerValues = vector<BYTE>(width * height * 3 * sizeFactor);
+	FastNoiseLite myNoise; // Create a FastNoise object
+						   // adjusting frequency is necessary when map size increases, 
+						   // as the heightmap will be noisier the larger the map
+	const double sizeNoiseFactor = (double)(1024.0 * 1024.0) / (double)(width * height);
+	//double sizeNoiseFactor = 1.0 / log2f((double)(width * height)) * 20.0;
+	myNoise.SetSeed(Data::getInstance().seed + layer * 100);
+	const uint32_t type = Data::getInstance().type[layer];
+	cout << sizeNoiseFactor << endl;
+	myNoise.SetFrequency((double)Data::getInstance().fractalFrequency[layer] * sizeNoiseFactor);
+	myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves[layer]);
+	myNoise.SetFractalGain(Data::getInstance().fractalGain[layer]);
+	switch (type)
+	{
+		// regular noisy, frequency around 0.0120 for continent sized shapes
+	case 1:
+	{
+		myNoise.SetNoiseType(FastNoiseLite::NoiseType_Value); // Set the desired noise type
+		myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
+		break;
+	}
+	// regular noisy
+	case 2:
+	{
+		myNoise.SetNoiseType(FastNoiseLite::NoiseType_ValueCubic); // Set the desired noise type
+		myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
+		break;
+	}
+	// typical billow, reduce fractal frequency by roughly 85%
+	case 3:
+	{
+		myNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2); // Set the desired noise type
+		myNoise.SetFractalType(FastNoiseLite::FractalType_Ridged);
+		break;
+	}
+	// typical billow, reduce fractal frequency by roughly 85%
+	case 4:
+	{
+		myNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2); // Set the desired noise type
+		myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
+		break;
+	}
+	}
+	unsigned char minHeight; unsigned char maxHeight;
+
+	std::tie(minHeight, maxHeight) = Data::getInstance().heightRange[layer];
+	maxHeight /= 2;
+	// set the point at which heightvalues are reduced towards 0 
+	// this eliminates provinces overlapping at the east/west map boundaries
+	const double delimiter = width / Data::getInstance().divideThreshold[layer];
+	for (auto x = 0; x < height; x++)
+	{
+		for (auto y = 0; y < width; y++)
+		{
+			double xf = (double)x;
+			double yf = (double)y;
+			double factor = 1;
+			//if (yf < delimiter) {
+			//	factor = (double)y / (double)delimiter;
+			//}
+			//else if (yf > width - delimiter)
+			//{
+			//	factor = ((double)width - (double)yf) / (double)delimiter;
+			//}
+			double noiseLevel = (double)minHeight + /*largeHeightmap.getValueAtXYPosition(lowerSegment, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0) * (double)maxHeight * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
+			BYTE completeNoise = (BYTE)noiseLevel + static_cast<BYTE>(1u);
+
+			RGBTRIPLE colour{ completeNoise, completeNoise, completeNoise };
+			layerValues[(x * width + y) * 3] = colour.rgbtBlue;
+			layerValues[(x * width + y) * 3 + 1] = colour.rgbtGreen;
+			layerValues[(x * width + y) * 3 + 2] = colour.rgbtRed;
+		}
+	}
+	Bitmap layerBMP(width, height, 24, layerValues);
+	BMPHandler::getInstance().SaveBMPToFile(layerBMP, (Data::getInstance().debugMapsPath + ("layers/layer" + to_string(layer) + ".bmp")).c_str());
+
+
+
+	return layerValues;
+}
 //creates the heightmap with a given seed
 vector<BYTE> TerrainGenerator::heightMap(uint32_t seed)
 {
@@ -62,94 +146,19 @@ vector<BYTE> TerrainGenerator::heightMap(uint32_t seed)
 	cout << "Creating Heightmap" << endl;
 	for (auto layer = 0; layer < Data::getInstance().layerAmount; layer++)
 	{
-		vector<BYTE> layerValues = vector<BYTE>(width*height * 3 * sizeFactor);
-		FastNoiseLite myNoise; // Create a FastNoise object
-							   // adjusting frequency is necessary when map size increases, 
-							   // as the heightmap will be noisier the larger the map
-		const double sizeNoiseFactor = (double)(1024.0 * 1024.0) / (double)(width * height);
-		//double sizeNoiseFactor = 1.0 / log2f((double)(width * height)) * 20.0;
-		myNoise.SetSeed(seed + layer * 100);
-		const uint32_t type = Data::getInstance().type[layer];
-		cout << sizeNoiseFactor << endl;
-		myNoise.SetFrequency((double)Data::getInstance().fractalFrequency[layer] * sizeNoiseFactor);
-		myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves[layer]);
-		myNoise.SetFractalGain(Data::getInstance().fractalGain[layer]);
-		switch (type)
-		{
-			// regular noisy, frequency around 0.0120 for continent sized shapes
-		case 1:
-		{
-			myNoise.SetNoiseType(FastNoiseLite::NoiseType_Value); // Set the desired noise type
-			myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
-			break;
-		}
-		// regular noisy
-		case 2:
-		{
-			myNoise.SetNoiseType(FastNoiseLite::NoiseType_ValueCubic); // Set the desired noise type
-			myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
-			break;
-		}
-		// typical billow, reduce fractal frequency by roughly 85%
-		case 3:
-		{
-			myNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2); // Set the desired noise type
-			myNoise.SetFractalType(FastNoiseLite::FractalType_Ridged);
-			break;
-		}
-		// typical billow, reduce fractal frequency by roughly 85%
-		case 4:
-		{
-			myNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2); // Set the desired noise type
-			myNoise.SetFractalType(FastNoiseLite::FractalType_FBm);
-			break;
-		}
-		}
-		unsigned char minHeight; unsigned char maxHeight;
-
-		std::tie(minHeight, maxHeight) = Data::getInstance().heightRange[layer];
-		maxHeight /= 2;
-		// set the point at which heightvalues are reduced towards 0 
-		// this eliminates provinces overlapping at the east/west map boundaries
-		const double delimiter = width / Data::getInstance().divideThreshold[layer];
-		for (auto x = 0; x < height; x++)
-		{
-			for (auto y = 0; y < width; y++)
-			{
-				double xf = (double)x;
-				double yf = (double)y;
-				double factor = 1;
-				//if (yf < delimiter) {
-				//	factor = (double)y / (double)delimiter;
-				//}
-				//else if (yf > width - delimiter)
-				//{
-				//	factor = ((double)width - (double)yf) / (double)delimiter;
-				//}
-				double noiseLevel = (double)minHeight + /*largeHeightmap.getValueAtXYPosition(lowerSegment, y) +*/ (myNoise.GetNoise(xf, yf) + 1.0) * (double)maxHeight * factor; // ((-1 to 1) + 1) * 64 * (0 to 1)
-				BYTE completeNoise = (BYTE)noiseLevel + static_cast<BYTE>(1u);
-
-				RGBTRIPLE colour{ completeNoise, completeNoise, completeNoise };
-				layerValues[(x*width + y) * 3] = colour.rgbtBlue;
-				layerValues[(x*width + y) * 3 + 1] = colour.rgbtGreen;
-				layerValues[(x*width + y) * 3 + 2] = colour.rgbtRed;
-			}
-		}
-		heightmapLayers.push_back(layerValues);
-		Bitmap layerBMP(width, height, 24, layerValues);
-		BMPHandler::getInstance().SaveBMPToFile(layerBMP, (Data::getInstance().debugMapsPath + ("layers/layer" + to_string(layer) + ".bmp")).c_str());
+		heightmapLayers.push_back(generateLayer(seed, layer, sizeFactor));
 	}
 
-	/*vector<BYTE> layerValues = vector<BYTE>(width*height * 3 * sizeFactor);
-	worleyNoise(layerValues, width, height);
-	Bitmap worley(width, height, 24, layerValues);
-	BMPHandler::getInstance().SaveBMPToFile(worley, (Data::getInstance().debugMapsPath + ("layers/worleyLayer.bmp")).c_str());*/
+	vector<BYTE> worleyLayer = vector<BYTE>(width*height * 3 * sizeFactor);
+	//worleyNoise(worleyLayer, width, height);
+	//Bitmap worley(width, height, 24, worleyLayer);
+	//BMPHandler::getInstance().SaveBMPToFile(worley, (Data::getInstance().debugMapsPath + ("layers/worleyLayer.bmp")).c_str());
 
 	//FOR NORMALIZATION
-	//largeHeightmap.setBuffer(normalizeHeightMap(largeHeightmap, heightmapLayers));
+	largeHeightmap.setBuffer(normalizeHeightMap(largeHeightmap, worleyLayer));
 
 	// NO NORM
-	largeHeightmap.setBuffer((heightmapLayers[0]));
+	//largeHeightmap.setBuffer((heightmapLayers[0]));
 
 	//for heightmap extraction after collison
 	//detectContinents(largeHeightmap);
@@ -180,11 +189,10 @@ vector<BYTE> TerrainGenerator::normalizeHeightMap(Bitmap heightMap, vector<BYTE>
 	for (int i = 0; i < heightMap.bInfoHeader.biWidth*heightMap.bInfoHeader.biHeight * 3; i++)
 	{
 		normalisedValues[i] = (unsigned char)((double)combinedValues[i] * factor);
-		if (normalisedValues[i] > 125)
-			normalisedValues[i] += worleyNoise[i];
+		//if (normalisedValues[i] > 125)
+		//	normalisedValues[i] += worleyNoise[i];
 	}
 	heightmapLayers.clear();
-
 	return normalisedValues;
 }
 // Out of basic landmass shape, create continents
@@ -206,7 +214,7 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 	double landPercentage = (double)unassignedCounter / (double)terrainBMP.bInfoHeader.biSizeImage;
 	while (unassignedCounter)
 	{
-		for (auto i = (uint32_t)terrainBMP.bInfoHeader.biWidth; i < unassignedPixels.size() - terrainBMP.bInfoHeader.biWidth; i++)//find start
+		for (auto i = 0u; i < unassignedPixels.size(); i++)//find start
 		{
 			if (!unassignedPixels[i]) // this index is unassigned
 			{
@@ -255,10 +263,11 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 		{
 			auto distance = MAXINT;
 			auto nextCont = 0u;
-			for (auto x = 0u; x < continents.size(); x++)
+			// now see which large continent is closer
+			for (auto x = 0u; x < continents.size(); x++) 
 			{
-				//only assign to other large continent
-				if ((double)continents[x].size() / (double)terrainBMP.bInfoHeader.biSizeImage < landPercentage / 20.0)
+				// only assign to other large continent
+				if ((double)continents[x].size() / (double)terrainBMP.bInfoHeader.biSizeImage > landPercentage / 20.0)
 				{
 					for (int pix = 0; pix < continents[x].size(); pix += 100)
 					{
@@ -293,9 +302,11 @@ void TerrainGenerator::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapB
 	cout << "Creating basic terrain from heightmap" << endl;
 	uint32_t corrections = 0;
 	double tempLandPercentage = 0;
-	while (0.05 < fabs(tempLandPercentage - (double)Data::getInstance().landMassPercentage / 100.0) && corrections++ < 2) {
+	while (0.05 < fabs(tempLandPercentage - (double)Data::getInstance().landMassPercentage) && corrections++ < 5) {
 		uint32_t landPixels = 0;
-		((tempLandPercentage > Data::getInstance().landMassPercentage) ? Data::getInstance().seaLevel -= 3 : Data::getInstance().seaLevel += 3);
+		std::cout << tempLandPercentage << endl;
+		std::cout << Data::getInstance().landMassPercentage << endl;
+		((tempLandPercentage < Data::getInstance().landMassPercentage) ? Data::getInstance().seaLevel -= 3 : Data::getInstance().seaLevel += 3);
 		for (auto i = 0u; i < terrainBMP->bInfoHeader.biSizeImage; i++)
 		{
 			if (heightMapBmp.getValueAtIndex(i) > Data::getInstance().seaLevel) {
@@ -308,10 +319,20 @@ void TerrainGenerator::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapB
 		}
 
 		tempLandPercentage = (double)landPixels / (double)terrainBMP->bInfoHeader.biSizeImage;
+		cout << "Sealevel: " << Data::getInstance().seaLevel << endl;
 		cout << "Landpercentage: " << tempLandPercentage << endl;
 	}
 	cout << "Sealevel has been set to " << (unsigned int)Data::getInstance().seaLevel <<
 		" to achieve a landMassPercentage of " << tempLandPercentage << endl;
+	for (auto i = 0u; i < terrainBMP->bInfoHeader.biSizeImage; i++)
+	{
+		if (heightMapBmp.getValueAtIndex(i) > Data::getInstance().seaLevel) {
+			terrainBMP->setValueAtIndex(i, 13);
+		}
+		else {
+			terrainBMP->setValueAtIndex(i, 254);
+		}
+	}
 }
 //creates rivers 
 void TerrainGenerator::generateRivers(const Bitmap heightMap)

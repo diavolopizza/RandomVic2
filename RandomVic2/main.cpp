@@ -109,8 +109,8 @@ int main() {
 	if (Data::getInstance().genSimpleTerrain) {
 		//create simplistic terrain shape from noise map
 		terrainGenerator.createTerrain(&terrainBMP, heightMapBMP);
-		terrainGenerator.detectContinents(terrainBMP);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("simpleterrain.bmp")).c_str());
+		terrainGenerator.detectContinents(terrainBMP);
 		//generate rivers according to terrain and climate
 		terrainGenerator.generateRivers(heightMapBMP);
 		visualizer.prettyRivers(riverBMP, heightMapBMP, terrainGenerator);

@@ -55,7 +55,7 @@ bool Data::getConfig(string configPath) {
 	bitmapSize = width * height;
 	seed = root.get<uint32_t>("map.seed");
 	seaLevel = root.get<unsigned char>("map.seaLevel");
-	landMassPercentage = root.get<uint32_t>("map.landMassPercentage");
+	landMassPercentage = (double)root.get<uint32_t>("map.landMassPercentage") / 100.0;
 	{ //PROVINCE PARAMS
 		landProv = root.get<uint32_t>("map.provinces.landProvinces");
 		seaProv = root.get<uint32_t>("map.provinces.seaProvinces");

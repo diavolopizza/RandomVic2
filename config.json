@@ -23,7 +23,7 @@
 		},
 		"heightmap" : {
 			"complexHeight" : 1,
-			"layerAmount" : 2,
+			"layerAmount" : 1,
 			"layers" :
 			{
 				"0" :
