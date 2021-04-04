@@ -106,10 +106,10 @@
 			}
 		},
 		"provinces" : {
-			"landProvinces" : 5000,
+			"landProvinces" : 2000,
 			"minProvPerContinent" : 100,
 			"minProvPerRegion" : 7,
-			"seaProvinces" : 5000,
+			"seaProvinces" : 2000,
 			"minProvSize" : 50
 		},
 		"humidity" : {
@@ -122,8 +122,8 @@
 
     "v2": 
 	{
-        "source": "F:\\Program Files (x86)\\Steam\\SteamApps\\common\\Victoria 2\\",
-        "destination": "C:\\SteamLibrary\\steamapps\\common\\Victoria 2\\mod\\myMod\\"
+        "source": "C:\\Users\\paul-\\Documents\\Visual Studio 2019\\Victoriasource\\",
+        "destination": "C:\\Users\\paul-\\Documents\\Visual Studio 2019\\Victoriasource\\mod\\myMod\\"
     },
 	
 	"visualisation":

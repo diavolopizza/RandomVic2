@@ -203,13 +203,14 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 			unassignedPixels[i] = 0; //is unassigned
 		}
 	}
+	double landPercentage = (double)unassignedCounter / (double)terrainBMP.bInfoHeader.biSizeImage;
 	while (unassignedCounter)
 	{
-		for (auto i = 0u; i < unassignedPixels.size(); i++)//find start
+		for (auto i = (uint32_t)terrainBMP.bInfoHeader.biWidth; i < unassignedPixels.size() - terrainBMP.bInfoHeader.biWidth; i++)//find start
 		{
 			if (!unassignedPixels[i]) // this index is unassigned
 			{
-				uint32_t sizeCounter = 0;
+				uint32_t sizeCounter = 1;
 				// now expand?
 				vector<uint32_t> newContinentPixels(terrainBMP.bInfoHeader.biSizeImage, 0);
 				newContinentPixels[sizeCounter] = i; //the first pixel of the new continent is at index i
@@ -246,6 +247,41 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 			}
 		}
 	}
+	// cleanup: remove small continents
+	for (auto i = 0u; i < continents.size(); i++)
+	{
+		// percentage of landmass of continent is smaller than 5% of the total landmass
+		if ((double)continents[i].size() / (double)terrainBMP.bInfoHeader.biSizeImage < landPercentage / 20.0)
+		{
+			auto distance = MAXINT;
+			auto nextCont = 0u;
+			for (auto x = 0u; x < continents.size(); x++)
+			{
+				//only assign to other large continent
+				if ((double)continents[x].size() / (double)terrainBMP.bInfoHeader.biSizeImage < landPercentage / 20.0)
+				{
+					for (int pix = 0; pix < continents[x].size(); pix += 100)
+					{
+						auto pixDistance = getDistance(pix, continents[i][0], terrainBMP.bInfoHeader.biWidth, (double)terrainBMP.bInfoHeader.biHeight);
+						if (pixDistance < distance)
+						{
+							distance = pixDistance;
+							nextCont = x;
+						}
+
+					}
+				}
+			}
+			continents[nextCont].insert(std::end(continents[nextCont]), std::begin(continents[i]), std::end(continents[i]));
+			// clear too small continent
+			continents.erase(continents.begin() + i);
+			i--;
+		}
+	}
+
+
+
+
 	for (const auto& continent : continents)
 	{
 		unsigned char blue = rand() % 255;
@@ -283,7 +319,7 @@ void TerrainGenerator::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapB
 		" to achieve a landMassPercentage of " << tempLandPercentage << endl;
 }
 //creates rivers 
-void TerrainGenerator::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
+void TerrainGenerator::generateRivers(const Bitmap heightMap)
 {
 	cout << "Creating rivers" << endl;
 	set<int> riverPixels;
@@ -325,7 +361,7 @@ void TerrainGenerator::generateRivers(Bitmap* riverBMP, const Bitmap heightMap)
 			//now expand to lower or equal pixel as long as possible
 			while (elevationToleranceOffset < Data::getInstance().elevationTolerance && !candidates.size()) {
 				if (heightMap.getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth)) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth))) {
-					if (ABOVE(R->getCurrentEnd(), heightmapWidth) < riverBMP->bInfoHeader.biSizeImage && previous != -(int)heightmapWidth)
+					if (ABOVE(R->getCurrentEnd(), heightmapWidth) < heightMap.bInfoHeader.biSizeImage && previous != -(int)heightmapWidth)
 						candidates.push_back(ABOVE(R->getCurrentEnd(), heightmapWidth));
 				}
 				if (heightMap.getValueAtIndex(BELOW(R->getCurrentEnd(), heightmapWidth)) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(BELOW(R->getCurrentEnd(), heightmapWidth))) {

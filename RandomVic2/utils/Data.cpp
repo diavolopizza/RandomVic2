@@ -13,13 +13,26 @@ Data::~Data()
 }
 
 
-void Data::getConfig(string configPath) {
+bool Data::getConfig(string configPath) {
+	ifstream f(configPath.c_str());
+	std::stringstream buffer;
+	if (!f.good())
+	{
+		f.open("config.json");
+		if (!f.good())
+		{
+			std::cout << "Config not found at " << configPath << " or config.json" << std::endl;
+			return false;
+		}
+	}
+	buffer << f.rdbuf();
+
 	// Short alias for this namespace
 	namespace pt = boost::property_tree;
 
 	// Create a root
 	pt::ptree root;
-	pt::read_json(configPath, root);
+	pt::read_json(buffer, root);
 
 	//MODULES
 	genHeight = root.get<bool>("module.genHeight");
@@ -72,7 +85,7 @@ void Data::getConfig(string configPath) {
 		layerAmount = root.get<uint32_t>("map.heightmap.layerAmount");
 		for (uint32_t i = 0; i < layerAmount; i++)
 		{
-			type.push_back( root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".type"));
+			type.push_back(root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".type"));
 			fractalFrequency.push_back(root.get<double>("map.heightmap.layers." + to_string(i) + ".fractalFrequency"));
 			fractalOctaves.push_back(root.get<uint32_t>("map.heightmap.layers." + to_string(i) + ".fractalOctaves"));
 			fractalGain.push_back(root.get<double>("map.heightmap.layers." + to_string(i) + ".fractalGain"));
@@ -90,5 +103,6 @@ void Data::getConfig(string configPath) {
 		seed = (uint32_t)time(NULL);
 	random2.seed(seed);
 	cout << "Seeding with " << seed << endl;
+	return true;
 
 }

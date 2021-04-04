@@ -56,7 +56,13 @@ int main() {
 	//Data data =
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	Data::getInstance();
-	Data::getInstance().getConfig("C:/Users/Paul/Documents/Visual Studio 2017/Projects/RandomVic2/config.json");
+
+	//Data::getInstance().getConfig("C:/Users/Paul/Documents/Visual Studio 2017/Projects/RandomVic2/config.json");
+	if (!Data::getInstance().getConfig("C:\\Users\\paul-\\Documents\\Visual Studio 2019\\RandomVic2\\config.json"))
+	{
+		system("pause");
+		return -1;
+	}
 	Parser genericParser;
 	TerrainGenerator terrainGenerator;
 	ProvinceGenerator provinceGenerator;
@@ -106,7 +112,7 @@ int main() {
 		terrainGenerator.detectContinents(terrainBMP);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("simpleterrain.bmp")).c_str());
 		//generate rivers according to terrain and climate
-		terrainGenerator.generateRivers(&riverBMP, heightMapBMP);
+		terrainGenerator.generateRivers(heightMapBMP);
 		visualizer.prettyRivers(riverBMP, heightMapBMP, terrainGenerator);
 	}
 	else {
@@ -166,7 +172,10 @@ int main() {
 		BMPHandler::getInstance().SaveBMPToFile(regionBMP, (Data::getInstance().debugMapsPath + ("regions.bmp")).c_str());
 		BMPHandler::getInstance().SaveBMPToFile(provincesBMP, (Data::getInstance().debugMapsPath + ("provinces.bmp")).c_str());
 	}
-
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() << "[s]" << std::endl;
+	system("pause");
+	return 0;
 	CountryGenerator cG(&provinceGenerator);
 	cG.distributeCountries(Data::getInstance().maxNumOfCountries, 0);
 	cG.determineDimensions();
@@ -189,7 +198,7 @@ int main() {
 	Bitmap countryRiver = merger.mergeCountryRiverProvince(countryBMP, riverBMP, provincesBMP);
 	BMPHandler::getInstance().SaveBMPToFile(countryRiver, (Data::getInstance().debugMapsPath + ("countryRiver.bmp")).c_str());
 
-	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	/*std::chrono::steady_clock::time_point*/ end = std::chrono::steady_clock::now();
 	std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() << "[s]" << std::endl;
 	system("pause");
 	return 0;

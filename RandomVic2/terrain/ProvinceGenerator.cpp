@@ -204,11 +204,6 @@ void ProvinceGenerator::provinceCreation(Bitmap* provinceBMP, uint32_t provinceS
 			//uint32_t currentPixel = P->pixels[P->pixels.size() - random() % ((P->pixels.size() / 4) + 1)];
 			uint32_t currentPixel = P->pixels[randomValuesCached[x] % P->pixels.size()];
 			newPixels = { RIGHT(currentPixel), LEFT(currentPixel), ABOVE(currentPixel, bmpWidth), BELOW(currentPixel, bmpWidth) };
-			//vector<int> newPixels;
-			//newPixels.push_back(RIGHT(currentPixel));
-			//newPixels.push_back(LEFT(currentPixel));
-			//newPixels.push_back(ABOVE(currentPixel, bmpWidth));
-			//newPixels.push_back(BELOW(currentPixel, bmpWidth));
 
 			for (const auto newPixel : newPixels) {
 				if (newPixel < bmpSize && newPixel > 0)
@@ -525,17 +520,19 @@ void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_
 
 	for (auto& prov : provinces)
 	{
-		for (auto& continent : continents)
+		if (!prov->sea)
 		{
-			if (continent.findPixel(prov->center)) {
-				prov->continentID = continent.ID;
-				continent.provinceIDs.push_back(prov->provID);
-				regions[prov->regionID].continentID = continent.ID;
-				break;
+			for (auto& continent : continents)
+			{
+				if (continent.findPixel(prov->center)) {
+					prov->continentID = continent.ID;
+					continent.provinceIDs.push_back(prov->provID);
+					regions[prov->regionID].continentID = continent.ID;
+					break;
+				}
 			}
 		}
 	}
-
 	//for (auto region : regions)
 	//{
 	//	if (region->continent == nullptr)
@@ -546,47 +543,4 @@ void ProvinceGenerator::evaluateContinents(uint32_t minProvPerContinent, uint32_
 	//		region->assignContinent(C, 0, minRegionPerContinent);
 	//	}
 	//}
-
-
-	/*for (auto prov : provinces)
-	{
-		if (prov->continent == nullptr && !prov->sea) {
-			Continent C(to_string(continentID), continentID);
-			continents.push_back(C);
-			continentID++;
-			prov->assignContinent(&C);
-		}
-	}
-	for (uint32_t i = 0; i < continents.size(); i++)
-	{
-		if (continents[i].provinces.size() < minProvPerContinent) {
-			for (auto province : continents[i].provinces) {
-				province->continent = nullptr;
-			}
-			continents.erase(continents.begin() + i);
-			i--;
-		}
-	}
-	for (auto prov : provinces)
-	{
-		if (prov->continent == nullptr && !prov->sea) {
-			uint32_t distance = MAXUINT32;
-			Continent nextOwner;
-			for (Province* P : provinces)
-			{
-				if (P->continent != nullptr) {
-					const int x1 = P->center  % width;
-					const int x2 = prov->center  % width;
-					const int y1 = P->center / height;
-					const int y2 = prov->center / height;
-					if (sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2))) < distance) {
-						distance = (uint32_t)sqrt(((x1 - x2) *(x1 - x2)) + ((y1 - y2) *(y1 - y2)));
-						nextOwner = *(P->continent);
-					}
-				}
-			}
-			//if (nextOwner != nullptr)
-			prov->assignContinent(&nextOwner);
-		}
-	}*/
 }

@@ -38,6 +38,6 @@ public:
 	void createTerrain(Bitmap* terrainBMP, const Bitmap heightMapBmp);
 	void worleyNoise(vector<BYTE> &layerValues, uint32_t width, uint32_t height);
 	void detectContinents(Bitmap heightMap);
-	void generateRivers(Bitmap* riverBMP, const Bitmap heightmap);
+	void generateRivers(const Bitmap heightmap);
 	void sanityChecks(Bitmap provinceBMP);
 };

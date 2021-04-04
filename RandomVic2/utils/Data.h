@@ -1,5 +1,6 @@
 #pragma once
 #include <random>
+#include <fstream>
 #include <time.h>
 #include <iostream>
 #include <boost/property_tree/ptree.hpp>
@@ -64,7 +65,7 @@ public:
 	uint32_t threadAmount = 8;
 
 
-	void getConfig(string configPath);
+	bool getConfig(string configPath);
 
 public:
 	Data(Data const&) = delete;
