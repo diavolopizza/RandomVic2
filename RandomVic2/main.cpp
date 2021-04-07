@@ -58,7 +58,7 @@ int main() {
 	Data::getInstance();
 
 	//Data::getInstance().getConfig("C:/Users/Paul/Documents/Visual Studio 2017/Projects/RandomVic2/config.json");
-	if (!Data::getInstance().getConfig("C:\\Users\\paul-\\Documents\\Visual Studio 2019\\RandomVic2\\config.json"))
+	if (!Data::getInstance().getConfig("C:\\Users\\Paul\\Documents\\Visual Studio 2017\\Projects\\RandomVic2\\config.json"))
 	{
 		system("pause");
 		return -1;

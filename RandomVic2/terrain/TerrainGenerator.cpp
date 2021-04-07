@@ -198,31 +198,30 @@ vector<BYTE> TerrainGenerator::normalizeHeightMap(Bitmap heightMap, vector<BYTE>
 // Out of basic landmass shape, create continents
 void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 {
-	cout << "Detecting continents from terrain" << endl;
+	enum assigned { UNASSIGNED = 1, ASSIGNED = 2 };
+	std::cout << "Detecting continents from terrain" << std::endl;
 	vector<int> offsets = { 1 ,-1, terrainBMP.bInfoHeader.biWidth, -terrainBMP.bInfoHeader.biWidth };
-	vector<uint32_t> unassignedPixels(terrainBMP.bInfoHeader.biSizeImage, 999);
 	int unassignedCounter = 0;
 	for (auto i = 0u; i < terrainBMP.bInfoHeader.biSizeImage; i++)
 	{
 		if (terrainBMP.getValueAtIndex(i) == 13)
 		{
-			terrainBMP.setValueAtIndex(i, 255);
+			terrainBMP.setValueAtIndex(i, UNASSIGNED);
 			unassignedCounter++;
-			unassignedPixels[i] = 0; //is unassigned
 		}
 	}
 	double landPercentage = (double)unassignedCounter / (double)terrainBMP.bInfoHeader.biSizeImage;
 	while (unassignedCounter)
 	{
-		for (auto i = 0u; i < unassignedPixels.size(); i++)//find start
+		for (auto i = 0u; i < terrainBMP.bInfoHeader.biSizeImage; i++)//find start
 		{
-			if (!unassignedPixels[i]) // this index is unassigned
+			if (terrainBMP.getValueAtIndex(i) == UNASSIGNED)
 			{
-				uint32_t sizeCounter = 1;
-				// now expand?
+				uint32_t sizeCounter = 0;
 				vector<uint32_t> newContinentPixels(terrainBMP.bInfoHeader.biSizeImage, 0);
 				newContinentPixels[sizeCounter] = i; //the first pixel of the new continent is at index i
-				unassignedPixels[i] = 1; // this pix is now assigned to a continent
+				sizeCounter++;
+				terrainBMP.setValueAtIndex(i, ASSIGNED); // this pix is now assigned to a continent
 				unassignedCounter--;
 				auto pixel = i;
 				set<uint32_t> pixelStack = { pixel };
@@ -233,11 +232,11 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 					const auto savePixel = pixel;
 					for (auto offset : offsets)
 					{
-						while (terrainBMP.getValueAtIndex(pixel += offset) == 255)
+						while (terrainBMP.getValueAtIndex(pixel += offset) == UNASSIGNED && (pixel) % terrainBMP.bInfoHeader.biWidth != 0 && (pixel) % terrainBMP.bInfoHeader.biWidth != terrainBMP.bInfoHeader.biWidth-1)
 						{
-							if (unassignedPixels[pixel] == 0)
+							if (terrainBMP.getValueAtIndex(pixel) == UNASSIGNED)
 							{
-								unassignedPixels[pixel] = 1; //assigned
+								terrainBMP.setValueAtIndex(pixel, ASSIGNED);
 								unassignedCounter--;
 								pixelStack.insert(pixel);
 								newContinentPixels[sizeCounter] = pixel;
@@ -258,42 +257,48 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 	std::sort(continents.begin(), continents.end(), [](const vector<uint32_t>& a, const vector<uint32_t>& b) { return a.size() < b.size(); });
 
 	// cleanup: remove small continents
-	for (auto i = 0u; i < continents.size(); i++)
+	for (auto smallContIndex = 0u; smallContIndex < continents.size(); smallContIndex++)
 	{
 		// percentage of landmass of continent is smaller than 5% of the total landmass
-		if ((double)continents[i].size() / (double)terrainBMP.bInfoHeader.biSizeImage < landPercentage / 20.0)
+		if ((double)continents[smallContIndex].size() / (double)terrainBMP.bInfoHeader.biSizeImage < landPercentage / 20.0)
 		{
 			auto distance = MAXINT;
-			auto nextCont = 0u;
+			auto nextCont = 999u;
 			// now see which large continent is closer
-			for (auto x = 0u; x < continents.size(); x++) 
+			for (auto nextContIndex = 0u; nextContIndex < continents.size(); nextContIndex++)
 			{
+				// skip when same continent, otherwise distance to self is 0
+				if (smallContIndex == nextContIndex)
+					continue;
 				// only assign to other large continent
 				//if ((double)continents[x].size() / (double)terrainBMP.bInfoHeader.biSizeImage > landPercentage / 20.0)
 				{
-					for (int pix = 0; pix < continents[x].size(); pix += 100)
+					for (int pix = 0; pix < continents[nextContIndex].size(); pix += 100)
 					{
-						auto pixDistance = getDistance(pix, continents[i][0], terrainBMP.bInfoHeader.biWidth, (double)terrainBMP.bInfoHeader.biHeight);
+						auto pixDistance = getDistance(continents[nextContIndex][pix], (int)continents[smallContIndex][0], (int)terrainBMP.bInfoHeader.biWidth, (int)terrainBMP.bInfoHeader.biHeight);
 						if (pixDistance < distance)
 						{
 							distance = pixDistance;
-							nextCont = x;
+							nextCont = nextContIndex;
 						}
 					}
 				}
 			}
-			continents[nextCont].insert(std::end(continents[nextCont]), std::begin(continents[i]), std::end(continents[i]));
+			continents[nextCont].insert(std::end(continents[nextCont]), std::begin(continents[smallContIndex]), std::end(continents[smallContIndex]));
 			// clear too small continent
-			continents.erase(continents.begin() + i);
-			i--;
+			continents.erase(continents.begin() + smallContIndex);
+			smallContIndex--;
 		}
 	}
-	for (const auto& continent : continents)
+
+	std::sort(continents.begin(), continents.end(), [](const vector<uint32_t>& a, const vector<uint32_t>& b) { return a.size() < b.size(); });
+	for (auto& continent : continents)
 	{
-		unsigned char blue = rand() % 255;
+		std::sort(continent.begin(), continent.end());
+		unsigned char colour = rand() % 255;
 		for (const auto& pixel : continent)
 		{
-			terrainBMP.setValueAtIndex(pixel, blue);
+			terrainBMP.setValueAtIndex(pixel, colour);
 		}
 	}
 	BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("detectedContinents.bmp")).c_str());
