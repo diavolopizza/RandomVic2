@@ -12,7 +12,7 @@
 	{
 		"seed" : 4,
         "height" : 2000,
-		"width" : 2000,
+		"width" : 5616,
 		"seaLevel" : 128,
 		"landMassPercentage" : 35,
 		
@@ -29,7 +29,7 @@
 				"0" :
 				{
 					"type" : 2,
-					"fractalFrequency" : 0.008,
+					"fractalFrequency" : 0.016,
 					"fractalOctaves" : 9,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,

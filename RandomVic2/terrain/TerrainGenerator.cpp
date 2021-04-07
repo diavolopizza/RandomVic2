@@ -255,6 +255,8 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 			}
 		}
 	}
+	std::sort(continents.begin(), continents.end(), [](const vector<uint32_t>& a, const vector<uint32_t>& b) { return a.size() < b.size(); });
+
 	// cleanup: remove small continents
 	for (auto i = 0u; i < continents.size(); i++)
 	{
@@ -267,7 +269,7 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 			for (auto x = 0u; x < continents.size(); x++) 
 			{
 				// only assign to other large continent
-				if ((double)continents[x].size() / (double)terrainBMP.bInfoHeader.biSizeImage > landPercentage / 20.0)
+				//if ((double)continents[x].size() / (double)terrainBMP.bInfoHeader.biSizeImage > landPercentage / 20.0)
 				{
 					for (int pix = 0; pix < continents[x].size(); pix += 100)
 					{
