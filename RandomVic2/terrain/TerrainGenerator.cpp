@@ -211,34 +211,36 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 		}
 	}
 	double landPercentage = (double)unassignedCounter / (double)terrainBMP.bInfoHeader.biSizeImage;
+
+	vector<uint32_t> newContinentPixels(terrainBMP.bInfoHeader.biSizeImage*Data::getInstance().landMassPercentage, 0);
 	while (unassignedCounter)
 	{
-		for (auto i = 0u; i < terrainBMP.bInfoHeader.biSizeImage; i++)//find start
+		for (auto i = 0u; i < terrainBMP.bInfoHeader.biSizeImage; i++) //find start
 		{
 			if (terrainBMP.getValueAtIndex(i) == UNASSIGNED)
 			{
 				uint32_t sizeCounter = 0;
-				vector<uint32_t> newContinentPixels(terrainBMP.bInfoHeader.biSizeImage, 0);
 				newContinentPixels[sizeCounter] = i; //the first pixel of the new continent is at index i
 				sizeCounter++;
 				terrainBMP.setValueAtIndex(i, ASSIGNED); // this pix is now assigned to a continent
 				unassignedCounter--;
 				auto pixel = i;
-				set<uint32_t> pixelStack = { pixel };
+				queue<uint32_t> pixelStack;
+				pixelStack.push(pixel);
 				while (pixelStack.size())
 				{
-					pixel = *pixelStack.begin();
-					pixelStack.erase(pixel);
+					pixel = pixelStack.front();
+					pixelStack.pop();
 					const auto savePixel = pixel;
 					for (auto offset : offsets)
 					{
-						while (terrainBMP.getValueAtIndex(pixel += offset) == UNASSIGNED && (pixel) % terrainBMP.bInfoHeader.biWidth != 0 && (pixel) % terrainBMP.bInfoHeader.biWidth != terrainBMP.bInfoHeader.biWidth-1)
+						while (terrainBMP.getValueAtIndex(pixel += offset) == UNASSIGNED && (pixel) % terrainBMP.bInfoHeader.biWidth != 0 && (pixel) % terrainBMP.bInfoHeader.biWidth != terrainBMP.bInfoHeader.biWidth - 1)
 						{
 							if (terrainBMP.getValueAtIndex(pixel) == UNASSIGNED)
 							{
 								terrainBMP.setValueAtIndex(pixel, ASSIGNED);
 								unassignedCounter--;
-								pixelStack.insert(pixel);
+								pixelStack.push(pixel);
 								newContinentPixels[sizeCounter] = pixel;
 								sizeCounter++;
 							}
@@ -251,6 +253,8 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 				newContinentPixels.resize(sizeCounter);
 				std::sort(newContinentPixels.begin(), newContinentPixels.end());
 				continents.push_back(newContinentPixels);
+				newContinentPixels.resize(terrainBMP.bInfoHeader.biSizeImage*Data::getInstance().landMassPercentage);
+				std::fill(newContinentPixels.begin(), newContinentPixels.end(), 0);
 			}
 		}
 	}
@@ -268,11 +272,7 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 			for (auto nextContIndex = 0u; nextContIndex < continents.size(); nextContIndex++)
 			{
 				// skip when same continent, otherwise distance to self is 0
-				if (smallContIndex == nextContIndex)
-					continue;
-				// only assign to other large continent
-				//if ((double)continents[x].size() / (double)terrainBMP.bInfoHeader.biSizeImage > landPercentage / 20.0)
-				{
+				if (smallContIndex != nextContIndex)
 					for (int pix = 0; pix < continents[nextContIndex].size(); pix += 100)
 					{
 						auto pixDistance = getDistance(continents[nextContIndex][pix], (int)continents[smallContIndex][0], (int)terrainBMP.bInfoHeader.biWidth, (int)terrainBMP.bInfoHeader.biHeight);
@@ -282,7 +282,6 @@ void TerrainGenerator::detectContinents(Bitmap terrainBMP)
 							nextCont = nextContIndex;
 						}
 					}
-				}
 			}
 			continents[nextCont].insert(std::end(continents[nextCont]), std::begin(continents[smallContIndex]), std::end(continents[smallContIndex]));
 			// clear too small continent
@@ -329,8 +328,9 @@ void TerrainGenerator::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapB
 		cout << "Sealevel: " << Data::getInstance().seaLevel << endl;
 		cout << "Landpercentage: " << tempLandPercentage << endl;
 	}
+	Data::getInstance().landMassPercentage = tempLandPercentage;
 	cout << "Sealevel has been set to " << (unsigned int)Data::getInstance().seaLevel <<
-		" to achieve a landMassPercentage of " << tempLandPercentage << endl;
+		" to achieve a landMassPercentage of " << Data::getInstance().landMassPercentage << endl;
 	for (auto i = 0u; i < terrainBMP->bInfoHeader.biSizeImage; i++)
 	{
 		if (heightMapBmp.getValueAtIndex(i) > Data::getInstance().seaLevel) {
