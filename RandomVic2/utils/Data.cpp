@@ -4,7 +4,7 @@
 
 Data::Data()
 {
-
+	seaLevel = 128;
 }
 
 
@@ -54,14 +54,26 @@ bool Data::getConfig(string configPath) {
 	height = root.get<uint32_t>("map.height");
 	bitmapSize = width * height;
 	seed = root.get<uint32_t>("map.seed");
-	seaLevel = root.get<unsigned char>("map.seaLevel");
 	landMassPercentage = (double)root.get<uint32_t>("map.landMassPercentage") / 100.0;
 	{ //PROVINCE PARAMS
-		landProv = root.get<uint32_t>("map.provinces.landProvinces");
-		seaProv = root.get<uint32_t>("map.provinces.seaProvinces");
-		minProvPerContinent = root.get<uint32_t>("map.provinces.minProvPerContinent");
-		minProvPerRegion = root.get<uint32_t>("map.provinces.minProvPerRegion");
-		minProvSize = root.get<uint32_t>("map.provinces.minProvSize");
+		auto automatic = root.get<uint32_t>("map.provinces.auto");
+		if (automatic)
+		{
+			auto sizeFactor = sqrt((double)bitmapSize / baseArea);
+			cout << sizeFactor << endl;
+			landProv = 5000.0 * landMassPercentage * sizeFactor;
+			seaProv = 5000.0 * (1.0 - landMassPercentage) * sizeFactor;
+			minProvPerContinent = root.get<uint32_t>("map.provinces.minProvPerContinent");
+			minProvPerRegion = root.get<uint32_t>("map.provinces.minProvPerRegion");
+			minProvSize = root.get<uint32_t>("map.provinces.minProvSize");
+		}
+		else {
+			landProv = root.get<uint32_t>("map.provinces.landProvinces");
+			seaProv = root.get<uint32_t>("map.provinces.seaProvinces");
+			minProvPerContinent = root.get<uint32_t>("map.provinces.minProvPerContinent");
+			minProvPerRegion = root.get<uint32_t>("map.provinces.minProvPerRegion");
+			minProvSize = root.get<uint32_t>("map.provinces.minProvSize");
+		}
 	}
 
 	{ //RIVERS

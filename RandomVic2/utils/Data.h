@@ -36,6 +36,7 @@ public:
 	uint32_t minProvPerContinent = 0;
 	uint32_t minProvPerRegion = 0;
 	uint32_t minProvSize = 0;
+	double baseArea = 2000.0 * 2000.0; // for reference, to scale many other factors
 
 	//heightmap
 	uint32_t layerAmount;

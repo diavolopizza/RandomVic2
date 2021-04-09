@@ -64,7 +64,10 @@ vector<unsigned char> TerrainGenerator::generateLayer(int seed, int layer, doubl
 	myNoise.SetSeed(Data::getInstance().seed + layer * 100);
 	const uint32_t type = Data::getInstance().type[layer];
 	cout << sizeNoiseFactor << endl;
-	myNoise.SetFrequency((double)Data::getInstance().fractalFrequency[layer] * sizeNoiseFactor);
+	const auto baseFrequency = 0.008;
+	const double thisArea = width * height;
+	const auto frequencyMod = baseFrequency * sqrt(thisArea / Data::getInstance().baseArea);
+	myNoise.SetFrequency(frequencyMod * (double)Data::getInstance().fractalFrequency[layer] * sizeNoiseFactor);
 	myNoise.SetFractalOctaves(Data::getInstance().fractalOctaves[layer]);
 	myNoise.SetFractalGain(Data::getInstance().fractalGain[layer]);
 	switch (type)
@@ -130,9 +133,7 @@ vector<unsigned char> TerrainGenerator::generateLayer(int seed, int layer, doubl
 	}
 	Bitmap layerBMP(width, height, 24, layerValues);
 	BMPHandler::getInstance().SaveBMPToFile(layerBMP, (Data::getInstance().debugMapsPath + ("layers/layer" + to_string(layer) + ".bmp")).c_str());
-
-
-
+	heightmapLayers[layer] = layerValues;
 	return layerValues;
 }
 //creates the heightmap with a given seed
@@ -144,10 +145,20 @@ vector<BYTE> TerrainGenerator::heightMap(uint32_t seed)
 	const auto width = (uint32_t)((double)largeHeightmap.bInfoHeader.biWidth);
 	const auto height = (uint32_t)((double)largeHeightmap.bInfoHeader.biHeight);
 	cout << "Creating Heightmap" << endl;
-	for (auto layer = 0; layer < Data::getInstance().layerAmount; layer++)
-	{
-		heightmapLayers.push_back(generateLayer(seed, layer, sizeFactor));
+	heightmapLayers.resize(Data::getInstance().layerAmount);
+	std::vector<std::thread> threads;
+	for (auto layer = 0; layer < Data::getInstance().layerAmount; layer++) {
+		threads.push_back(std::thread(&TerrainGenerator::generateLayer, this,seed,layer, sizeFactor));
+		//threads.push_back(std::thread(&ProvinceGenerator::fill, this, std::ref(provinceBMP), std::ref(riverBMP), (uint32_t)255, (uint32_t)254, from, to, updateThreshold));
 	}
+	//wait for threads to finish
+	for (auto& t : threads) {
+		t.join();
+	}
+	//for (auto layer = 0; layer < Data::getInstance().layerAmount; layer++)
+	//{
+	//	heightmapLayers.push_back(generateLayer(seed, layer, sizeFactor));
+	//}
 
 	vector<BYTE> worleyLayer = vector<BYTE>(width*height * 3 * sizeFactor);
 	//worleyNoise(worleyLayer, width, height);
@@ -310,8 +321,6 @@ void TerrainGenerator::createTerrain(Bitmap* terrainBMP, const Bitmap heightMapB
 	double tempLandPercentage = 0;
 	while (0.05 < fabs(tempLandPercentage - (double)Data::getInstance().landMassPercentage) && corrections++ < 5) {
 		uint32_t landPixels = 0;
-		std::cout << tempLandPercentage << endl;
-		std::cout << Data::getInstance().landMassPercentage << endl;
 		((tempLandPercentage < Data::getInstance().landMassPercentage) ? Data::getInstance().seaLevel -= 3 : Data::getInstance().seaLevel += 3);
 		for (auto i = 0u; i < terrainBMP->bInfoHeader.biSizeImage; i++)
 		{
