@@ -144,12 +144,12 @@ vector<BYTE> ProvinceGenerator::landProvinces(Bitmap terrainBMP, Bitmap* provinc
 		provinceBMP->setTripleAtIndex(terrainBMP.getValueAtIndex(i) == 254 ? rgbHigh : rgbLow, i);
 	}
 	//assign province size //better calculation?
-	uint32_t landProvSize = (int)((double)bmpSize * 0.6f / (double)Data::getInstance().landProv);
-	uint32_t seaProvSize = (int)((double)bmpSize * 1.2f / (double)Data::getInstance().seaProv);
+	uint32_t landProvSize = (int)((double)bmpSize * 0.6f / (double)Data::getInstance().landProvinceAmount);
+	uint32_t seaProvSize = (int)((double)bmpSize * 1.2f / (double)Data::getInstance().seaProvinceAmount);
 	//assign pixels to this new province
 	//cout << landProvSize << endl;
-	provinceCreation(provinceBMP, landProvSize, Data::getInstance().landProv, 0, 0);
-	provinceCreation(provinceBMP, seaProvSize, Data::getInstance().seaProv, Data::getInstance().landProv, 254);
+	provinceCreation(provinceBMP, landProvSize, Data::getInstance().landProvinceAmount, 0, 0);
+	provinceCreation(provinceBMP, seaProvSize, Data::getInstance().seaProvinceAmount, Data::getInstance().landProvinceAmount, 254);
 	//For multithreading: create vector of random values. Used for performance improvements, as ranlux24 is using locks, and new instances would remove determination.
 	uint32_t threadAmount = Data::getInstance().threadAmount;
 	//decrement number of threads, until biSizeImage can be divided by threadCount without any rest
@@ -650,8 +650,8 @@ bool ProvinceGenerator::sanityChecks(const Bitmap& provinceBMP)
 		cout << "ERROR: Higher province IDs than the total amount of provinces. Check deletion of small provinces" << endl;
 		return false;
 	}
-	if (provinces.size() != Data::getInstance().landProv + Data::getInstance().seaProv)
-		cout << "INFO: Amount of provinces diverges from requested amount of provinces by " << (int)((int)provinces.size() - (int)Data::getInstance().landProv - (int)Data::getInstance().seaProv) << endl;
+	if (provinces.size() != Data::getInstance().landProvinceAmount + Data::getInstance().seaProvinceAmount)
+		cout << "INFO: Amount of provinces diverges from requested amount of provinces by " << (int)((int)provinces.size() - (int)Data::getInstance().landProvinceAmount - (int)Data::getInstance().seaProvinceAmount) << endl;
 
 	cout << "INFO: There are a total of " << coastals << " coastal provinces" << endl;
 	return true;

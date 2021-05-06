@@ -57,23 +57,19 @@ bool Data::getConfig(string configPath) {
 	landMassPercentage = (double)root.get<uint32_t>("map.landMassPercentage") / 100.0;
 	{ //PROVINCE PARAMS
 		auto automatic = root.get<uint32_t>("map.provinces.auto");
-		if (automatic)
+		auto landProvFactor = 1.0;
+		auto seaProvFactor = 1.0;
+		if (!automatic)
 		{
-			auto sizeFactor = sqrt((double)bitmapSize / baseArea);
-			cout << sizeFactor << endl;
-			landProv = 5000.0 * landMassPercentage * sizeFactor;
-			seaProv = 5000.0 * (1.0 - landMassPercentage) * sizeFactor;
-			minProvPerContinent = root.get<uint32_t>("map.provinces.minProvPerContinent");
-			minProvPerRegion = root.get<uint32_t>("map.provinces.minProvPerRegion");
-			minProvSize = root.get<uint32_t>("map.provinces.minProvSize");
+			landProvFactor = root.get<double>("map.provinces.landProvinceFactor");
+			seaProvFactor = root.get<double>("map.provinces.seaProvinceFactor");
 		}
-		else {
-			landProv = root.get<uint32_t>("map.provinces.landProvinces");
-			seaProv = root.get<uint32_t>("map.provinces.seaProvinces");
-			minProvPerContinent = root.get<uint32_t>("map.provinces.minProvPerContinent");
-			minProvPerRegion = root.get<uint32_t>("map.provinces.minProvPerRegion");
-			minProvSize = root.get<uint32_t>("map.provinces.minProvSize");
-		}
+		auto sizeFactor = sqrt((double)bitmapSize / baseArea);
+		landProvinceAmount = 5000.0 * landMassPercentage * sizeFactor * landProvFactor;
+		seaProvinceAmount = 5000.0 * (1.0 - landMassPercentage) * sizeFactor * seaProvFactor;
+		minProvPerContinent = root.get<uint32_t>("map.provinces.minProvPerContinent");
+		minProvPerRegion = root.get<uint32_t>("map.provinces.minProvPerRegion");
+		minProvSize = root.get<uint32_t>("map.provinces.minProvSize");
 	}
 
 	{ //RIVERS

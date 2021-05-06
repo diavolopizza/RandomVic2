@@ -12,8 +12,7 @@
 	{
 		"seed" : 4,
         "height" : 2000,
-		"width" : 5616,
-		"seaLevel" : 128,
+		"width" : 5000,
 		"landMassPercentage" : 35,
 		
 		"rivers" : 
@@ -23,13 +22,13 @@
 		},
 		"heightmap" : {
 			"complexHeight" : 1,
-			"layerAmount" : 1,
+			"layerAmount" : 3,
 			"layers" :
 			{
 				"0" :
 				{
 					"type" : 2,
-					"fractalFrequency" : 0.016,
+					"fractalFrequency" : 1,
 					"fractalOctaves" : 9,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
@@ -39,30 +38,30 @@
 				},
 				"1" :
 				{
-					"type" : 4,
-					"fractalFrequency" : 0.012,
+					"type" : 2,
+					"fractalFrequency" : 1,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
 					"weight" : 0.15,
 					"maxHeight" : 150,
-					"minHeight" : 100
+					"minHeight" : 50
 				},
 				"2" :
 				{
-					"type" : 6,
-					"fractalFrequency" : 0.004,
+					"type" : 2,
+					"fractalFrequency" : 1,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
-					"weight" : 0.5,
-					"maxHeight" : 200,
-					"minHeight" : 0
+					"weight" : 0.1,
+					"maxHeight" : 150,
+					"minHeight" : 50
 				},
 				"3" :
 				{
 					"type" : 0,
-					"fractalFrequency" : 0.01,
+					"fractalFrequency" : 1,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
@@ -73,7 +72,7 @@
 				"4" :
 				{
 					"type" : 0,
-					"fractalFrequency" : 0.0008,
+					"fractalFrequency" : 1,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
@@ -84,7 +83,7 @@
 				"5" :
 				{
 					"type" : 0,
-					"fractalFrequency" : 0.0008,
+					"fractalFrequency" : 1,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.5,
 					"divideThreshold" : 10,
@@ -95,7 +94,7 @@
 				"6" :
 				{
 					"type" : 3,
-					"fractalFrequency" : 0.008,
+					"fractalFrequency" : 1,
 					"fractalOctaves" : 11,
 					"fractalGain" : 0.6,
 					"divideThreshold" : 10,
@@ -106,10 +105,11 @@
 			}
 		},
 		"provinces" : {
-			"landProvinces" : 2000,
+			"auto" : 1,
+			"landProvinceFactor" : 1,
+			"seaProvinceFactor" : 1,
 			"minProvPerContinent" : 100,
 			"minProvPerRegion" : 7,
-			"seaProvinces" : 2000,
 			"minProvSize" : 50
 		},
 		"humidity" : {
@@ -122,8 +122,8 @@
 
     "v2": 
 	{
-        "source": "C:\\Users\\paul-\\Documents\\Visual Studio 2019\\Victoriasource\\",
-        "destination": "C:\\Users\\paul-\\Documents\\Visual Studio 2019\\Victoriasource\\mod\\myMod\\"
+        "source": "F:\\Program Files (x86)\\Steam\\SteamApps\\common\\Victoria 2\\",
+        "destination": "C:\\SteamLibrary\\steamapps\\common\\Victoria 2\\mod\\myMod\\"
     },
 	
 	"visualisation":

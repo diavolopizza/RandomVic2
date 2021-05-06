@@ -31,8 +31,8 @@ public:
 	uint32_t seed = 0;
 	int seaLevel = 0;
 	double landMassPercentage = 0;
-	uint32_t seaProv = 0;
-	uint32_t landProv = 0;
+	uint32_t seaProvinceAmount = 0;
+	uint32_t landProvinceAmount = 0;
 	uint32_t minProvPerContinent = 0;
 	uint32_t minProvPerRegion = 0;
 	uint32_t minProvSize = 0;
