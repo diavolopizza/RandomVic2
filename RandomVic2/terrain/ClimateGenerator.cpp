@@ -91,18 +91,16 @@ double calcCoastalHumidity(Bitmap heightmapBMP, uint32_t heightPos, uint32_t wid
 	//the more continental, the less of an influence the distance to a coast has
 	uint32_t continentality = 0;
 	//East/west directions are more important that north/south, as important winds travel east/west more often
-	const double maxEffectDistance = width / 20 * (30.0 * windIntensity);
+	const double maxEffectDistance = (double)width * windIntensity;
 	//the distance to water AGAINST the wind
-	double waterDistance = maxEffectDistance;// maxEffectDistance;
+	uint32_t waterDistance = maxEffectDistance;// maxEffectDistance;
 
 	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
 	//try to determine our distance to water
-	for (uint32_t i = 0; i < maxEffectDistance; i++)
+	for (int i = 0; i < maxEffectDistance; i++)
 	{
 		bool found = false;
-		if (widthPos + (i * windDirection) % width == 0 || widthPos + (i * windDirection) % width == 1 || widthPos + (i * windDirection) % width == -1)
-			break;
-		uint32_t value = heightmapBMP.getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
+		uint32_t value = (uint32_t)heightmapBMP.getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
 		if (value != -1 && value < seaLevel)
 		{
 			if (i < waterDistance)
@@ -114,8 +112,22 @@ double calcCoastalHumidity(Bitmap heightmapBMP, uint32_t heightPos, uint32_t wid
 		if (found)
 			break;
 	}
+
 	if (prov->coastal &&  0.15 < (0.3 * (waterDistance / maxEffectDistance)))
 		return 0.15;
+	for (auto neighbour : prov->adjProv)
+	{
+		if (neighbour->coastal && 0.2 < (0.3 * (waterDistance / maxEffectDistance)))
+			return 0.2;
+	}
+	for (auto neighbour : prov->adjProv)
+	{
+		for (auto neighboursNeighbour : neighbour->adjProv)
+		{
+			if (neighboursNeighbour->coastal && 0.25 < (0.3 * (waterDistance / maxEffectDistance)))
+				return 0.25;
+		}
+	}
 	return 0.3 * (waterDistance / maxEffectDistance);
 }
 
