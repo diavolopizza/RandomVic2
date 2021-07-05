@@ -1,13 +1,13 @@
 #pragma once
 #include <iostream>
-#include "../entities/Province.h"
-#include "../entities/Country.h"
-#include "../utils/Bitmap.h"
-#include "../terrain/TerrainGenerator.h"
-#include "../terrain/ProvinceGenerator.h"
+#include "../../entities/Province.h"
+#include "../../entities/Country.h"
+#include "../../utils/Bitmap.h"
+#include "../../terrain/TerrainGenerator.h"
+#include "../../terrain/ProvinceGenerator.h"
 #include <random>
 #include <map>
-#include "Data.h"
+#include "../../utils/Data.h"
 using namespace std;
 class CountryGenerator
 {

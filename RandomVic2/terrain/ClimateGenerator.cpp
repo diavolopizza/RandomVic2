@@ -1,14 +1,75 @@
 #include "ClimateGenerator.h"
 
 
-ClimateGenerator::ClimateGenerator()
+ClimateGenerator::ClimateGenerator(ProvinceGenerator *provinceGenerator)
 {
+	this->provinceGenerator = provinceGenerator;
 	this->random = Data::getInstance().random2;
 }
 
 ClimateGenerator::~ClimateGenerator()
 {
 
+}
+
+
+double ClimateGenerator::calcWindDirection(double heightf) {
+	int windDirection = 1;
+
+	//the height of the image scaled between 0 and 2
+	//if the heightf is ...
+	if (heightf == boost::algorithm::clamp(heightf, polarEasterlies, westerlies) || heightf == boost::algorithm::clamp(heightf, (double)(2 - westerlies), (double)(2 - polarEasterlies)))
+	{   // ... in westerlies range
+		windDirection = -1;
+	}
+	else if (heightf == boost::algorithm::clamp(heightf, westerlies, tradeWinds) || heightf == boost::algorithm::clamp(heightf, (double)(2 - tradeWinds), (double)(2 - westerlies)))
+	{   //... in tradewinds range
+		windDirection = 1;
+	}
+	else if (heightf == boost::algorithm::clamp(heightf, 0, polarEasterlies) || heightf == boost::algorithm::clamp(heightf, (double)(2 - polarEasterlies), (double)(2)))
+	{   // ... in polar easterlies range
+		windDirection = 1;
+	}
+	return windDirection;
+}
+
+double ClimateGenerator::calcWindIntensity(double heightf)
+{
+	//the height of the image scaled between 0 and 2
+	double baseWindIntensity = 0.1;
+	double windIntensity = 0;
+	//if the heightf is ...
+	if (heightf == boost::algorithm::clamp(heightf, polarEasterlies, westerlies) || heightf == boost::algorithm::clamp(heightf, (double)(2 - westerlies), (double)(2 - polarEasterlies)))
+	{   // ... in westerlies range
+		if (heightf == boost::algorithm::clamp(heightf, polarEasterlies, westerlies))
+			windIntensity = baseWindIntensity + (0.6 * (1 - ((heightf - polarEasterlies) / (westerlies - polarEasterlies))));
+		else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - westerlies), (double)(2 - polarEasterlies))) {
+			const double a = (heightf - (1.99 - westerlies));
+			const double b = (2 - polarEasterlies) - (1.99 - westerlies);
+			windIntensity = baseWindIntensity + (0.6 * ((a / b)));
+		}
+	}
+	else if (heightf == boost::algorithm::clamp(heightf, westerlies, tradeWinds) || heightf == boost::algorithm::clamp(heightf, (double)(2 - tradeWinds), (double)(2 - westerlies)))
+	{   //... in tradewinds range
+		if (heightf == boost::algorithm::clamp(heightf, westerlies, tradeWinds))
+			windIntensity = baseWindIntensity + (0.6 * (((heightf - westerlies) / (tradeWinds - westerlies))));
+		else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - tradeWinds), (double)(2 - westerlies))) {
+			const double a = (heightf - (1.99 - tradeWinds));
+			const double b = (2 - westerlies) - (1.99 - tradeWinds);
+			windIntensity = baseWindIntensity + (0.6 * (1 - (a / b)));
+		}
+	}
+	else if (heightf == boost::algorithm::clamp(heightf, 0, polarEasterlies) || heightf == boost::algorithm::clamp(heightf, (double)(2 - polarEasterlies), (double)(2)))
+	{   // ... in polar easterlies range
+		if (heightf == boost::algorithm::clamp(heightf, 0, polarEasterlies))
+			windIntensity = baseWindIntensity + (0.6 * (((heightf) / (polarEasterlies))));
+		else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - polarEasterlies), (double)(2))) {
+			const double a = (heightf - (1.99 - polarEasterlies));
+			const double b = (2) - (1.99 - polarEasterlies);
+			windIntensity = baseWindIntensity + (0.6 * (1 - (a / b)));
+		}
+	}
+	return windIntensity;
 }
 
 double calcMountainShadowAridity(Bitmap heightmapBMP, uint32_t heightPos, uint32_t widthPos, int currentDirection, uint32_t seaLevel, double windIntensity) {
@@ -26,215 +87,101 @@ double calcMountainShadowAridity(Bitmap heightmapBMP, uint32_t heightPos, uint32
 	}
 	return windIntensity * ((double)mountainPixelsInRange / (double)maxEffectDistance);
 }
-double calcCoastalHumidity(Bitmap heightmapBMP, uint32_t heightPos, uint32_t widthPos, int windDirection, uint32_t seaLevel, double windIntensity, uint32_t width, uint32_t height) {
+double calcCoastalHumidity(Bitmap heightmapBMP, uint32_t heightPos, uint32_t widthPos, int windDirection, uint32_t seaLevel, double windIntensity, uint32_t width, uint32_t height, Province* prov) {
 	//the more continental, the less of an influence the distance to a coast has
 	uint32_t continentality = 0;
 	//East/west directions are more important that north/south, as important winds travel east/west more often
-	const uint32_t maxEffectDistance = width / 200;
-	//in the opposite direction of the major global winds, the distance to look at is much larger
-	const auto windFactor = 20.0 * windIntensity;
-	uint32_t coastDistance = (uint32_t)((double)maxEffectDistance * windFactor);
-	double windDistance = maxEffectDistance * windFactor;
+	const double maxEffectDistance = width / 20 * (30.0 * windIntensity);
+	//the distance to water AGAINST the wind
+	double waterDistance = maxEffectDistance;// maxEffectDistance;
 
 	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
-	for (uint32_t i = 0; i < maxEffectDistance * windFactor; i++)
-	{
-		unsigned char value = heightmapBMP.getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
-		if (value != -1 && value < seaLevel)
-		{
-			if (i < windDistance)
-				windDistance = i;
-		}
-	}
-	for (uint32_t x = 0; x < maxEffectDistance * windFactor; x++) {
-		unsigned char value = heightmapBMP.getValueAtXYPosition(heightPos, widthPos + (uint32_t)((windDistance + (double)x) * (double)windDirection));
-		if (value != -1 && value > seaLevel) {
-			continentality++;
-		}
-	}
-	//the direction opposite to the winds, e.g. west in case of west winds(winds coming from the west)
+	//try to determine our distance to water
 	for (uint32_t i = 0; i < maxEffectDistance; i++)
 	{
-		unsigned char value = heightmapBMP.getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
+		bool found = false;
+		if (widthPos + (i * windDirection) % width == 0 || widthPos + (i * windDirection) % width == 1 || widthPos + (i * windDirection) % width == -1)
+			break;
+		uint32_t value = heightmapBMP.getValueAtXYPosition(heightPos, widthPos + (i * windDirection));
 		if (value != -1 && value < seaLevel)
 		{
-			if (i < coastDistance)
-				coastDistance = i;
+			if (i < waterDistance)
+			{
+				waterDistance = i;
+				found = true;
+			}
 		}
-
+		if (found)
+			break;
 	}
-	//the direction the winds are going(e.g. east in case of west winds)
-	for (uint32_t i = 0; i < maxEffectDistance; i++)
-	{
-		unsigned char value = heightmapBMP.getValueAtXYPosition(heightPos, widthPos + (i * windDirection * -1));
-		if (value != -1 && value < seaLevel)
-		{
-			if (i < coastDistance)
-				coastDistance = i;
-		}
-	}
-	//north
-	for (uint32_t i = 0; i < maxEffectDistance; i++)
-	{
-		unsigned char value = heightmapBMP.getValueAtXYPosition(heightPos + i, widthPos);
-		if (value != -1 && value < seaLevel)
-		{
-			if (i < coastDistance)
-				coastDistance = i;
-		}
-	}
-	//south
-	for (uint32_t i = 0; i < maxEffectDistance; i++)
-	{
-		unsigned char value = heightmapBMP.getValueAtXYPosition(heightPos - i, widthPos);
-		if (value != -1 && value < seaLevel)
-		{
-			if (i < coastDistance)
-				coastDistance = i;
-		}
-	}
-	//the more is returned, the more humid the pixel
-	//find the smallest factor:
-		//higher means less humid
-	const double continentalityFactor = 1 * (((double)continentality / ((double)maxEffectDistance* windFactor)));
-	//higher means less humid
-	const double windDistanceFactor = (((double)windDistance / ((double)maxEffectDistance * windFactor)));// *windIntensity;
-	//higher means less humid
-	const double coastDistanceFactor = (double)coastDistance / (double)maxEffectDistance;
-	if (windDistanceFactor + continentalityFactor > coastDistanceFactor)
-		return 1 - coastDistanceFactor;
-	else return 1 - (windDistanceFactor + continentalityFactor);
-
+	if (prov->coastal &&  0.15 < (0.3 * (waterDistance / maxEffectDistance)))
+		return 0.15;
+	return 0.3 * (waterDistance / maxEffectDistance);
 }
+
 void ClimateGenerator::humidityMap(Bitmap heightmapBMP, Bitmap* humidityBMP, uint32_t seaLevel, uint32_t updateThreshold)
 {
 	//if (Data::getInstance().opencvVisualisation)
 	//	Visualizer::initializeWindow();
 	cout << "Creating humidity map" << endl;
-	constexpr double polarEasterlies = 0.3;
-	constexpr double westerlies = 0.7;
-	constexpr double tradeWinds = 1;
 	const uint32_t width = heightmapBMP.bInfoHeader.biWidth;
 	const uint32_t height = heightmapBMP.bInfoHeader.biHeight;
 
-	for (uint32_t x = 0; x < height; x++)
+	for (auto prov : provinceGenerator->provinces)
 	{
-		int windDirection = 1;
-		//the height of the image scaled between 0 and 2
-		const double heightf = (double)x / ((double)height / 2);
+		if (prov->sea)
+			continue;
+		uint32_t h = prov->center / height;
+		uint32_t w = prov->center % width;
+		const double heightf = (double)h / ((double)height / 2);
+		auto windDirection = calcWindDirection(heightf);
+		auto windIntensity = calcWindIntensity(heightf);
+		double coastalHumidity = calcCoastalHumidity(heightmapBMP, h, w, windDirection, seaLevel, windIntensity, width, height, prov);
+		double heatAridity = 0;
 
-		double windIntensity = 0;
-		//if the heightf is ...
-		if (heightf == boost::algorithm::clamp(heightf, polarEasterlies, westerlies) || heightf == boost::algorithm::clamp(heightf, (double)(2 - westerlies), (double)(2 - polarEasterlies)))
-		{   // ... in westerlies range
-			windDirection = -1;
-			if (heightf == boost::algorithm::clamp(heightf, polarEasterlies, westerlies))
-				windIntensity = 0.4 + (0.6 * (1 - ((heightf - polarEasterlies) / (westerlies - polarEasterlies))));
-			else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - westerlies), (double)(2 - polarEasterlies))) {
-				const double a = (heightf - (1.99 - westerlies));
-				const double b = (2 - polarEasterlies) - (1.99 - westerlies);
-				windIntensity = 0.4 + (0.6 * ((a / b)));
-			}
-		}
-		else if (heightf == boost::algorithm::clamp(heightf, westerlies, tradeWinds) || heightf == boost::algorithm::clamp(heightf, (double)(2 - tradeWinds), (double)(2 - westerlies)))
-		{   //... in tradewinds range
-			windDirection = 1;
-			if (heightf == boost::algorithm::clamp(heightf, westerlies, tradeWinds))
-				windIntensity = 0.4 + (0.6 * (((heightf - westerlies) / (tradeWinds - westerlies))));
-			else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - tradeWinds), (double)(2 - westerlies))) {
-				const double a = (heightf - (1.99 - tradeWinds));
-				const double b = (2 - westerlies) - (1.99 - tradeWinds);
-				windIntensity = 0.4 + (0.6 * (1 - (a / b)));
-			}
-		}
-		else if (heightf == boost::algorithm::clamp(heightf, 0, polarEasterlies) || heightf == boost::algorithm::clamp(heightf, (double)(2 - polarEasterlies), (double)(2)))
-		{   // ... in polar easterlies range
-			windDirection = 1;
-			if (heightf == boost::algorithm::clamp(heightf, 0, polarEasterlies))
-				windIntensity = 0.4 + (0.6 * (((heightf) / (polarEasterlies))));
-			else if (heightf == boost::algorithm::clamp(heightf, (double)(2 - polarEasterlies), (double)(2))) {
-				const double a = (heightf - (1.99 - polarEasterlies));
-				const double b = (2) - (1.99 - polarEasterlies);
-				windIntensity = 0.4 + (0.6 * (1 - (a / b)));
-			}
-		}
-		for (uint32_t y = 0; y < width; y++)
+		if (heightf < 1)
 		{
-			//TODO
-			if (heightmapBMP.getValueAtIndex((x * width + y)) > seaLevel)
+			double dryArea = westerlies + ((tradeWinds - westerlies) / 4);
+			heatAridity = 0.5 - abs(heightf - dryArea);
+			heatAridity = boost::algorithm::clamp(heatAridity, 0, 1);
+			if (abs(heightf - tradeWinds) < 0.3)
 			{
-				//the higher, the drier
-				const double mountainShadowAridity = calcMountainShadowAridity(heightmapBMP, x, y, windDirection, seaLevel, windIntensity);
-				//the higher, the damper
-				double coastalHumidity = calcCoastalHumidity(heightmapBMP, x, y, windDirection, seaLevel, windIntensity, width, height);
-				coastalHumidity = boost::algorithm::clamp(coastalHumidity, 0, 1);
-				//the higher, the drier
-				double heatAridity = 0;
-
-				if (heightf < 1)
-				{
-					double dryArea = westerlies + ((tradeWinds - westerlies) / 4);
-					heatAridity = 0.5 - abs(heightf - dryArea);
-					heatAridity *= 2;
-					heatAridity = boost::algorithm::clamp(heatAridity, 0, 1);
-					if (abs(heightf - tradeWinds) < 0.3)
-					{
-						heatAridity -= 0.3 - abs(heightf - tradeWinds);
-					}
-				}
-				else {
-					double dryArea = 2 - (westerlies + ((tradeWinds - westerlies) / 4));
-					heatAridity = 0.5 - abs(heightf - dryArea);
-					heatAridity *= 2;
-					heatAridity = boost::algorithm::clamp(heatAridity, 0, 1);
-					if (abs(heightf - tradeWinds) < 0.3) // near equator
-					{
-						heatAridity -= 0.3 - abs(heightf - tradeWinds);
-					}
-				}
-
-				double totalAridity = 0;
-				//incorporate temperature
-				totalAridity += heatAridity;
-				//incorporate the fact that precipitation falls on mountains and is not carried inwards
-				totalAridity += mountainShadowAridity / 2;
-				totalAridity = totalAridity * 0.2 + 0.8 * (totalAridity * (1.0 - coastalHumidity));
-				//cannot get drier than super dry or less dry than humid
-				totalAridity = boost::algorithm::clamp(totalAridity, 0, 1);
-
-				{
-					RGBTRIPLE colour = { static_cast<BYTE>(255.0 * (1.0 - totalAridity)),static_cast<BYTE>(totalAridity * 255.0),static_cast<BYTE>(totalAridity * 255.0) };
-					humidityBMP->setTripleAtIndex(colour, (x * width + y));
-				}
+				heatAridity -= 0.3 - abs(heightf - tradeWinds);
 			}
+		}
+		else {
+			double dryArea = 2 - (westerlies + ((tradeWinds - westerlies) / 4));
+			heatAridity = 0.5 - abs(heightf - dryArea);
+			heatAridity = boost::algorithm::clamp(heatAridity, 0, 1);
+			if (abs(heightf - tradeWinds) < 0.3) // near equator
+			{
+				heatAridity -= 0.3 - abs(heightf - tradeWinds);
+			}
+		}
+
+		double totalAridity = 0;
+		//incorporate temperature
+		totalAridity = boost::algorithm::clamp(heatAridity, 0, 0.66);
+		//incorporate the fact that precipitation falls on mountains and is not carried inwards
+		//totalAridity += mountainShadowAridity / 2;
+		//coastalHumidity = boost::algorithm::clamp(coastalHumidity, 0, 0.1);
+		totalAridity = (totalAridity + coastalHumidity);/* * 0.2 + 0.8 * (totalAridity * (1.0 - coastalHumidity))*/
+		totalAridity = boost::algorithm::clamp(totalAridity, 0, 1);
+		//cannot get drier than super dry or damper than humid
+		// 1 = arid, 0 = humid
+		for (auto pix : prov->pixels)
+		{
+			RGBTRIPLE colour = { static_cast<BYTE>(255.0 * (1.0 - totalAridity)),static_cast<BYTE>(totalAridity * 255.0),static_cast<BYTE>(totalAridity * 255.0) };
+			humidityBMP->setTripleAtIndex(colour, pix);
 		}
 	}
-
-	/*uint32_t smoothDistance = 2;
-	for (int upperSegment = width  * smoothDistance + smoothDistance; upperSegment < humidityBMP.bInfoHeader.biSizeImage - width  * smoothDistance - smoothDistance; upperSegment += 3)
-	{
-		RGBTRIPLE north = humidityBMP.getTripleAtIndex(upperSegment - width  * smoothDistance);
-		RGBTRIPLE northwest = humidityBMP.getTripleAtIndex(upperSegment - width  * smoothDistance - smoothDistance );
-		RGBTRIPLE northeast = humidityBMP.getTripleAtIndex(upperSegment - width  * smoothDistance + smoothDistance );
-		RGBTRIPLE south = humidityBMP.getTripleAtIndex(upperSegment + width  * smoothDistance);
-		RGBTRIPLE southwest = humidityBMP.getTripleAtIndex(upperSegment + width  * smoothDistance - smoothDistance );
-		RGBTRIPLE southeast = humidityBMP.getTripleAtIndex(upperSegment + width  * smoothDistance + smoothDistance );
-		RGBTRIPLE west = humidityBMP.getTripleAtIndex(upperSegment + smoothDistance );
-		RGBTRIPLE east = humidityBMP.getTripleAtIndex(upperSegment - smoothDistance );
-		RGBTRIPLE colour;
-		colour.rgbtBlue = (double)((int)north.rgbtBlue + (int)northwest.rgbtBlue + (int)northeast.rgbtBlue + (int)southwest.rgbtBlue + (int)southeast.rgbtBlue + (int)south.rgbtBlue + (int)west.rgbtBlue + (int)east.rgbtBlue) / 8;
-		colour.rgbtGreen = (double)((int)north.rgbtGreen + (int)northwest.rgbtGreen + (int)northeast.rgbtGreen + (int)southwest.rgbtGreen + (int)southeast.rgbtGreen + (int)south.rgbtGreen + (int)west.rgbtGreen + (int)east.rgbtGreen) / 8;
-		colour.rgbtRed = (double)((int)north.rgbtRed + (int)northwest.rgbtRed + (int)northeast.rgbtRed + (int)southwest.rgbtRed + (int)southeast.rgbtRed + (int)south.rgbtRed + (int)west.rgbtRed + (int)east.rgbtRed) / 8;
-
-		humidityBMP.setTripleAtIndex(colour, upperSegment);
-	}*/
 }
 //creates terrain around simplistic climate model
 void ClimateGenerator::complexTerrain(Bitmap* terrainBMP, const Bitmap heightMap, uint32_t seaLevel, uint32_t updateThreshold)
 {
-	/*cout << "Creating complex terrain" << endl;
-	if (Data::getInstance().opencvVisualisation)
-		Visualizer::initializeWindow();
+	cout << "Creating complex terrain" << endl;
+	//if (Data::getInstance().opencvVisualisation)
+	//	Visualizer::initializeWindow();
 	//TODO CONFIG FOR ALL PARAMS
 	const uint32_t coastalDistanceInfluence = 30;
 	const unsigned char mountainStart = seaLevel + (uint32_t)((double)seaLevel * 0.4);
@@ -263,7 +210,7 @@ void ClimateGenerator::complexTerrain(Bitmap* terrainBMP, const Bitmap heightMap
 	constexpr unsigned char coastal_desert = 52;
 	uint32_t displayCounter = 0;
 
-	for (auto prov : provinces)
+	for (auto prov : provinceGenerator->provinces)
 	{
 		displayCounter++;
 		if (prov->sea)
@@ -459,5 +406,5 @@ void ClimateGenerator::complexTerrain(Bitmap* terrainBMP, const Bitmap heightMap
 				else { terrainBMP->setValueAtIndex(pixel, 31u); }
 			}
 		}
-	}*/
+	}
 }

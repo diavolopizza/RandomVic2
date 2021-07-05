@@ -7,7 +7,7 @@
 #include "utils/Data.h"
 #include "utils/Parser.h"
 #include "victoria2/VictoriaModule.h"
-#include "utils/CountryGenerator.h"
+#include "worldgen/generic/CountryGenerator.h"
 #include <memory.h>
 #include <random>
 #include "utils/Visualizer.h"
@@ -66,7 +66,6 @@ int main() {
 	Parser genericParser;
 	TerrainGenerator terrainGenerator;
 	ProvinceGenerator provinceGenerator;
-	ClimateGenerator climateGenerator;
 	Visualizer visualizer;
 	//const Bitmap heightMapBMP;
 	const string heightmapSourceString = Data::getInstance().debugMapsPath + ("heightmap.bmp");
@@ -158,8 +157,9 @@ int main() {
 		return -1;
 	}
 	if (Data::getInstance().genComplexTerrain) {
-		//terrainGenerator->humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
-		//BMPHandler::getInstance().SaveBMPToFile(&humidityBMP, (Data::getInstance().debugMapsPath + ("humidity.bmp")).c_str());
+		ClimateGenerator climateGenerator(&provinceGenerator);
+		climateGenerator.humidityMap(heightMapBMP, &humidityBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
+		BMPHandler::getInstance().SaveBMPToFile(humidityBMP, (Data::getInstance().debugMapsPath + ("humidity.bmp")).c_str());
 		//generate terrain and rivers according to simplistic climate model
 		climateGenerator.complexTerrain(&terrainBMP, heightMapBMP, Data::getInstance().seaLevel, Data::getInstance().updateThreshold);
 		BMPHandler::getInstance().SaveBMPToFile(terrainBMP, (Data::getInstance().debugMapsPath + ("terrain.bmp")).c_str());
