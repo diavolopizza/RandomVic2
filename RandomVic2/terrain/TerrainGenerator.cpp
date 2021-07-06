@@ -375,38 +375,54 @@ void TerrainGenerator::generateRivers(const Bitmap heightMap)
 		R->pixels.push_back(start);
 		riverPixels.insert(R->getCurrentEnd());
 
-		//const int favDirection = 1;
-
-		int previous = 0; //this variable is used to avoid rectangles in the river
+		const int favDirection = 1;
+		int previous = 0;
+		//vector<int> previous{ 5,5,5 }; //this variable is used to avoid rectangles in the river
 		//continue the river until the sealevel is reached, either at a lake or the ocean
 		while (heightMap.getValueAtIndex(R->getCurrentEnd()) > Data::getInstance().seaLevel - 1) {
 			//check each direction for fastest decay in altitude, each direction checked 5 pixels away
-			vector<int> altitudes{ heightMap.getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth * 5)),
-				heightMap.getValueAtIndex(BELOW(R->getCurrentEnd(), heightmapWidth * 5)),
-				heightMap.getValueAtIndex(R->getCurrentEnd() - 5),
-				heightMap.getValueAtIndex(R->getCurrentEnd() + 5) };
+			vector<int> altitudes{ heightMap.getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth * 50)),
+				heightMap.getValueAtIndex(BELOW(R->getCurrentEnd(), heightmapWidth * 50)),
+				heightMap.getValueAtIndex(R->getCurrentEnd() - 50),
+				heightMap.getValueAtIndex(R->getCurrentEnd() + 50) };
+			vector<double> altitudeWeights;
+			const std::vector<int>::iterator maxAltitude = std::max_element(std::begin(altitudes), std::end(altitudes));
+			const std::vector<int>::iterator minAltitude = std::min_element(std::begin(altitudes), std::end(altitudes));
+			for (auto altitude : altitudes)
+			{
+				//cout << ((double)altitude - (double)*minAltitude) / ((double)*maxAltitude - (double)*minAltitude) << endl;
+				altitudeWeights.push_back(1.0-(((double)altitude-(double)*minAltitude) / ((double)*maxAltitude - (double)*minAltitude)));
+			}
 
-			const std::vector<int>::iterator result = std::min_element(std::begin(altitudes), std::end(altitudes));
-			const int favDirection = (int)std::distance(std::begin(altitudes), result);
+			const int favDirection = (int)std::distance(std::begin(altitudes), minAltitude);
+
 			int elevationToleranceOffset = 0;
 			vector<int> candidates;
 			//now expand to lower or equal pixel as long as possible
 			while (elevationToleranceOffset < Data::getInstance().elevationTolerance && !candidates.size()) {
 				if (heightMap.getValueAtIndex(ABOVE(R->getCurrentEnd(), heightmapWidth)) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(ABOVE(R->getCurrentEnd(), heightmapWidth))) {
 					if (ABOVE(R->getCurrentEnd(), heightmapWidth) < heightMap.bInfoHeader.biSizeImage && previous != -(int)heightmapWidth)
-						candidates.push_back(ABOVE(R->getCurrentEnd(), heightmapWidth));
+						for (int x = 0; x < (double)100 * altitudeWeights[0]; x++) {
+							candidates.push_back(ABOVE(R->getCurrentEnd(), heightmapWidth));
+						}
 				}
 				if (heightMap.getValueAtIndex(BELOW(R->getCurrentEnd(), heightmapWidth)) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(BELOW(R->getCurrentEnd(), heightmapWidth))) {
 					if (BELOW(R->getCurrentEnd(), heightmapWidth) > heightmapWidth && previous != heightmapWidth)
-						candidates.push_back(BELOW(R->getCurrentEnd(), heightmapWidth));
+						for (int x = 0; x < (double)100 * altitudeWeights[1]; x++) {
+							candidates.push_back(BELOW(R->getCurrentEnd(), heightmapWidth));
+						}
 				}
 				if (heightMap.getValueAtIndex(LEFT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(LEFT(R->getCurrentEnd()))) {
 					if (LEFT(R->getCurrentEnd()) > 3 && previous != 1)
-						candidates.push_back(LEFT(R->getCurrentEnd()));
+						for (int x = 0; x < (double)100 * altitudeWeights[2]; x++) {
+							candidates.push_back(LEFT(R->getCurrentEnd()));
+						}
 				}
 				if (heightMap.getValueAtIndex(RIGHT(R->getCurrentEnd())) < heightMap.getValueAtIndex(R->getCurrentEnd()) + elevationToleranceOffset && !R->contains(RIGHT(R->getCurrentEnd()))) {
 					if (RIGHT(R->getCurrentEnd()) < heightMap.bInfoHeader.biSizeImage - 1 && previous != -1)
-						candidates.push_back(RIGHT(R->getCurrentEnd()));
+						for (int x = 0; x < (double)100 * altitudeWeights[3]; x++) {
+							candidates.push_back(RIGHT(R->getCurrentEnd()));
+						}
 				}
 				if (candidates.size() == 0) {
 					elevationToleranceOffset++;
@@ -421,10 +437,13 @@ void TerrainGenerator::generateRivers(const Bitmap heightMap)
 			}
 			int newPixel = candidates[random() % candidates.size()];
 
+			candidates.clear();
 
+			// check if neighbours of the newPixel belong to another river
 			vector<int> directions = { LEFT(newPixel), RIGHT(newPixel), BELOW(newPixel, heightmapWidth),ABOVE(newPixel, heightmapWidth) };
 			for (uint32_t index = 0; index < directions.size(); index++)
 			{
+				//delete the backwards direction, so we don't check the same river
 				if (directions[index] == R->pixels.back())
 				{
 					directions.erase(directions.begin() + index);
